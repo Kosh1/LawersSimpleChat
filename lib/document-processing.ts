@@ -1,8 +1,8 @@
 import { extname } from 'path';
-import { Readable } from 'stream';
 import mammoth from 'mammoth';
 import OpenAI from 'openai';
 import pdfParse from 'pdf-parse';
+import { toFile } from 'openai/uploads';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -128,9 +128,8 @@ async function extractWithVision(buffer: Buffer, mimeType: string, filename: str
 
 async function extractWithFileAttachment(buffer: Buffer, filename: string) {
   ensureOpenAIKey();
-  const stream = Readable.from(buffer);
   const upload = await openai.files.create({
-    file: stream,
+    file: await toFile(buffer, filename),
     purpose: 'assistants',
     filename,
   });
