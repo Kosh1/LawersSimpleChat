@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
         };
         const { error: sessionError } = await supabase
           .from('chat_sessions')
-          .insert(newChatSession);
+          .insert([newChatSession]);
         if (sessionError) {
           console.error('Error creating session:', sessionError);
         } else {
