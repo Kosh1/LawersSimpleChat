@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 import { extractTextFromDocument } from '@/lib/document-processing';
 import { mapProjectDocument } from '@/lib/projects';
-import type { Database } from '@/lib/types';
 
 export const runtime = 'nodejs';
 
@@ -88,7 +87,7 @@ export async function POST(req: NextRequest) {
     const supabase = getSupabase();
     const now = new Date().toISOString();
 
-    const newDocument: Database['public']['Tables']['project_documents']['Insert'] = {
+    const newDocument = {
       id: uuidv4(),
       project_id: projectId,
       name: filename,
@@ -103,11 +102,9 @@ export async function POST(req: NextRequest) {
       created_at: now,
     };
 
-    const insertRows: Database['public']['Tables']['project_documents']['Insert'][] = [newDocument];
-
     const { data, error } = await supabase
       .from('project_documents')
-      .insert(insertRows)
+      .insert([newDocument])
       .select('*')
       .single();
 

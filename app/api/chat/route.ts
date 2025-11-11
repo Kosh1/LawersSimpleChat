@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 import { getUKLawyerPrompt } from '@/lib/prompts';
-import type { ChatMessage, ChatRequestDocument, Database, UTMData } from '@/lib/types';
+import type { ChatMessage, ChatRequestDocument, UTMData } from '@/lib/types';
 import { projectDocumentToSessionDocument } from '@/lib/projects';
 
 const openai = new OpenAI({
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     if (!currentSessionId) {
       const newSessionId = uuidv4();
       try {
-        const newChatSession: Database['public']['Tables']['chat_sessions']['Insert'] = {
+        const newChatSession = {
           id: newSessionId,
           user_id: userId ?? null,
           project_id: resolvedProjectId ?? null,
@@ -111,7 +111,17 @@ export async function POST(req: NextRequest) {
         };
         const { error: sessionError } = await supabase
           .from('chat_sessions')
-          .insert([newChatSession]);
+          .insert([
+            {
+              id: newChatSession.id,
+              user_id: newChatSession.user_id,
+              project_id: newChatSession.project_id,
+              initial_message: newChatSession.initial_message,
+              created_at: newChatSession.created_at,
+              utm: newChatSession.utm,
+              document_type: newChatSession.document_type ?? null,
+            },
+          ]);
         if (sessionError) {
           console.error('Error creating session:', sessionError);
         } else {
@@ -125,7 +135,7 @@ export async function POST(req: NextRequest) {
     // Save messages to database
     try {
       if (currentSessionId) {
-        const messageRows: Database['public']['Tables']['chat_messages']['Insert'][] = [
+        const messageRows = [
           {
             session_id: currentSessionId,
             role: 'user',

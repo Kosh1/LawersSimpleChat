@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
-import type { Database } from '@/lib/types';
 
 function getProjectIdFromRequest(req: NextRequest) {
   const segments = req.nextUrl.pathname.split('/').filter(Boolean);
@@ -94,7 +93,7 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     const newSessionId = uuidv4();
 
-    const newChatSession: Database['public']['Tables']['chat_sessions']['Insert'] = {
+    const newChatSession = {
       id: newSessionId,
       user_id: userId ?? null,
       project_id: projectId,
@@ -104,13 +103,9 @@ export async function POST(req: NextRequest) {
       document_type: null,
     };
 
-    const chatSessionRows: Database['public']['Tables']['chat_sessions']['Insert'][] = [
-      newChatSession,
-    ];
-
     const { data, error } = await supabase
       .from('chat_sessions')
-      .insert(chatSessionRows)
+      .insert([newChatSession])
       .select('*')
       .single();
 
