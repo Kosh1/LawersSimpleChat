@@ -104,8 +104,11 @@ export async function POST(req: NextRequest) {
       document_type: null,
     };
 
-    const { data, error } = await supabase
-      .from('chat_sessions')
+    const chatSessionsTable = supabase.from(
+      'chat_sessions' satisfies keyof Database['public']['Tables'],
+    );
+
+    const { data, error } = await chatSessionsTable
       .insert([newChatSession])
       .select('*')
       .single();
