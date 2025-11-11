@@ -141,7 +141,7 @@ async function extractWithFileAttachment(buffer: Buffer, filename: string) {
           role: 'system',
           content: [
             {
-              type: 'text',
+              type: 'input_text',
               text: 'You are a meticulous legal transcription assistant. Extract the complete plain text from provided documents without adding commentary.',
             },
           ],
@@ -150,7 +150,7 @@ async function extractWithFileAttachment(buffer: Buffer, filename: string) {
           role: 'user',
           content: [
             {
-              type: 'text',
+              type: 'input_text',
               text: `Read the attached document "${filename}" and return only its textual content.`,
             },
           ],
