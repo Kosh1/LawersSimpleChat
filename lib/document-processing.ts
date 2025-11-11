@@ -153,18 +153,11 @@ async function extractWithFileAttachment(buffer: Buffer, filename: string) {
               type: 'input_text',
               text: `Read the attached document "${filename}" and return only its textual content.`,
             },
+            {
+              type: 'input_file',
+              file_id: upload.id,
+            },
           ],
-        },
-      ],
-      tools: [
-        {
-          type: 'file_search',
-        },
-      ],
-      attachments: [
-        {
-          file_id: upload.id,
-          tools: [{ type: 'file_search' }],
         },
       ],
       temperature: 0,
