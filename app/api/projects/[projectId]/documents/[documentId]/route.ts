@@ -28,7 +28,7 @@ export async function DELETE(req: NextRequest) {
     const supabase = getSupabase();
     if (userId) {
       const { data: project, error: projectError } = await supabase
-        .from('projects')
+        .from<'projects'>('projects')
         .select('id')
         .eq('id', projectId)
         .eq('user_id', userId)
@@ -40,7 +40,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const { error } = await supabase
-      .from('project_documents')
+      .from<'project_documents'>('project_documents')
       .delete()
       .eq('id', documentId)
       .eq('project_id', projectId);
@@ -51,7 +51,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const now = new Date().toISOString();
-    await supabase.from('projects').update({ updated_at: now }).eq('id', projectId).limit(1);
+    await supabase.from<'projects'>('projects').update({ updated_at: now }).eq('id', projectId).limit(1);
 
     return NextResponse.json({ success: true });
   } catch (error) {

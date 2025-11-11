@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     if (!resolvedProjectId && sessionId) {
       try {
         const { data: sessionRow } = await supabase
-          .from('chat_sessions')
+          .from<'chat_sessions'>('chat_sessions')
           .select('project_id')
           .eq('id', sessionId)
           .maybeSingle<{ project_id: string | null }>();
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           utm: utm || null,
         };
         const { error: sessionError } = await supabase
-          .from('chat_sessions')
+          .from<'chat_sessions'>('chat_sessions')
           .insert([newChatSession]);
         if (sessionError) {
           console.error('Error creating session:', sessionError);
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
           },
         ];
         const { error: messageError } = await supabase
-          .from('chat_messages')
+          .from<'chat_messages'>('chat_messages')
           .insert(messageRows);
 
         if (messageError) {
@@ -201,7 +201,7 @@ async function loadProjectDocumentsForContext(
 ) {
   try {
     const { data, error } = await supabase
-      .from('project_documents')
+      .from<'project_documents'>('project_documents')
       .select('*')
       .eq('project_id', projectId)
       .order('uploaded_at', { ascending: false })
