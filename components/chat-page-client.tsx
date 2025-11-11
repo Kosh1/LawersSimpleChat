@@ -104,17 +104,23 @@ export function ChatPageClient() {
       const storedSessions = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedSessions) {
         const parsedRaw: LocalChatSession[] = JSON.parse(storedSessions);
-        const parsed = parsedRaw.map<LocalChatSession>((session) => ({
-          ...session,
-          title: session.title?.trim() ? session.title : "Новый чат",
-          messages: Array.isArray(session.messages) ? session.messages : [],
-          documents: Array.isArray((session as any).documents)
-            ? (session as any).documents
-                .map((document) => normalizeDocument(document))
-                .filter((document): document is SessionDocument => Boolean(document))
-            : [],
-          createdAt: session.createdAt ?? new Date().toISOString(),
-        }));
+        const parsed = parsedRaw.map<LocalChatSession>((session) => {
+          const storedDocuments = Array.isArray((session as any).documents)
+            ? ((session as any).documents as unknown[])
+            : [];
+
+          const normalizedDocuments = storedDocuments
+            .map((document) => normalizeDocument(document))
+            .filter((document): document is SessionDocument => Boolean(document));
+
+          return {
+            ...session,
+            title: session.title?.trim() ? session.title : "Новый чат",
+            messages: Array.isArray(session.messages) ? session.messages : [],
+            documents: normalizedDocuments,
+            createdAt: session.createdAt ?? new Date().toISOString(),
+          };
+        });
         if (parsed.length > 0) {
           setSessions(parsed);
           setActiveSessionId(parsed[0].id);
