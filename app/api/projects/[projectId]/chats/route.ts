@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
+import type { Database } from '@/lib/types';
 
 function getProjectIdFromRequest(req: NextRequest) {
   const segments = req.nextUrl.pathname.split('/').filter(Boolean);
@@ -95,10 +96,10 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supabase
       .from('chat_sessions')
-      .insert([
+      .insert<Database['public']['Tables']['chat_sessions']['Insert']>([
         {
           id: newSessionId,
-          user_id: userId,
+          user_id: userId ?? null,
           project_id: projectId,
           initial_message: initialMessage,
           created_at: now,
