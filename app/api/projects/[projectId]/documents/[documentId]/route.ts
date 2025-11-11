@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
+type ProjectDocumentParamsContext = {
+  params: {
+    projectId: string;
+    documentId: string;
+  };
+};
+
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { projectId: string; documentId: string } },
+  context: ProjectDocumentParamsContext,
 ) {
-  const { projectId, documentId } = params;
+  const { projectId, documentId } = context.params;
   const body = await req.json().catch(() => ({}));
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : null;
 
