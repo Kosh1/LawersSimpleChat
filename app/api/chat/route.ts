@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     if (!resolvedProjectId && sessionId) {
       try {
         const { data: sessionRow } = await supabase
-          .from<'chat_sessions'>('chat_sessions')
+          .from<Database['public']['Tables']['chat_sessions']['Row'], Database['public']['Tables']['chat_sessions']['Insert']>('chat_sessions')
           .select('project_id')
           .eq('id', sessionId)
           .maybeSingle<{ project_id: string | null }>();
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           utm: utm || null,
         };
         const { error: sessionError } = await supabase
-          .from<'chat_sessions'>('chat_sessions')
+          .from<Database['public']['Tables']['chat_sessions']['Row'], Database['public']['Tables']['chat_sessions']['Insert']>('chat_sessions')
           .insert([newChatSession]);
         if (sessionError) {
           console.error('Error creating session:', sessionError);
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
           },
         ];
         const { error: messageError } = await supabase
-          .from<'chat_messages'>('chat_messages')
+          .from<Database['public']['Tables']['chat_messages']['Row'], Database['public']['Tables']['chat_messages']['Insert']>('chat_messages')
           .insert(messageRows);
 
         if (messageError) {

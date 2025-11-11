@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
-      .from<'projects'>('projects')
+      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
       .select('*')
       .eq('user_id', userId)
       .order('updated_at', { ascending: false });
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     const projectRows: Database['public']['Tables']['projects']['Insert'][] = [newProject];
 
     const { data, error } = await supabase
-      .from<'projects'>('projects')
+      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
       .insert(projectRows)
       .select('*')
       .single();

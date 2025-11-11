@@ -28,8 +28,8 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabase();
 
     if (userId) {
-      const { data: project, error: projectError } = await supabase
-        .from<'projects'>('projects')
+    const { data: project, error: projectError } = await supabase
+      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
         .select('id')
         .eq('id', projectId)
         .eq('user_id', userId)
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from<'chat_sessions'>('chat_sessions')
+      .from<Database['public']['Tables']['chat_sessions']['Row'], Database['public']['Tables']['chat_sessions']['Insert']>('chat_sessions')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
 
     if (userId) {
       const { data: project, error: projectError } = await supabase
-        .from<'projects'>('projects')
+        .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
         .select('id')
         .eq('id', projectId)
         .eq('user_id', userId)
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     ];
 
     const { data, error } = await supabase
-      .from<'chat_sessions'>('chat_sessions')
+      .from<Database['public']['Tables']['chat_sessions']['Row'], Database['public']['Tables']['chat_sessions']['Insert']>('chat_sessions')
       .insert(chatSessionRows)
       .select('*')
       .single();
@@ -119,7 +119,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Не удалось создать чат.' }, { status: 500 });
     }
 
-    await supabase.from<'projects'>('projects').update({ updated_at: now }).eq('id', projectId).limit(1);
+    await supabase
+      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
+      .update({ updated_at: now })
+      .eq('id', projectId)
+      .limit(1);
 
     return NextResponse.json({ chat: data }, { status: 201 });
   } catch (error) {

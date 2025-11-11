@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
-      .from<'project_documents'>('project_documents')
+      .from<Database['public']['Tables']['project_documents']['Row'], Database['public']['Tables']['project_documents']['Insert']>('project_documents')
       .select('*')
       .eq('project_id', projectId)
       .order('uploaded_at', { ascending: false });
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     const insertRows: Database['public']['Tables']['project_documents']['Insert'][] = [newDocument];
 
     const { data, error } = await supabase
-      .from<'project_documents'>('project_documents')
+      .from<Database['public']['Tables']['project_documents']['Row'], Database['public']['Tables']['project_documents']['Insert']>('project_documents')
       .insert(insertRows)
       .select('*')
       .single();
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
 
     // Touch project updated_at
     let projectUpdate = supabase
-      .from<'projects'>('projects')
+      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
       .update({ updated_at: now })
       .eq('id', projectId);
     if (userId) {
