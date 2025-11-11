@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
           .from('chat_sessions')
           .select('project_id')
           .eq('id', sessionId)
-          .maybeSingle<{ project_id: string | null }>();
+          .maybeSingle();
         if (sessionRow?.project_id) {
           resolvedProjectId = sessionRow.project_id;
         }
