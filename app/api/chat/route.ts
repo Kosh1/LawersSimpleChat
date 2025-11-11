@@ -30,14 +30,7 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // Extract landing type from UTM
-    let landingType: string | undefined;
-    if (utm.landing_type) {
-      landingType = utm.landing_type;
-    }
-
-    // Get appropriate prompt based on landing type
-    const lawyerPrompt = getUKLawyerPrompt(landingType);
+    const lawyerPrompt = getUKLawyerPrompt();
 
     // Format messages for OpenAI
     const formattedMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [

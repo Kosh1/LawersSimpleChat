@@ -26,14 +26,14 @@ function createEmptySession(): LocalChatSession {
   const now = new Date().toISOString();
   return {
     id: uuidv4(),
-    title: "New Chat",
+    title: "Новый чат",
     messages: [],
     createdAt: now,
   };
 }
 
 function generateTitle(message: string) {
-  if (!message) return "New Chat";
+  if (!message) return "Новый чат";
   const trimmed = message.trim().replace(/\s+/g, " ");
   if (trimmed.length <= 40) {
     return trimmed;
@@ -70,7 +70,7 @@ export function ChatPageClient() {
         const parsedRaw: LocalChatSession[] = JSON.parse(storedSessions);
         const parsed = parsedRaw.map<LocalChatSession>((session) => ({
           ...session,
-          title: session.title?.trim() ? session.title : "New Chat",
+          title: session.title?.trim() ? session.title : "Новый чат",
           messages: Array.isArray(session.messages) ? session.messages : [],
           createdAt: session.createdAt ?? new Date().toISOString(),
         }));
@@ -82,7 +82,7 @@ export function ChatPageClient() {
         }
       }
     } catch (error) {
-      console.error("Failed to load chat sessions from storage:", error);
+      console.error("Не удалось загрузить чаты из хранилища:", error);
     }
 
     const initialSession = createEmptySession();
@@ -96,7 +96,7 @@ export function ChatPageClient() {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sessions));
     } catch (error) {
-      console.error("Failed to persist chat sessions:", error);
+      console.error("Не удалось сохранить чаты:", error);
     }
   }, [sessions, hasInitialized]);
 
@@ -161,7 +161,7 @@ export function ChatPageClient() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send message");
+        throw new Error("Не удалось отправить сообщение");
       }
 
       const data = await response.json();
@@ -181,7 +181,7 @@ export function ChatPageClient() {
         }),
       );
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Ошибка при отправке сообщения:", error);
       setSessions((prev) =>
         prev.map((session) => {
           if (session.id !== sessionLocalId) return session;
@@ -191,7 +191,7 @@ export function ChatPageClient() {
               ...session.messages,
               {
                 role: "assistant",
-                content: "Sorry, there was an error processing your request. Please try again.",
+                content: "Извините, произошла ошибка при обработке запроса. Попробуйте ещё раз.",
               },
             ],
           };
@@ -232,14 +232,14 @@ export function ChatPageClient() {
           <div className="flex items-center justify-between border-b px-4 py-4">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5" />
-              <span className="text-sm font-semibold">AI Legal Assistant</span>
+              <span className="text-sm font-semibold">AI-юрист</span>
             </div>
             <ThemeToggle />
           </div>
           <div className="p-4">
             <Button onClick={handleNewChat} className="w-full" variant="outline">
               <Plus className="mr-2 h-4 w-4" />
-              New Chat
+              Новый чат
             </Button>
           </div>
           <ScrollArea className="flex-1 px-2">
@@ -255,7 +255,7 @@ export function ChatPageClient() {
                 >
                   <div className="flex w-full items-center gap-2">
                     <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1 truncate font-medium">{session.title || "New Chat"}</span>
+                    <span className="flex-1 truncate font-medium">{session.title || "Новый чат"}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {new Date(session.createdAt).toLocaleString()}
@@ -277,9 +277,9 @@ export function ChatPageClient() {
               onClick={() => setIsSidebarOpen((prev) => !prev)}
             >
               <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle chat history</span>
+              <span className="sr-only">Открыть или скрыть список чатов</span>
             </Button>
-            <h1 className="text-base font-semibold md:text-lg">{activeSession?.title ?? "New Chat"}</h1>
+            <h1 className="text-base font-semibold md:text-lg">{activeSession?.title ?? "Новый чат"}</h1>
           </div>
         </header>
 
@@ -288,9 +288,9 @@ export function ChatPageClient() {
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
               {activeSession && activeSession.messages.length === 0 && !isLoading && (
                 <div className="mt-10 text-center text-muted-foreground">
-                  <h2 className="text-xl font-semibold text-foreground">How can I help you today?</h2>
+                  <h2 className="text-xl font-semibold text-foreground">С чего начнём?</h2>
                   <p className="mt-2 text-sm">
-                    Ask any question about UK legal matters, documents, or procedures. I&apos;m here to help.
+                    Опишите ситуацию, из-за которой вы обращаетесь. Я помогу разобраться со стратегией и рисками.
                   </p>
                 </div>
               )}
@@ -349,7 +349,7 @@ export function ChatPageClient() {
                       <CardContent className="p-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>AI is thinking…</span>
+                          <span>AI обрабатывает запрос…</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -368,13 +368,13 @@ export function ChatPageClient() {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={handleInputKeyDown}
-              placeholder="Describe your legal situation or ask a question…"
+              placeholder="Опишите ситуацию, вопрос или запрос к защитнику…"
               className="min-h-[120px] resize-none"
               disabled={isLoading}
             />
             <div className="flex items-center justify-end gap-3">
               <span className="text-xs text-muted-foreground">
-                Press Enter to send · Shift + Enter for a new line
+                Нажмите Enter, чтобы отправить · Shift + Enter — новая строка
               </span>
               <Button type="submit" disabled={isLoading || !input.trim()}>
                 {isLoading ? (
@@ -382,7 +382,7 @@ export function ChatPageClient() {
                 ) : (
                   <Send className="mr-2 h-4 w-4" />
                 )}
-                Send
+                Отправить
               </Button>
             </div>
           </form>
@@ -394,7 +394,7 @@ export function ChatPageClient() {
           type="button"
           onClick={() => setIsSidebarOpen(false)}
           className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm md:hidden"
-          aria-label="Close sidebar"
+          aria-label="Закрыть список чатов"
         />
       )}
     </div>
