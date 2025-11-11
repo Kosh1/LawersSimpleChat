@@ -398,8 +398,6 @@ export function ChatPageClient() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [sessions, activeSessionId]);
 
-  const activeSession = sessions.find((session) => session.id === activeSessionId);
-
   const handleNewChat = useCallback(() => {
     if (!selectedProjectId) return;
     const newSession = createEmptySession(selectedProjectId);
