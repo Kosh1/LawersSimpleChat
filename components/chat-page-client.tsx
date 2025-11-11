@@ -9,9 +9,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
-import type { ChatMessage, SessionDocument } from "@/lib/types";
+import type { ChatMessage, Project, SessionDocument } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, FileText, Loader2, Menu, MessageSquare, Paperclip, Plus, Send, Trash2, User } from "lucide-react";
+import { Bot, FileText, Folder, FolderPlus, Loader2, Menu, MessageSquare, Paperclip, Plus, Send, Trash2, User } from "lucide-react";
 
 type LocalChatSession = {
   id: string;
@@ -20,11 +20,20 @@ type LocalChatSession = {
   backendSessionId?: string;
   createdAt: string;
   documents: SessionDocument[];
+  projectId: string;
 };
 
-const LOCAL_STORAGE_KEY = "legal-assistant-chat-sessions";
+type ProjectState = Project & {
+  documents: SessionDocument[];
+};
 
-function createEmptySession(): LocalChatSession {
+const LOCAL_STORAGE_KEY = "legal-assistant-chat-sessions-v2";
+const LEGACY_LOCAL_STORAGE_KEY = "legal-assistant-chat-sessions";
+const USER_STORAGE_KEY = "legal-assistant-user-id";
+const ACTIVE_PROJECT_STORAGE_KEY = "legal-assistant-active-project-id";
+const DEFAULT_PROJECT_NAME = "Мои дела";
+
+function createEmptySession(projectId: string): LocalChatSession {
   const now = new Date().toISOString();
   return {
     id: uuidv4(),
@@ -32,6 +41,7 @@ function createEmptySession(): LocalChatSession {
     messages: [],
     documents: [],
     createdAt: now,
+    projectId,
   };
 }
 
@@ -87,6 +97,11 @@ export function ChatPageClient() {
     return query ? `?${query}` : "";
   }, [searchParams]);
 
+  const [userId, setUserId] = useState<string | null>(null);
+  const [projects, setProjects] = useState<ProjectState[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [isProjectsLoading, setIsProjectsLoading] = useState<boolean>(true);
+  const [isDocumentsLoading, setIsDocumentsLoading] = useState<boolean>(false);
   const [sessions, setSessions] = useState<LocalChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [input, setInput] = useState("");
@@ -101,7 +116,98 @@ export function ChatPageClient() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const storedSessions = localStorage.getItem(LOCAL_STORAGE_KEY);
+      let storedUserId = localStorage.getItem(USER_STORAGE_KEY);
+      if (!storedUserId) {
+        storedUserId = uuidv4();
+        localStorage.setItem(USER_STORAGE_KEY, storedUserId);
+      }
+      setUserId(storedUserId);
+    } catch (error) {
+      console.error("Не удалось получить идентификатор пользователя:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    let isCancelled = false;
+
+    const loadProjects = async () => {
+      setIsProjectsLoading(true);
+      try {
+        const response = await fetch(`/api/projects?userId=${encodeURIComponent(userId)}`);
+        let projectsPayload: Project[] = [];
+
+        if (response.ok) {
+          const data = await response.json();
+          projectsPayload = Array.isArray(data?.projects) ? data.projects : [];
+        }
+
+        if (!projectsPayload.length) {
+          const createResponse = await fetch(`/api/projects`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: DEFAULT_PROJECT_NAME, userId }),
+          });
+
+          if (createResponse.ok) {
+            const created = await createResponse.json();
+            if (created?.project) {
+              projectsPayload = [created.project as Project];
+            }
+          }
+        }
+
+        if (!isCancelled) {
+          const enriched = projectsPayload
+            .map<ProjectState>((project) => ({
+              ...project,
+              documents: [],
+            }))
+            .sort(
+              (a, b) =>
+                new Date(b.updated_at ?? b.created_at).getTime() -
+                new Date(a.updated_at ?? a.created_at).getTime(),
+            );
+          setProjects(enriched);
+
+          if (enriched.length > 0) {
+            const storedActiveProject = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_PROJECT_STORAGE_KEY) : null;
+            const initialProject = storedActiveProject && enriched.some((project) => project.id === storedActiveProject)
+              ? storedActiveProject
+              : enriched[0].id;
+            setSelectedProjectId(initialProject);
+          }
+        }
+      } catch (error) {
+        console.error("Не удалось загрузить проекты:", error);
+        if (!isCancelled) {
+          toast({
+            variant: "destructive",
+            title: "Ошибка загрузки проектов",
+            description: "Попробуйте обновить страницу или повторить попытку позже.",
+          });
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsProjectsLoading(false);
+        }
+      }
+    };
+
+    void loadProjects();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [toast, userId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      let storedSessions = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!storedSessions) {
+        storedSessions = localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY);
+      }
       if (storedSessions) {
         const parsedRaw: LocalChatSession[] = JSON.parse(storedSessions);
         const parsed = parsedRaw.map<LocalChatSession>((session) => {
@@ -119,22 +225,17 @@ export function ChatPageClient() {
             messages: Array.isArray(session.messages) ? session.messages : [],
             documents: normalizedDocuments,
             createdAt: session.createdAt ?? new Date().toISOString(),
+            projectId: session.projectId ?? "",
           };
         });
-        if (parsed.length > 0) {
-          setSessions(parsed);
-          setActiveSessionId(parsed[0].id);
-          setHasInitialized(true);
-          return;
-        }
+        setSessions(parsed);
+        setHasInitialized(true);
+        return;
       }
     } catch (error) {
       console.error("Не удалось загрузить чаты из хранилища:", error);
     }
 
-    const initialSession = createEmptySession();
-    setSessions([initialSession]);
-    setActiveSessionId(initialSession.id);
     setHasInitialized(true);
   }, []);
 
@@ -148,24 +249,248 @@ export function ChatPageClient() {
   }, [sessions, hasInitialized]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (selectedProjectId) {
+      try {
+        localStorage.setItem(ACTIVE_PROJECT_STORAGE_KEY, selectedProjectId);
+      } catch (error) {
+        console.error("Не удалось сохранить активный проект:", error);
+      }
+    }
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    if (!hasInitialized) return;
+    if (!projects.length) return;
+
+    const fallbackProjectId = selectedProjectId ?? projects[0]?.id;
+    if (!fallbackProjectId) return;
+
+    setSessions((prev) => {
+      let hasChanges = false;
+      const next = prev.map((session) => {
+        if (!session.projectId) {
+          hasChanges = true;
+          return { ...session, projectId: fallbackProjectId };
+        }
+        return session;
+      });
+      return hasChanges ? next : prev;
+    });
+  }, [hasInitialized, projects, selectedProjectId]);
+
+  useEffect(() => {
+    if (!selectedProjectId) return;
+    let newSessionId: string | null = null;
+
+    setSessions((prev) => {
+      if (prev.some((session) => session.projectId === selectedProjectId)) {
+        return prev;
+      }
+      const session = createEmptySession(selectedProjectId);
+      newSessionId = session.id;
+      return [session, ...prev];
+    });
+
+    if (newSessionId) {
+      setActiveSessionId(newSessionId);
+    }
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    if (!selectedProjectId) return;
+
+    const sessionsForProject = sessions.filter((session) => session.projectId === selectedProjectId);
+    if (!sessionsForProject.length) {
+      setActiveSessionId(null);
+      return;
+    }
+
+    if (!activeSessionId || !sessionsForProject.some((session) => session.id === activeSessionId)) {
+      setActiveSessionId(sessionsForProject[0].id);
+    }
+  }, [activeSessionId, selectedProjectId, sessions]);
+
+  useEffect(() => {
+    if (!selectedProjectId) return;
+    let isCancelled = false;
+
+    setProjects((prev) =>
+      prev.map((project) => {
+        if (project.id !== selectedProjectId) {
+          return project;
+        }
+        return {
+          ...project,
+          documents: [],
+        };
+      }),
+    );
+
+    const loadDocuments = async () => {
+      setIsDocumentsLoading(true);
+      try {
+        const response = await fetch(`/api/projects/${selectedProjectId}/documents`);
+        if (response.ok) {
+          const data = await response.json();
+          const docs = Array.isArray(data?.documents)
+            ? data.documents
+                .map((doc: any) => normalizeDocument(doc))
+                .filter((doc): doc is SessionDocument => Boolean(doc))
+                .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
+            : [];
+
+          if (!isCancelled) {
+            setProjects((prev) =>
+              prev.map((project) => {
+                if (project.id !== selectedProjectId) {
+                  return project;
+                }
+                return {
+                  ...project,
+                  documents: docs,
+                };
+              }),
+            );
+          }
+        } else {
+          console.error("Не удалось получить документы проекта:", await response.text());
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке документов проекта:", error);
+      } finally {
+        if (!isCancelled) {
+          setIsDocumentsLoading(false);
+        }
+      }
+    };
+
+    void loadDocuments();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedProjectId]);
+
+  const activeProject = useMemo(
+    () => projects.find((project) => project.id === selectedProjectId) ?? null,
+    [projects, selectedProjectId],
+  );
+  const projectDocuments = activeProject?.documents ?? [];
+  const sessionsForActiveProject = useMemo(
+    () =>
+      sessions
+        .filter((session) => !selectedProjectId || session.projectId === selectedProjectId)
+        .slice()
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [selectedProjectId, sessions],
+  );
+  const activeSession = useMemo(
+    () =>
+      sessions.find(
+        (session) =>
+          session.id === activeSessionId && (!selectedProjectId || session.projectId === selectedProjectId),
+      ) ?? null,
+    [activeSessionId, selectedProjectId, sessions],
+  );
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [sessions, activeSessionId]);
 
   const activeSession = sessions.find((session) => session.id === activeSessionId);
 
   const handleNewChat = useCallback(() => {
-    const newSession = createEmptySession();
+    if (!selectedProjectId) return;
+    const newSession = createEmptySession(selectedProjectId);
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
     setInput("");
     setIsSidebarOpen(false);
-  }, []);
+  }, [selectedProjectId]);
 
   const handleSelectSession = useCallback((sessionId: string) => {
+    const session = sessions.find((item) => item.id === sessionId);
+    if (session?.projectId && session.projectId !== selectedProjectId) {
+      setSelectedProjectId(session.projectId);
+    }
     setActiveSessionId(sessionId);
     setInput("");
     setIsSidebarOpen(false);
-  }, []);
+  }, [selectedProjectId, sessions]);
+
+  const handleSelectProject = useCallback(
+    (projectId: string) => {
+      if (projectId === selectedProjectId) {
+        setIsSidebarOpen(false);
+        return;
+      }
+      setSelectedProjectId(projectId);
+      setIsSidebarOpen(false);
+    },
+    [selectedProjectId],
+  );
+
+  const handleCreateProject = useCallback(async () => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Не удалось определить пользователя",
+        description: "Обновите страницу и попробуйте снова.",
+      });
+      return;
+    }
+
+    const defaultName = `Новое дело ${projects.length + 1}`;
+    const name = window.prompt("Введите название проекта", defaultName)?.trim();
+    if (!name) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, userId }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const message =
+          typeof payload?.error === "string" && payload.error.trim()
+            ? payload.error
+            : "Не удалось создать проект. Попробуйте снова.";
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      if (data?.project) {
+        const project: ProjectState = {
+          ...(data.project as Project),
+          documents: [],
+        };
+        setProjects((prev) =>
+          [project, ...prev].sort(
+            (a, b) =>
+              new Date(b.updated_at ?? b.created_at).getTime() -
+              new Date(a.updated_at ?? a.created_at).getTime(),
+          ),
+        );
+        setSelectedProjectId(project.id);
+        toast({
+          title: "Проект создан",
+          description: `Папка «${project.name}» готова. Добавляйте документы и создавайте чаты.`,
+        });
+      }
+    } catch (error) {
+      console.error("Не удалось создать проект:", error);
+      toast({
+        variant: "destructive",
+        title: "Не удалось создать проект",
+        description: error instanceof Error ? error.message : "Попробуйте снова чуть позже.",
+      });
+    }
+  }, [projects.length, toast, userId]);
 
   const handleAttachButtonClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -173,7 +498,15 @@ export function ChatPageClient() {
 
   const processDocumentFiles = useCallback(
     async (fileList: FileList | null) => {
-      if (!activeSession || !fileList || fileList.length === 0) {
+      if (!selectedProjectId || !activeSession || !fileList || fileList.length === 0) {
+        return;
+      }
+      if (!userId) {
+        toast({
+          variant: "destructive",
+          title: "Не удалось определить пользователя",
+          description: "Обновите страницу и попробуйте снова.",
+        });
         return;
       }
 
@@ -185,8 +518,9 @@ export function ChatPageClient() {
         try {
           const formData = new FormData();
           formData.append("file", file);
+          formData.append("userId", userId);
 
-          const response = await fetch("/api/documents", {
+          const response = await fetch(`/api/projects/${selectedProjectId}/documents`, {
             method: "POST",
             body: formData,
           });
@@ -208,7 +542,7 @@ export function ChatPageClient() {
 
           const contextMessage: ChatMessage = {
             role: "assistant",
-            content: `Документ «${normalized.name}» добавлен в контекст. Я буду учитывать его при ответах.`,
+            content: `Документ «${normalized.name}» добавлен в контекст этого проекта.`,
           };
 
           setSessions((prev) =>
@@ -218,11 +552,36 @@ export function ChatPageClient() {
               }
               return {
                 ...session,
-                documents: [...session.documents, normalized],
                 messages: [...session.messages, contextMessage],
               };
             }),
           );
+
+          setProjects((prev) => {
+            const next = prev.map((project) => {
+              if (project.id !== selectedProjectId) {
+                return project;
+              }
+              const existing = project.documents.some((doc) => doc.id === normalized.id);
+              const updatedDocuments = existing
+                ? project.documents.map((doc) => (doc.id === normalized.id ? normalized : doc))
+                : [...project.documents, normalized];
+              const sortedDocuments = updatedDocuments
+                .slice()
+                .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+              return {
+                ...project,
+                documents: sortedDocuments,
+                updated_at: new Date().toISOString(),
+              };
+            });
+
+            return next.sort(
+              (a, b) =>
+                new Date(b.updated_at ?? b.created_at).getTime() -
+                new Date(a.updated_at ?? a.created_at).getTime(),
+            );
+          });
 
           toast({
             title: "Документ добавлен",
@@ -241,7 +600,7 @@ export function ChatPageClient() {
 
       setIsUploadingDocument(false);
     },
-    [activeSession, setSessions, toast],
+    [activeSession, selectedProjectId, setSessions, setProjects, toast, userId],
   );
 
   const handleDocumentInputChange = useCallback(
@@ -255,36 +614,113 @@ export function ChatPageClient() {
   );
 
   const handleRemoveDocument = useCallback(
-    (documentId: string) => {
-      if (!activeSession) {
+    async (documentId: string) => {
+      if (!selectedProjectId) {
         return;
       }
-      const sessionLocalId = activeSession.id;
-      setSessions((prev) =>
-        prev.map((session) => {
-          if (session.id !== sessionLocalId) {
-            return session;
-          }
-          const nextDocuments = session.documents.filter((document) => document.id !== documentId);
-          if (nextDocuments.length === session.documents.length) {
-            return session;
+      if (!userId) {
+        toast({
+          variant: "destructive",
+          title: "Не удалось определить пользователя",
+          description: "Обновите страницу и попробуйте снова.",
+        });
+        return;
+      }
+
+      const removedDocument = projectDocuments.find((doc) => doc.id === documentId);
+
+      setProjects((prev) => {
+        const next = prev.map((project) => {
+          if (project.id !== selectedProjectId) {
+            return project;
           }
           return {
-            ...session,
-            documents: nextDocuments,
+            ...project,
+            documents: project.documents.filter((document) => document.id !== documentId),
+            updated_at: new Date().toISOString(),
           };
-        }),
-      );
-      toast({
-        title: "Документ удалён",
-        description: "Этот документ больше не будет использоваться в ответах.",
+        });
+
+        return next.sort(
+          (a, b) =>
+            new Date(b.updated_at ?? b.created_at).getTime() - new Date(a.updated_at ?? a.created_at).getTime(),
+        );
       });
+
+      try {
+        const response = await fetch(`/api/projects/${selectedProjectId}/documents/${documentId}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          const message =
+            typeof payload?.error === "string" && payload.error.trim()
+              ? payload.error
+              : "Не удалось удалить документ. Попробуйте снова.";
+          throw new Error(message);
+        }
+
+        toast({
+          title: "Документ удалён",
+          description: "Этот документ больше не будет использоваться в ответах.",
+        });
+      } catch (error) {
+        console.error("Ошибка при удалении документа:", error);
+        if (removedDocument) {
+          setProjects((prev) => {
+            const next = prev.map((project) => {
+              if (project.id !== selectedProjectId) {
+                return project;
+              }
+              const restored = [...project.documents, removedDocument].sort(
+                (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
+              );
+              return {
+                ...project,
+                documents: restored,
+                updated_at: new Date().toISOString(),
+              };
+            });
+
+            return next.sort(
+              (a, b) =>
+                new Date(b.updated_at ?? b.created_at).getTime() -
+                new Date(a.updated_at ?? a.created_at).getTime(),
+            );
+          });
+        }
+        toast({
+          variant: "destructive",
+          title: "Не удалось удалить документ",
+          description:
+            error instanceof Error ? error.message : "Попробуйте другой файл или повторите попытку позже.",
+        });
+      }
     },
-    [activeSession, setSessions, toast],
+    [projectDocuments, selectedProjectId, setProjects, toast, userId],
   );
 
   const handleSendMessage = useCallback(async () => {
     if (!activeSession || isLoading) return;
+    if (!selectedProjectId) {
+      toast({
+        variant: "destructive",
+        title: "Проект не выбран",
+        description: "Выберите проект или создайте новый, прежде чем отправлять сообщения.",
+      });
+      return;
+    }
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Не удалось определить пользователя",
+        description: "Обновите страницу и попробуйте снова.",
+      });
+      return;
+    }
     const trimmedMessage = input.trim();
     if (!trimmedMessage) return;
 
@@ -327,6 +763,8 @@ export function ChatPageClient() {
           messages: messagesForRequest,
           sessionId: backendSessionId,
           documents: documentsForRequest,
+          projectId: selectedProjectId,
+          userId,
         }),
       });
 
@@ -347,8 +785,23 @@ export function ChatPageClient() {
             ...session,
             backendSessionId: data.sessionId ?? session.backendSessionId,
             messages: [...session.messages, assistantMessage],
+            projectId: data.projectId ?? session.projectId ?? selectedProjectId,
           };
         }),
+      );
+
+      setProjects((prev) =>
+        prev
+          .map((project) =>
+            project.id === (data.projectId ?? selectedProjectId)
+              ? { ...project, updated_at: new Date().toISOString() }
+              : project,
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.updated_at ?? b.created_at).getTime() -
+              new Date(a.updated_at ?? a.created_at).getTime(),
+          ),
       );
     } catch (error) {
       console.error("Ошибка при отправке сообщения:", error);
@@ -370,7 +823,7 @@ export function ChatPageClient() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeSession, input, isLoading, utmQuery]);
+  }, [activeSession, input, isLoading, selectedProjectId, toast, userId, utmQuery]);
 
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -406,15 +859,50 @@ export function ChatPageClient() {
             </div>
             <ThemeToggle />
           </div>
-          <div className="p-4">
-            <Button onClick={handleNewChat} className="w-full" variant="outline">
+          <div className="space-y-3 p-4">
+            <Button onClick={handleCreateProject} className="w-full" variant="secondary">
+              <FolderPlus className="mr-2 h-4 w-4" />
+              Новый проект
+            </Button>
+            <div>
+              <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted-foreground">
+                <span>Проекты</span>
+                {isProjectsLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+              </div>
+              <div className="space-y-2">
+                {projects.map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => handleSelectProject(project.id)}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-muted",
+                      project.id === selectedProjectId ? "bg-muted" : "bg-transparent",
+                    )}
+                  >
+                    <Folder className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1 truncate">
+                      <div className="font-medium leading-tight">{project.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(project.updated_at ?? project.created_at).toLocaleString()}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+                {!projects.length && !isProjectsLoading && (
+                  <div className="rounded-lg border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
+                    Нет проектов. Создайте первый, чтобы начать.
+                  </div>
+                )}
+              </div>
+            </div>
+            <Button onClick={handleNewChat} className="w-full" variant="outline" disabled={!selectedProjectId}>
               <Plus className="mr-2 h-4 w-4" />
               Новый чат
             </Button>
           </div>
           <ScrollArea className="flex-1 px-2">
             <div className="space-y-2 pb-6">
-              {sessions.map((session) => (
+              {sessionsForActiveProject.map((session) => (
                 <button
                   key={session.id}
                   onClick={() => handleSelectSession(session.id)}
@@ -432,6 +920,11 @@ export function ChatPageClient() {
                   </span>
                 </button>
               ))}
+              {!sessionsForActiveProject.length && (
+                <div className="rounded-lg border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
+                  В этом проекте пока нет чатов.
+                </div>
+              )}
             </div>
           </ScrollArea>
         </div>
@@ -449,7 +942,12 @@ export function ChatPageClient() {
               <Menu className="h-5 w-5" />
               <span className="sr-only">Открыть или скрыть список чатов</span>
             </Button>
-            <h1 className="text-base font-semibold md:text-lg">{activeSession?.title ?? "Новый чат"}</h1>
+            <div className="flex flex-col">
+              <h1 className="text-base font-semibold md:text-lg">{activeSession?.title ?? "Новый чат"}</h1>
+              {activeProject ? (
+                <span className="text-xs text-muted-foreground md:text-sm">{activeProject.name}</span>
+              ) : null}
+            </div>
           </div>
         </header>
 
@@ -543,12 +1041,15 @@ export function ChatPageClient() {
               onChange={handleDocumentInputChange}
             />
 
-            {activeSession?.documents.length ? (
+            {projectDocuments.length ? (
               <Card className="border-dashed">
                 <CardContent className="space-y-3 p-4">
-                  <div className="text-sm font-semibold">Документы в контексте</div>
+                  <div className="flex items-center justify-between text-sm font-semibold">
+                    <span>Документы проекта</span>
+                    {isDocumentsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                  </div>
                   <div className="space-y-2">
-                    {activeSession.documents.map((document) => (
+                    {projectDocuments.map((document) => (
                       <div
                         key={document.id}
                         className="flex items-start justify-between gap-3 rounded-lg border bg-muted/40 p-3 text-sm"
@@ -572,7 +1073,7 @@ export function ChatPageClient() {
                           size="icon"
                           className="text-muted-foreground hover:text-foreground"
                           onClick={() => handleRemoveDocument(document.id)}
-                          disabled={isUploadingDocument}
+                          disabled={isUploadingDocument || isDocumentsLoading}
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Удалить документ</span>
@@ -599,7 +1100,7 @@ export function ChatPageClient() {
                     type="button"
                     variant="outline"
                     onClick={handleAttachButtonClick}
-                    disabled={isUploadingDocument}
+                    disabled={isUploadingDocument || !selectedProjectId || !userId}
                   >
                     {isUploadingDocument ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

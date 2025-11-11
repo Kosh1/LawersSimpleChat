@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 import { getUKLawyerPrompt } from '@/lib/prompts';
 import type { ChatMessage, ChatRequestDocument, UTMData } from '@/lib/types';
+import { projectDocumentToSessionDocument } from '@/lib/projects';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -16,11 +17,13 @@ export async function POST(req: NextRequest) {
       sessionId,
       userId,
       documents,
+      projectId,
     }: {
       messages: ChatMessage[];
       sessionId?: string;
       userId?: string;
       documents?: ChatRequestDocument[];
+      projectId?: string;
     } = await req.json();
 
     if (!messages || messages.length === 0) {
@@ -38,6 +41,30 @@ export async function POST(req: NextRequest) {
 
     const lawyerPrompt = getUKLawyerPrompt();
 
+    const supabase = getSupabase();
+    let resolvedProjectId = projectId;
+    if (!resolvedProjectId && sessionId) {
+      try {
+        const { data: sessionRow } = await supabase
+          .from('chat_sessions')
+          .select('project_id')
+          .eq('id', sessionId)
+          .maybeSingle();
+        if (sessionRow?.project_id) {
+          resolvedProjectId = sessionRow.project_id;
+        }
+      } catch (error) {
+        console.error('Failed to resolve project for session:', error);
+      }
+    }
+
+    const sharedDocuments =
+      resolvedProjectId != null
+        ? await loadProjectDocumentsForContext(supabase, resolvedProjectId)
+        : [];
+
+    const combinedDocuments = mergeDocumentsForContext(sharedDocuments, documents);
+
     // Format messages for OpenAI
     const formattedMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: "system", content: lawyerPrompt },
@@ -47,7 +74,7 @@ export async function POST(req: NextRequest) {
       }))
     ];
 
-    const documentContext = buildDocumentContext(documents);
+    const documentContext = buildDocumentContext(combinedDocuments);
     if (documentContext) {
       formattedMessages.splice(1, 0, {
         role: "system",
@@ -74,13 +101,13 @@ export async function POST(req: NextRequest) {
     if (!currentSessionId) {
       const newSessionId = uuidv4();
       try {
-        const supabase = getSupabase();
         const { error: sessionError } = await (supabase as any)
           .from('chat_sessions')
           .insert([
             {
               id: newSessionId,
               user_id: userId || null,
+              project_id: resolvedProjectId || null,
               initial_message: messages[0].content,
               created_at: new Date().toISOString(),
               utm: utm || null,
@@ -98,7 +125,6 @@ export async function POST(req: NextRequest) {
 
     // Save messages to database
     try {
-      const supabase = getSupabase();
       const { error: messageError } = await (supabase as any)
         .from('chat_messages')
         .insert([
@@ -126,6 +152,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message: assistantMessage,
       sessionId: currentSessionId,
+      projectId: resolvedProjectId,
     });
 
   } catch (error) {
@@ -164,4 +191,59 @@ function buildDocumentContext(documents?: ChatRequestDocument[]) {
   }
 
   return `Пользователь загрузил вспомогательные документы. При ответах опирайся на их содержание, но перепроверяй факты. Если данные противоречат законодательству, объясни это. Документы:\n\n${prepared.join('\n\n---\n\n')}`;
+}
+
+async function loadProjectDocumentsForContext(
+  supabase: ReturnType<typeof getSupabase>,
+  projectId: string,
+) {
+  try {
+    const { data, error } = await supabase
+      .from('project_documents')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('uploaded_at', { ascending: false })
+      .limit(MAX_CONTEXT_DOCUMENTS);
+
+    if (error) {
+      console.error('Failed to load project documents for context:', error);
+      return [];
+    }
+
+    return (data ?? []).map(projectDocumentToSessionDocument);
+  } catch (error) {
+    console.error('Unexpected error while loading project documents:', error);
+    return [];
+  }
+}
+
+function mergeDocumentsForContext(
+  sharedDocuments: ReturnType<typeof projectDocumentToSessionDocument>[],
+  requestDocuments?: ChatRequestDocument[],
+): ChatRequestDocument[] {
+  const merged = new Map<string, ChatRequestDocument>();
+
+  sharedDocuments.forEach((doc) => {
+    if (doc.text?.trim()) {
+      merged.set(doc.id, {
+        id: doc.id,
+        name: doc.name,
+        text: doc.text,
+      });
+    }
+  });
+
+  if (Array.isArray(requestDocuments)) {
+    requestDocuments.forEach((doc) => {
+      if (doc?.id && doc.text?.trim()) {
+        merged.set(doc.id, {
+          id: doc.id,
+          name: doc.name,
+          text: doc.text,
+        });
+      }
+    });
+  }
+
+  return Array.from(merged.values()).slice(0, MAX_CONTEXT_DOCUMENTS);
 }

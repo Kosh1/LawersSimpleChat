@@ -21,9 +21,32 @@ export interface ChatRequestDocument {
   text: string;
 }
 
+export interface Project {
+  id: string;
+  user_id?: string | null;
+  name: string;
+  slug?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectDocument {
+  id: string;
+  project_id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  text: string;
+  truncated: boolean;
+  rawTextLength: number;
+  strategy: SessionDocument['strategy'];
+  uploadedAt: string;
+}
+
 export interface ChatSession {
   id: string;
   user_id?: string;
+  project_id?: string | null;
   initial_message: string;
   created_at: string;
   utm?: UTMData | null;
@@ -47,6 +70,7 @@ export interface Database {
         Row: {
           id: string;
           user_id: string | null;
+          project_id: string | null;
           initial_message: string;
           created_at: string;
           utm: any | null;
@@ -55,6 +79,7 @@ export interface Database {
         Insert: {
           id: string;
           user_id?: string | null;
+          project_id?: string | null;
           initial_message: string;
           created_at?: string;
           utm?: any | null;
@@ -63,6 +88,7 @@ export interface Database {
         Update: {
           id?: string;
           user_id?: string | null;
+          project_id?: string | null;
           initial_message?: string;
           created_at?: string;
           utm?: any | null;
@@ -89,6 +115,76 @@ export interface Database {
           session_id?: string;
           role?: string;
           content?: string;
+          created_at?: string;
+        };
+      };
+      projects: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          name: string;
+          slug: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          name: string;
+          slug?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          name?: string;
+          slug?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      project_documents: {
+        Row: {
+          id: string;
+          project_id: string;
+          name: string;
+          mime_type: string;
+          size: number;
+          text: string;
+          truncated: boolean;
+          raw_text_length: number;
+          strategy: string;
+          uploaded_at: string;
+          checksum: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          mime_type: string;
+          size: number;
+          text: string;
+          truncated: boolean;
+          raw_text_length: number;
+          strategy: string;
+          uploaded_at?: string;
+          checksum?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          name?: string;
+          mime_type?: string;
+          size?: number;
+          text?: string;
+          truncated?: boolean;
+          raw_text_length?: number;
+          strategy?: string;
+          uploaded_at?: string;
+          checksum?: string | null;
           created_at?: string;
         };
       };

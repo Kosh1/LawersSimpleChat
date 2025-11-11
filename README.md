@@ -6,7 +6,9 @@ A chat-first Next.js application that lets users talk directly with an AI legal 
 
 - 💬 Chat-centred UX with persistent conversation history
 - 🤖 OpenAI-powered legal assistant tuned for UK law
-- 💾 Local session storage for quick access to past chats
+- 📁 Project folders (“дела”) with shared document context across chats
+- 📄 Document ingestion with automatic text extraction
+- 💾 Local session storage layered over Supabase persistence
 - ➕ One-click new chat creation
 - 📱 Responsive layout with dark mode support
 - 🔒 Confidential conversations backed by Supabase persistence
@@ -58,7 +60,9 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
 5. Set up Supabase database with the following tables:
-- `chat_sessions`
+- `projects`
+- `project_documents`
+- `chat_sessions` (with `project_id` reference)
 - `chat_messages`
 
 6. Run the development server:
@@ -72,9 +76,32 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Database Schema
 
+### projects
+- `id` (uuid, primary key)
+- `user_id` (uuid, optional)
+- `name` (text)
+- `slug` (text, optional, unique per user)
+- `created_at` (timestamptz)
+- `updated_at` (timestamptz)
+
+### project_documents
+- `id` (uuid, primary key)
+- `project_id` (uuid, foreign key → projects.id)
+- `name` (text)
+- `mime_type` (text)
+- `size` (bigint)
+- `text` (text)
+- `truncated` (boolean)
+- `raw_text_length` (integer)
+- `strategy` (text)
+- `uploaded_at` (timestamptz)
+- `checksum` (text, optional)
+- `created_at` (timestamptz)
+
 ### chat_sessions
 - `id` (uuid, primary key)
-- `user_id` (text, optional)
+- `user_id` (uuid, optional)
+- `project_id` (uuid, optional foreign key → projects.id)
 - `initial_message` (text)
 - `created_at` (timestamp)
 - `utm` (jsonb, optional)
@@ -87,15 +114,51 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `content` (text)
 - `created_at` (timestamp)
 
-### user_contacts
-- `id` (uuid, primary key)
-- `session_id` (uuid, foreign key)
-- `phone` (text)
-- `created_at` (timestamp)
-
 ## API Endpoints
 
-- `POST /api/chat` - Main chat endpoint for AI conversations
+- `GET /api/projects?userId=<id>` — List user projects
+- `POST /api/projects` — Create project folder
+- `GET /api/projects/[projectId]` — Fetch project meta
+- `PATCH /api/projects/[projectId]` — Update project name/slug
+- `DELETE /api/projects/[projectId]` — Delete project
+- `GET /api/projects/[projectId]/documents` — List shared documents
+- `POST /api/projects/[projectId]/documents` — Upload and extract document
+- `DELETE /api/projects/[projectId]/documents/[documentId]` — Remove document
+- `GET /api/projects/[projectId]/chats` — List chats within project
+- `POST /api/projects/[projectId]/chats` — Create empty chat session
+- `POST /api/chat` — Main chat endpoint with project-aware context
+
+## Migration & Backfill
+
+1. Apply the SQL migration in `supabase/migrations/20241111100000_add_projects_and_documents.sql`.
+2. Backfill existing chat sessions into default projects:
+   ```sql
+   with distinct_users as (
+     select coalesce(user_id::text, 'anonymous') as user_key
+     from public.chat_sessions
+     group by user_key
+   ),
+   created_projects as (
+     insert into public.projects (name, user_id)
+     select
+       case when user_key = 'anonymous' then 'Импортированные дела' else 'Импортированные дела' end,
+       nullif(user_key, 'anonymous')::uuid
+     from distinct_users
+     returning id, coalesce(user_id::text, 'anonymous') as user_key
+   )
+   update public.chat_sessions cs
+   set project_id = cp.id
+   from created_projects cp
+   where coalesce(cs.user_id::text, 'anonymous') = cp.user_key
+     and cs.project_id is null;
+   ```
+3. Optionally attach shared documents by re-uploading key files to each project via the UI or API.
+
+After migration, run through manual regression:
+- Create a new project, upload documents, and verify they are visible in any chat within the folder.
+- Start multiple chats in the same project and confirm responses include shared document context.
+- Delete a shared document and ensure it no longer appears in chat context.
+- Switch between projects on desktop and mobile widths to confirm UI responsiveness.
 
 ## Deployment
 
