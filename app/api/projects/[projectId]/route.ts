@@ -5,9 +5,9 @@ import { slugify } from '@/lib/utils';
 
 export async function GET(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> },
+  { params }: { params: { projectId: string } },
 ) {
-  const projectId = context.params.projectId as string;
+  const { projectId } = params;
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
 
@@ -38,9 +38,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> },
+  { params }: { params: { projectId: string } },
 ) {
-  const projectId = context.params.projectId as string;
+  const { projectId } = params;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
@@ -87,9 +87,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> },
+  { params }: { params: { projectId: string } },
 ) {
-  const projectId = context.params.projectId as string;
+  const { projectId } = params;
   const body = await req.json().catch(() => ({}));
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : null;
 

@@ -3,10 +3,9 @@ import { getSupabase } from '@/lib/supabase';
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> },
+  { params }: { params: { projectId: string; documentId: string } },
 ) {
-  const projectId = context.params.projectId as string;
-  const documentId = context.params.documentId as string;
+  const { projectId, documentId } = params;
   const body = await req.json().catch(() => ({}));
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : null;
 

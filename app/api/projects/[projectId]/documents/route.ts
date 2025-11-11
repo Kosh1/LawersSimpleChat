@@ -8,9 +8,9 @@ export const runtime = 'nodejs';
 
 export async function GET(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> },
+  { params }: { params: { projectId: string } },
 ) {
-  const projectId = context.params.projectId as string;
+  const { projectId } = params;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
@@ -39,9 +39,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> },
+  { params }: { params: { projectId: string } },
 ) {
-  const projectId = context.params.projectId as string;
+  const { projectId } = params;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });

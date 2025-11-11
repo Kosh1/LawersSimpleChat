@@ -4,9 +4,9 @@ import { getSupabase } from '@/lib/supabase';
 
 export async function GET(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> },
+  { params }: { params: { projectId: string } },
 ) {
-  const projectId = context.params.projectId as string;
+  const { projectId } = params;
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
 
@@ -50,9 +50,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> },
+  { params }: { params: { projectId: string } },
 ) {
-  const projectId = context.params.projectId as string;
+  const { projectId } = params;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
