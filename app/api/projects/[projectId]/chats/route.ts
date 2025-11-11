@@ -94,19 +94,19 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     const newSessionId = uuidv4();
 
+    const newChatSession: Database['public']['Tables']['chat_sessions']['Insert'] = {
+      id: newSessionId,
+      user_id: userId ?? null,
+      project_id: projectId,
+      initial_message: initialMessage,
+      created_at: now,
+      utm: null,
+      document_type: null,
+    };
+
     const { data, error } = await supabase
       .from('chat_sessions')
-      .insert<Database['public']['Tables']['chat_sessions']['Insert']>([
-        {
-          id: newSessionId,
-          user_id: userId ?? null,
-          project_id: projectId,
-          initial_message: initialMessage,
-          created_at: now,
-          utm: null,
-          document_type: null,
-        },
-      ])
+      .insert([newChatSession])
       .select('*')
       .single();
 
