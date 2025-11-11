@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       try {
         const { data: sessionRow } = await supabase
           .from('chat_sessions')
-          .select('project_id')
+          .select<{ project_id: string | null }>('project_id')
           .eq('id', sessionId)
           .maybeSingle();
         if (sessionRow?.project_id) {
