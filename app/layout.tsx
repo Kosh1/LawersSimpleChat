@@ -7,9 +7,9 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Legal Assistant UK - Create Legal Documents in Minutes",
-  description: "Get help creating Letter Before Action, Claim Forms, and other legal documents for UK courts. AI-powered legal assistance that's fast, accurate, and confidential.",
-  keywords: "UK legal documents, Letter Before Action, Claim Form, UK courts, legal assistance, AI lawyer UK",
+  title: "AI Legal Assistant UK – Chat",
+  description: "Chat with an AI-powered legal assistant for fast, confidential support with UK legal questions and document preparation.",
+  keywords: "UK legal advice, AI legal assistant, UK courts, legal chat, AI lawyer UK",
   authors: [{ name: "AI Legal Assistant UK" }],
   creator: "AI Legal Assistant UK",
   publisher: "AI Legal Assistant UK",
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "AI Legal Assistant UK - Create Legal Documents in Minutes",
-    description: "Get help creating Letter Before Action, Claim Forms, and other legal documents for UK courts. AI-powered legal assistance that's fast, accurate, and confidential.",
+    title: "AI Legal Assistant UK – Chat",
+    description: "Chat with an AI-powered legal assistant for fast, confidential support with UK legal questions and document preparation.",
     url: '/',
     siteName: 'AI Legal Assistant UK',
     type: "website",
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Legal Assistant UK - Create Legal Documents in Minutes",
-    description: "Get help creating Letter Before Action, Claim Forms, and other legal documents for UK courts.",
+    title: "AI Legal Assistant UK – Chat",
+    description: "Chat with an AI-powered legal assistant for fast, confidential support with UK legal questions and document preparation.",
   },
   robots: {
     index: true,

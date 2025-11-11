@@ -1,16 +1,15 @@
 # AI Legal Assistant UK
 
-A Next.js application that helps users create professional legal documents for UK courts using AI. The application can generate Letter Before Action, Claim Forms, and other legal documents based on user input.
+A chat-first Next.js application that lets users talk directly with an AI legal assistant for UK matters. The interface mirrors popular LLM chat experiences, keeping the backend conversation logic intact while focusing the frontend entirely on messaging.
 
 ## Features
 
-- 🤖 AI-powered legal document generation
-- 📄 Support for various UK legal documents (Letter Before Action, Claim Forms, etc.)
-- 🔒 100% confidential and secure
-- ⚡ Fast document creation (2-5 minutes)
-- 💰 Affordable pricing (£5 per document)
-- 📱 Responsive design
-- 🌙 Dark mode support
+- 💬 Chat-centred UX with persistent conversation history
+- 🤖 OpenAI-powered legal assistant tuned for UK law
+- 💾 Local session storage for quick access to past chats
+- ➕ One-click new chat creation
+- 📱 Responsive layout with dark mode support
+- 🔒 Confidential conversations backed by Supabase persistence
 
 ## Tech Stack
 
@@ -35,7 +34,7 @@ A Next.js application that helps users create professional legal documents for U
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd uk-ai-lawsuit-generator
+cd lawer-chat-bot
 ```
 
 2. Install dependencies:
@@ -61,7 +60,6 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 5. Set up Supabase database with the following tables:
 - `chat_sessions`
 - `chat_messages`
-- `user_contacts`
 
 6. Run the development server:
 ```bash
@@ -98,17 +96,6 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## API Endpoints
 
 - `POST /api/chat` - Main chat endpoint for AI conversations
-
-## Landing Page Types
-
-The application supports different landing page configurations:
-
-- `default` - General legal disputes
-- `family` - Family law matters
-- `employment` - Employment disputes
-- `contract` - Contract disputes
-- `debt` - Debt recovery
-- `property` - Property disputes
 
 ## Deployment
 
