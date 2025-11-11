@@ -100,7 +100,6 @@ export async function POST(req: NextRequest) {
       initial_message: initialMessage,
       created_at: now,
       utm: null,
-      document_type: null,
     };
 
     const { data, error } = await supabase

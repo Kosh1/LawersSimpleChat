@@ -119,7 +119,6 @@ export async function POST(req: NextRequest) {
               initial_message: newChatSession.initial_message,
               created_at: newChatSession.created_at,
               utm: newChatSession.utm,
-              document_type: newChatSession.document_type ?? null,
             },
           ]);
         if (sessionError) {
