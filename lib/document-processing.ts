@@ -131,7 +131,6 @@ async function extractWithFileAttachment(buffer: Buffer, filename: string) {
   const upload = await openai.files.create({
     file: await toFile(buffer, filename),
     purpose: 'assistants',
-    filename,
   });
 
   try {
