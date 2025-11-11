@@ -47,9 +47,9 @@ export async function POST(req: NextRequest) {
       try {
         const { data: sessionRow } = await supabase
           .from('chat_sessions')
-          .select<{ project_id: string | null }>('project_id')
+          .select('project_id')
           .eq('id', sessionId)
-          .maybeSingle();
+          .maybeSingle<{ project_id: string | null }>();
         if (sessionRow?.project_id) {
           resolvedProjectId = sessionRow.project_id;
         }
