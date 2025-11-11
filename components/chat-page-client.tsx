@@ -376,7 +376,10 @@ export function ChatPageClient() {
     () => projects.find((project) => project.id === selectedProjectId) ?? null,
     [projects, selectedProjectId],
   );
-  const projectDocuments = activeProject?.documents ?? [];
+  const projectDocuments = useMemo(
+    () => activeProject?.documents ?? [],
+    [activeProject],
+  );
   const sessionsForActiveProject = useMemo(
     () =>
       sessions

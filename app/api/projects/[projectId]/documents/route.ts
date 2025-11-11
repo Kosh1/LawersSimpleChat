@@ -4,16 +4,13 @@ import { getSupabase } from '@/lib/supabase';
 import { extractTextFromDocument } from '@/lib/document-processing';
 import { mapProjectDocument } from '@/lib/projects';
 
-type RouteContext = {
-  params: {
-    projectId: string;
-  };
-};
-
 export const runtime = 'nodejs';
 
-export async function GET(req: NextRequest, context: RouteContext) {
-  const projectId = context.params.projectId;
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { projectId: string } },
+) {
+  const projectId = params.projectId;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
@@ -40,8 +37,11 @@ export async function GET(req: NextRequest, context: RouteContext) {
   }
 }
 
-export async function POST(req: NextRequest, context: RouteContext) {
-  const projectId = context.params.projectId;
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { projectId: string } },
+) {
+  const projectId = params.projectId;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });

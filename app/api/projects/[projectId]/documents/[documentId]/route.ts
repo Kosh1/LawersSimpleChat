@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
-type RouteContext = {
-  params: {
-    projectId: string;
-    documentId: string;
-  };
-};
-
-export async function DELETE(req: NextRequest, context: RouteContext) {
-  const { projectId, documentId } = context.params;
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { projectId: string; documentId: string } },
+) {
+  const { projectId, documentId } = params;
   const body = await req.json().catch(() => ({}));
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : null;
 

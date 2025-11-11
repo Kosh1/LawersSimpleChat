@@ -2,14 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 
-type RouteContext = {
-  params: {
-    projectId: string;
-  };
-};
-
-export async function GET(req: NextRequest, context: RouteContext) {
-  const { projectId } = context.params;
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { projectId: string } },
+) {
+  const { projectId } = params;
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
 
@@ -51,8 +48,11 @@ export async function GET(req: NextRequest, context: RouteContext) {
   }
 }
 
-export async function POST(req: NextRequest, context: RouteContext) {
-  const { projectId } = context.params;
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { projectId: string } },
+) {
+  const { projectId } = params;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });

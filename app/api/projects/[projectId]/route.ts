@@ -3,14 +3,11 @@ import { getSupabase } from '@/lib/supabase';
 import { mapProject } from '@/lib/projects';
 import { slugify } from '@/lib/utils';
 
-type RouteContext = {
-  params: {
-    projectId: string;
-  };
-};
-
-export async function GET(req: NextRequest, context: RouteContext) {
-  const projectId = context.params.projectId;
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { projectId: string } },
+) {
+  const projectId = params.projectId;
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
 
@@ -39,8 +36,11 @@ export async function GET(req: NextRequest, context: RouteContext) {
   }
 }
 
-export async function PATCH(req: NextRequest, context: RouteContext) {
-  const projectId = context.params.projectId;
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { projectId: string } },
+) {
+  const projectId = params.projectId;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
@@ -85,8 +85,11 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   }
 }
 
-export async function DELETE(req: NextRequest, context: RouteContext) {
-  const projectId = context.params.projectId;
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { projectId: string } },
+) {
+  const projectId = params.projectId;
   const body = await req.json().catch(() => ({}));
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : null;
 
