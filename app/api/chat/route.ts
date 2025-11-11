@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
         ];
         const { error: sessionError } = await supabase
           .from('chat_sessions')
-          .insert(chatSessionRows);
+          .insert(chatSessionRows as Database['public']['Tables']['chat_sessions']['Insert'][]);
         if (sessionError) {
           console.error('Error creating session:', sessionError);
         } else {
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
         ];
         const { error: messageError } = await supabase
           .from('chat_messages')
-          .insert(messageRows);
+          .insert(messageRows as Database['public']['Tables']['chat_messages']['Insert'][]);
 
         if (messageError) {
           console.error('Error saving messages:', messageError);
