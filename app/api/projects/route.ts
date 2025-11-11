@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 import { mapProject } from '@/lib/projects';
 import { slugify } from '@/lib/utils';
+import type { Database } from '@/lib/types';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -53,18 +54,19 @@ export async function POST(req: NextRequest) {
     }
 
     const now = new Date().toISOString();
+    const newProject: Database['public']['Tables']['projects']['Insert'] = {
+      id: uuidv4(),
+      user_id: userId,
+      name,
+      slug: slugCandidate,
+      created_at: now,
+      updated_at: now,
+    };
+    const projectRows: Database['public']['Tables']['projects']['Insert'][] = [newProject];
+
     const { data, error } = await supabase
       .from('projects')
-      .insert([
-        {
-          id: uuidv4(),
-          user_id: userId,
-          name,
-          slug: slugCandidate,
-          created_at: now,
-          updated_at: now,
-        },
-      ])
+      .insert(projectRows)
       .select('*')
       .single();
 

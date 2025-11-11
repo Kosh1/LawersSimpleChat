@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 import { getUKLawyerPrompt } from '@/lib/prompts';
-import type { ChatMessage, ChatRequestDocument, UTMData } from '@/lib/types';
+import type { ChatMessage, ChatRequestDocument, Database, UTMData } from '@/lib/types';
 import { projectDocumentToSessionDocument } from '@/lib/projects';
 
 const openai = new OpenAI({
@@ -101,18 +101,20 @@ export async function POST(req: NextRequest) {
     if (!currentSessionId) {
       const newSessionId = uuidv4();
       try {
-        const { error: sessionError } = await (supabase as any)
+        const newChatSession: Database['public']['Tables']['chat_sessions']['Insert'] = {
+          id: newSessionId,
+          user_id: userId ?? null,
+          project_id: resolvedProjectId ?? null,
+          initial_message: messages[0].content,
+          created_at: new Date().toISOString(),
+          utm: utm || null,
+        };
+        const chatSessionRows: Database['public']['Tables']['chat_sessions']['Insert'][] = [
+          newChatSession,
+        ];
+        const { error: sessionError } = await supabase
           .from('chat_sessions')
-          .insert([
-            {
-              id: newSessionId,
-              user_id: userId || null,
-              project_id: resolvedProjectId || null,
-              initial_message: messages[0].content,
-              created_at: new Date().toISOString(),
-              utm: utm || null,
-            },
-          ]);
+          .insert(chatSessionRows);
         if (sessionError) {
           console.error('Error creating session:', sessionError);
         } else {
@@ -125,9 +127,8 @@ export async function POST(req: NextRequest) {
 
     // Save messages to database
     try {
-      const { error: messageError } = await (supabase as any)
-        .from('chat_messages')
-        .insert([
+      if (currentSessionId) {
+        const messageRows: Database['public']['Tables']['chat_messages']['Insert'][] = [
           {
             session_id: currentSessionId,
             role: 'user',
@@ -139,11 +140,15 @@ export async function POST(req: NextRequest) {
             role: 'assistant',
             content: assistantMessage,
             created_at: new Date().toISOString(),
-          }
-        ]);
-      
-      if (messageError) {
-        console.error('Error saving messages:', messageError);
+          },
+        ];
+        const { error: messageError } = await supabase
+          .from('chat_messages')
+          .insert(messageRows);
+
+        if (messageError) {
+          console.error('Error saving messages:', messageError);
+        }
       }
     } catch (error) {
       console.error('Error with Supabase message saving:', error);

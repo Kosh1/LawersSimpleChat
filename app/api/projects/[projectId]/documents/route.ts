@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 import { extractTextFromDocument } from '@/lib/document-processing';
 import { mapProjectDocument } from '@/lib/projects';
+import type { Database } from '@/lib/types';
 
 export const runtime = 'nodejs';
 
@@ -87,24 +88,26 @@ export async function POST(req: NextRequest) {
     const supabase = getSupabase();
     const now = new Date().toISOString();
 
+    const newDocument: Database['public']['Tables']['project_documents']['Insert'] = {
+      id: uuidv4(),
+      project_id: projectId,
+      name: filename,
+      mime_type: mimeType,
+      size: file.size,
+      text: extraction.text,
+      truncated: extraction.truncated,
+      raw_text_length: extraction.rawTextLength,
+      strategy: extraction.strategy,
+      uploaded_at: now,
+      checksum: null,
+      created_at: now,
+    };
+
+    const insertRows: Database['public']['Tables']['project_documents']['Insert'][] = [newDocument];
+
     const { data, error } = await supabase
       .from('project_documents')
-      .insert([
-        {
-          id: uuidv4(),
-          project_id: projectId,
-          name: filename,
-          mime_type: mimeType,
-          size: file.size,
-          text: extraction.text,
-          truncated: extraction.truncated,
-          raw_text_length: extraction.rawTextLength,
-          strategy: extraction.strategy,
-          uploaded_at: now,
-          checksum: null,
-          created_at: now,
-        },
-      ])
+      .insert(insertRows)
       .select('*')
       .single();
 
