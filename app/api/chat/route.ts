@@ -109,12 +109,9 @@ export async function POST(req: NextRequest) {
           created_at: new Date().toISOString(),
           utm: utm || null,
         };
-        const chatSessionRows: Database['public']['Tables']['chat_sessions']['Insert'][] = [
-          newChatSession,
-        ];
         const { error: sessionError } = await supabase
           .from('chat_sessions')
-          .insert(chatSessionRows as Database['public']['Tables']['chat_sessions']['Insert'][]);
+          .insert(newChatSession);
         if (sessionError) {
           console.error('Error creating session:', sessionError);
         } else {
@@ -144,7 +141,7 @@ export async function POST(req: NextRequest) {
         ];
         const { error: messageError } = await supabase
           .from('chat_messages')
-          .insert(messageRows as Database['public']['Tables']['chat_messages']['Insert'][]);
+          .insert(messageRows);
 
         if (messageError) {
           console.error('Error saving messages:', messageError);
