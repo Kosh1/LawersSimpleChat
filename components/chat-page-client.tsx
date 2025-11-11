@@ -9,8 +9,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
-import type { ChatMessage } from "@/lib/types";
-import { Bot, Loader2, Menu, MessageSquare, Plus, Send, User } from "lucide-react";
+import type { ChatMessage, SessionDocument } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
+import { Bot, FileText, Loader2, Menu, MessageSquare, Paperclip, Plus, Send, Trash2, User } from "lucide-react";
 
 type LocalChatSession = {
   id: string;
@@ -18,6 +19,7 @@ type LocalChatSession = {
   messages: ChatMessage[];
   backendSessionId?: string;
   createdAt: string;
+  documents: SessionDocument[];
 };
 
 const LOCAL_STORAGE_KEY = "legal-assistant-chat-sessions";
@@ -28,6 +30,7 @@ function createEmptySession(): LocalChatSession {
     id: uuidv4(),
     title: "Новый чат",
     messages: [],
+    documents: [],
     createdAt: now,
   };
 }
@@ -39,6 +42,36 @@ function generateTitle(message: string) {
     return trimmed;
   }
   return `${trimmed.slice(0, 40)}…`;
+}
+
+function normalizeDocument(raw: unknown): SessionDocument | null {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+  const value = raw as Partial<SessionDocument> & Record<string, unknown>;
+  const text = typeof value.text === "string" ? value.text : "";
+  if (!text) {
+    return null;
+  }
+  const strategy = isValidDocumentStrategy(value.strategy) ? value.strategy : "text";
+  return {
+    id: typeof value.id === "string" && value.id.trim() ? value.id : uuidv4(),
+    name: typeof value.name === "string" && value.name.trim() ? value.name : "Документ",
+    mimeType: typeof value.mimeType === "string" && value.mimeType.trim() ? value.mimeType : "application/octet-stream",
+    size: typeof value.size === "number" && value.size >= 0 ? value.size : text.length,
+    text,
+    truncated: Boolean(value.truncated),
+    rawTextLength: typeof value.rawTextLength === "number" && value.rawTextLength > 0 ? value.rawTextLength : text.length,
+    strategy,
+    uploadedAt:
+      typeof value.uploadedAt === "string" && value.uploadedAt.trim()
+        ? value.uploadedAt
+        : new Date().toISOString(),
+  };
+}
+
+function isValidDocumentStrategy(value: unknown): value is SessionDocument["strategy"] {
+  return value === "text" || value === "pdf" || value === "docx" || value === "vision" || value === "llm-file";
 }
 
 export function ChatPageClient() {
@@ -60,7 +93,10 @@ export function ChatPageClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -72,6 +108,11 @@ export function ChatPageClient() {
           ...session,
           title: session.title?.trim() ? session.title : "Новый чат",
           messages: Array.isArray(session.messages) ? session.messages : [],
+          documents: Array.isArray((session as any).documents)
+            ? (session as any).documents
+                .map((document) => normalizeDocument(document))
+                .filter((document): document is SessionDocument => Boolean(document))
+            : [],
           createdAt: session.createdAt ?? new Date().toISOString(),
         }));
         if (parsed.length > 0) {
@@ -120,6 +161,122 @@ export function ChatPageClient() {
     setIsSidebarOpen(false);
   }, []);
 
+  const handleAttachButtonClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const processDocumentFiles = useCallback(
+    async (fileList: FileList | null) => {
+      if (!activeSession || !fileList || fileList.length === 0) {
+        return;
+      }
+
+      const sessionLocalId = activeSession.id;
+      setIsUploadingDocument(true);
+
+      const files = Array.from(fileList);
+      for (const file of files) {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const response = await fetch("/api/documents", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorPayload = await response.json().catch(() => ({}));
+            const message =
+              typeof errorPayload?.error === "string" && errorPayload.error.trim()
+                ? errorPayload.error
+                : "Не удалось обработать документ. Попробуйте другой файл.";
+            throw new Error(message);
+          }
+
+          const data = await response.json();
+          const normalized = normalizeDocument(data?.document);
+          if (!normalized) {
+            throw new Error("Ответ сервера не содержит текст документа.");
+          }
+
+          const contextMessage: ChatMessage = {
+            role: "assistant",
+            content: `Документ «${normalized.name}» добавлен в контекст. Я буду учитывать его при ответах.`,
+          };
+
+          setSessions((prev) =>
+            prev.map((session) => {
+              if (session.id !== sessionLocalId) {
+                return session;
+              }
+              return {
+                ...session,
+                documents: [...session.documents, normalized],
+                messages: [...session.messages, contextMessage],
+              };
+            }),
+          );
+
+          toast({
+            title: "Документ добавлен",
+            description: `Текст из «${normalized.name}» будет использоваться при ответах.`,
+          });
+        } catch (error) {
+          console.error("Ошибка при обработке документа:", error);
+          toast({
+            variant: "destructive",
+            title: "Не удалось обработать документ",
+            description:
+              error instanceof Error ? error.message : "Попробуйте другой файл или повторите попытку позже.",
+          });
+        }
+      }
+
+      setIsUploadingDocument(false);
+    },
+    [activeSession, setSessions, toast],
+  );
+
+  const handleDocumentInputChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      await processDocumentFiles(event.target.files);
+      if (event.target) {
+        event.target.value = "";
+      }
+    },
+    [processDocumentFiles],
+  );
+
+  const handleRemoveDocument = useCallback(
+    (documentId: string) => {
+      if (!activeSession) {
+        return;
+      }
+      const sessionLocalId = activeSession.id;
+      setSessions((prev) =>
+        prev.map((session) => {
+          if (session.id !== sessionLocalId) {
+            return session;
+          }
+          const nextDocuments = session.documents.filter((document) => document.id !== documentId);
+          if (nextDocuments.length === session.documents.length) {
+            return session;
+          }
+          return {
+            ...session,
+            documents: nextDocuments,
+          };
+        }),
+      );
+      toast({
+        title: "Документ удалён",
+        description: "Этот документ больше не будет использоваться в ответах.",
+      });
+    },
+    [activeSession, setSessions, toast],
+  );
+
   const handleSendMessage = useCallback(async () => {
     if (!activeSession || isLoading) return;
     const trimmedMessage = input.trim();
@@ -127,12 +284,18 @@ export function ChatPageClient() {
 
     const sessionLocalId = activeSession.id;
     const backendSessionId = activeSession.backendSessionId;
-    const isFirstMessage = activeSession.messages.length === 0;
+    const hasUserMessages = activeSession.messages.some((message) => message.role === "user");
+    const isFirstUserMessage = !hasUserMessages;
     const userMessage: ChatMessage = {
       role: "user",
       content: trimmedMessage,
     };
     const messagesForRequest = [...activeSession.messages, userMessage];
+    const documentsForRequest = activeSession.documents.map((document) => ({
+      id: document.id,
+      name: document.name,
+      text: document.text,
+    }));
 
     setInput("");
     setIsLoading(true);
@@ -143,7 +306,7 @@ export function ChatPageClient() {
         return {
           ...session,
           messages: messagesForRequest,
-          title: isFirstMessage ? generateTitle(trimmedMessage) : session.title,
+          title: isFirstUserMessage ? generateTitle(trimmedMessage) : session.title,
         };
       }),
     );
@@ -157,6 +320,7 @@ export function ChatPageClient() {
         body: JSON.stringify({
           messages: messagesForRequest,
           sessionId: backendSessionId,
+          documents: documentsForRequest,
         }),
       });
 
@@ -364,6 +528,56 @@ export function ChatPageClient() {
 
         <div className="border-t bg-background p-4">
           <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl flex-col gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              multiple
+              accept=".pdf,.doc,.docx,.txt,.md,.rtf,image/*"
+              onChange={handleDocumentInputChange}
+            />
+
+            {activeSession?.documents.length ? (
+              <Card className="border-dashed">
+                <CardContent className="space-y-3 p-4">
+                  <div className="text-sm font-semibold">Документы в контексте</div>
+                  <div className="space-y-2">
+                    {activeSession.documents.map((document) => (
+                      <div
+                        key={document.id}
+                        className="flex items-start justify-between gap-3 rounded-lg border bg-muted/40 p-3 text-sm"
+                      >
+                        <div className="flex flex-1 items-start gap-3">
+                          <div className="mt-0.5 rounded-full bg-muted p-2 text-muted-foreground">
+                            <FileText className="h-4 w-4" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-medium leading-tight">{document.name}</div>
+                            <div className="text-xs text-muted-foreground leading-snug">
+                              {formatBytes(document.size)} · {new Date(document.uploadedAt).toLocaleString()} ·{" "}
+                              {formatStrategy(document.strategy)}
+                              {document.truncated ? " · Текст усечён" : ""}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-foreground"
+                          onClick={() => handleRemoveDocument(document.id)}
+                          disabled={isUploadingDocument}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Удалить документ</span>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
             <Textarea
               value={input}
               onChange={(event) => setInput(event.target.value)}
@@ -372,11 +586,31 @@ export function ChatPageClient() {
               className="min-h-[120px] resize-none"
               disabled={isLoading}
             />
-            <div className="flex items-center justify-end gap-3">
-              <span className="text-xs text-muted-foreground">
-                Нажмите Enter, чтобы отправить · Shift + Enter — новая строка
-              </span>
-              <Button type="submit" disabled={isLoading || !input.trim()}>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAttachButtonClick}
+                    disabled={isUploadingDocument}
+                  >
+                    {isUploadingDocument ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Paperclip className="mr-2 h-4 w-4" />
+                    )}
+                    {isUploadingDocument ? "Обработка…" : "Прикрепить документ"}
+                  </Button>
+                  {isUploadingDocument && (
+                    <span className="text-xs text-muted-foreground">Идёт обработка документа…</span>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  Нажмите Enter, чтобы отправить · Shift + Enter — новая строка
+                </span>
+              </div>
+              <Button type="submit" disabled={isLoading || isUploadingDocument || !input.trim()}>
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -399,5 +633,27 @@ export function ChatPageClient() {
       )}
     </div>
   );
+}
+
+function formatBytes(size: number) {
+  if (!size || size < 0) return "—";
+  if (size < 1024) return `${size} Б`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} КБ`;
+  return `${(size / (1024 * 1024)).toFixed(1)} МБ`;
+}
+
+function formatStrategy(strategy: SessionDocument["strategy"]) {
+  switch (strategy) {
+    case "pdf":
+      return "PDF (прямое чтение)";
+    case "docx":
+      return "Word (прямое чтение)";
+    case "vision":
+      return "LLM/vision";
+    case "llm-file":
+      return "LLM/анализ файла";
+    default:
+      return "Текстовый файл";
+  }
 }
 

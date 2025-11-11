@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 import { getUKLawyerPrompt } from '@/lib/prompts';
-import type { ChatMessage, UTMData } from '@/lib/types';
+import type { ChatMessage, ChatRequestDocument, UTMData } from '@/lib/types';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -11,10 +11,16 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, sessionId, userId }: { 
-      messages: ChatMessage[], 
-      sessionId?: string, 
-      userId?: string 
+    const {
+      messages,
+      sessionId,
+      userId,
+      documents,
+    }: {
+      messages: ChatMessage[];
+      sessionId?: string;
+      userId?: string;
+      documents?: ChatRequestDocument[];
     } = await req.json();
 
     if (!messages || messages.length === 0) {
@@ -40,6 +46,14 @@ export async function POST(req: NextRequest) {
         content: msg.content
       }))
     ];
+
+    const documentContext = buildDocumentContext(documents);
+    if (documentContext) {
+      formattedMessages.splice(1, 0, {
+        role: "system",
+        content: documentContext,
+      });
+    }
 
     console.log('Sending request to OpenAI with messages:', formattedMessages)
 
@@ -121,4 +135,33 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+const MAX_CONTEXT_DOCUMENTS = 5;
+const MAX_CHARACTERS_PER_DOCUMENT = 6000;
+
+function buildDocumentContext(documents?: ChatRequestDocument[]) {
+  if (!Array.isArray(documents) || documents.length === 0) {
+    return null;
+  }
+
+  const prepared = documents
+    .slice(0, MAX_CONTEXT_DOCUMENTS)
+    .map((doc, index) => {
+      if (!doc || typeof doc.text !== 'string' || !doc.text.trim()) {
+        return null;
+      }
+      const name = doc.name?.trim() || `Document ${index + 1}`;
+      const text = doc.text.length > MAX_CHARACTERS_PER_DOCUMENT
+        ? `${doc.text.slice(0, MAX_CHARACTERS_PER_DOCUMENT)}\n\n[Текст усечён для контекста]`
+        : doc.text;
+      return `Источник: ${name}\n\n${text}`;
+    })
+    .filter((entry): entry is string => Boolean(entry));
+
+  if (prepared.length === 0) {
+    return null;
+  }
+
+  return `Пользователь загрузил вспомогательные документы. При ответах опирайся на их содержание, но перепроверяй факты. Если данные противоречат законодательству, объясни это. Документы:\n\n${prepared.join('\n\n---\n\n')}`;
 }

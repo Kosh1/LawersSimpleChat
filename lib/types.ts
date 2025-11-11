@@ -3,6 +3,24 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface SessionDocument {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  text: string;
+  truncated: boolean;
+  rawTextLength: number;
+  strategy: 'text' | 'pdf' | 'docx' | 'vision' | 'llm-file';
+  uploadedAt: string;
+}
+
+export interface ChatRequestDocument {
+  id: string;
+  name: string;
+  text: string;
+}
+
 export interface ChatSession {
   id: string;
   user_id?: string;
