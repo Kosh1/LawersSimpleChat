@@ -333,10 +333,10 @@ export function ChatPageClient() {
         const response = await fetch(`/api/projects/${selectedProjectId}/documents`);
         if (response.ok) {
           const data = await response.json();
-          const docs = Array.isArray(data?.documents)
-            ? data.documents
+          const docs: SessionDocument[] = Array.isArray(data?.documents)
+            ? (data.documents
                 .map((doc: any) => normalizeDocument(doc))
-                .filter((doc): doc is SessionDocument => Boolean(doc))
+                .filter((doc): doc is SessionDocument => Boolean(doc)) as SessionDocument[])
                 .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
             : [];
 
