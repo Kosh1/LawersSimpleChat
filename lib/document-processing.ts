@@ -156,6 +156,11 @@ async function extractWithFileAttachment(buffer: Buffer, filename: string) {
           ],
         },
       ],
+      tools: [
+        {
+          type: 'file_search',
+        },
+      ],
       attachments: [
         {
           file_id: upload.id,
