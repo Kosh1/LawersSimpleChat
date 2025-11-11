@@ -2,11 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { projectId: string } },
-) {
-  const { projectId } = params;
+function getProjectIdFromRequest(req: NextRequest) {
+  const segments = req.nextUrl.pathname.split('/').filter(Boolean);
+  const projectsIndex = segments.lastIndexOf('projects');
+  if (projectsIndex >= 0 && segments.length > projectsIndex + 1) {
+    return segments[projectsIndex + 1];
+  }
+  return null;
+}
+
+export async function GET(req: NextRequest) {
+  const projectId = getProjectIdFromRequest(req);
+  if (!projectId) {
+    return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+  }
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
 
@@ -48,11 +57,11 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { projectId: string } },
-) {
-  const { projectId } = params;
+export async function POST(req: NextRequest) {
+  const projectId = getProjectIdFromRequest(req);
+  if (!projectId) {
+    return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+  }
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });

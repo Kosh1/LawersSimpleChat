@@ -3,11 +3,20 @@ import { getSupabase } from '@/lib/supabase';
 import { mapProject } from '@/lib/projects';
 import { slugify } from '@/lib/utils';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { projectId: string } },
-) {
-  const { projectId } = params;
+function getProjectIdFromRequest(req: NextRequest) {
+  const segments = req.nextUrl.pathname.split('/').filter(Boolean);
+  const projectsIndex = segments.lastIndexOf('projects');
+  if (projectsIndex >= 0 && segments.length > projectsIndex + 1) {
+    return segments[projectsIndex + 1];
+  }
+  return null;
+}
+
+export async function GET(req: NextRequest) {
+  const projectId = getProjectIdFromRequest(req);
+  if (!projectId) {
+    return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+  }
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
 
@@ -36,11 +45,11 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { projectId: string } },
-) {
-  const { projectId } = params;
+export async function PATCH(req: NextRequest) {
+  const projectId = getProjectIdFromRequest(req);
+  if (!projectId) {
+    return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+  }
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
@@ -85,11 +94,11 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { projectId: string } },
-) {
-  const { projectId } = params;
+export async function DELETE(req: NextRequest) {
+  const projectId = getProjectIdFromRequest(req);
+  if (!projectId) {
+    return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+  }
   const body = await req.json().catch(() => ({}));
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : null;
 

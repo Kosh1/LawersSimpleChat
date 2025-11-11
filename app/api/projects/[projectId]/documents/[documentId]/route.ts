@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { projectId: string; documentId: string } },
-) {
-  const { projectId, documentId } = params;
+function getProjectAndDocumentIds(req: NextRequest) {
+  const segments = req.nextUrl.pathname.split('/').filter(Boolean);
+  const projectsIndex = segments.lastIndexOf('projects');
+  const documentIndex = segments.lastIndexOf('documents');
+  const projectId =
+    projectsIndex >= 0 && segments.length > projectsIndex + 1 ? segments[projectsIndex + 1] : null;
+  const documentId =
+    documentIndex >= 0 && segments.length > documentIndex + 1 ? segments[documentIndex + 1] : null;
+  return { projectId, documentId };
+}
+
+export async function DELETE(req: NextRequest) {
+  const { projectId, documentId } = getProjectAndDocumentIds(req);
+  if (!projectId || !documentId) {
+    return NextResponse.json({ error: 'projectId и documentId обязательны.' }, { status: 400 });
+  }
   const body = await req.json().catch(() => ({}));
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : null;
 
