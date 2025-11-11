@@ -26,11 +26,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = getSupabase();
-    let query = supabase
-      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
-      .select('*')
-      .eq('id', projectId)
-      .limit(1);
+    let query = supabase.from('projects').select('*').eq('id', projectId).limit(1);
 
     if (userId) {
       query = query.eq('user_id', userId);
@@ -79,10 +75,7 @@ export async function PATCH(req: NextRequest) {
       updates.slug = slugify(slug, slug) || slug;
     }
 
-    let query = supabase
-      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
-      .update(updates)
-      .eq('id', projectId);
+    let query = supabase.from('projects').update(updates).eq('id', projectId);
     if (userId) {
       query = query.eq('user_id', userId);
     }
@@ -115,10 +108,7 @@ export async function DELETE(req: NextRequest) {
 
   try {
     const supabase = getSupabase();
-    let query = supabase
-      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
-      .delete()
-      .eq('id', projectId);
+    let query = supabase.from('projects').delete().eq('id', projectId);
 
     if (userId) {
       query = query.eq('user_id', userId);

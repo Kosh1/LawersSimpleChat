@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
     if (userId) {
     const { data: project, error: projectError } = await supabase
-      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
+      .from('projects')
         .select('id')
         .eq('id', projectId)
         .eq('user_id', userId)
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from<Database['public']['Tables']['chat_sessions']['Row'], Database['public']['Tables']['chat_sessions']['Insert']>('chat_sessions')
+      .from('chat_sessions')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
 
     if (userId) {
       const { data: project, error: projectError } = await supabase
-        .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
+        .from('projects')
         .select('id')
         .eq('id', projectId)
         .eq('user_id', userId)
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     ];
 
     const { data, error } = await supabase
-      .from<Database['public']['Tables']['chat_sessions']['Row'], Database['public']['Tables']['chat_sessions']['Insert']>('chat_sessions')
+      .from('chat_sessions')
       .insert(chatSessionRows)
       .select('*')
       .single();
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
     }
 
     await supabase
-      .from<Database['public']['Tables']['projects']['Row'], Database['public']['Tables']['projects']['Insert']>('projects')
+      .from('projects')
       .update({ updated_at: now })
       .eq('id', projectId)
       .limit(1);
