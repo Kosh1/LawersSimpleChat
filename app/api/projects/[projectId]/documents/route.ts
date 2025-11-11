@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     const { data, error } = await supabase
       .from('project_documents')
       .select('*')
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     const now = new Date().toISOString();
 
     const newDocument = {

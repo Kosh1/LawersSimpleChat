@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const lawyerPrompt = getUKLawyerPrompt();
 
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     let resolvedProjectId = projectId;
     if (!resolvedProjectId && sessionId) {
       try {

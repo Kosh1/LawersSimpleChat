@@ -25,7 +25,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     if (userId) {
       const { data: project, error: projectError } = await supabase
         .from('projects')

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Название проекта обязательно.' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     const baseSlug = providedSlug || slugify(name);
     let slugCandidate = baseSlug || uuidv4();
 

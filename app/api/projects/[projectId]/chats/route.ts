@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
 
     if (userId) {
     const { data: project, error: projectError } = await supabase
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
         ? body.initialMessage.trim()
         : 'Новый чат';
 
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
 
     if (userId) {
       const { data: project, error: projectError } = await supabase

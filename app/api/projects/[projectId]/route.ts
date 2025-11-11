@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     let query = supabase.from('projects').select('*').eq('id', projectId).limit(1);
 
     if (userId) {
@@ -65,7 +65,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Нет изменений для обновления.' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
 
     const updates: Record<string, any> = { updated_at: new Date().toISOString() };
     if (name) {
@@ -107,7 +107,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     let query = supabase.from('projects').delete().eq('id', projectId);
 
     if (userId) {
