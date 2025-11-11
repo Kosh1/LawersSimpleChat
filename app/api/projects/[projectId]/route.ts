@@ -3,17 +3,11 @@ import { getSupabase } from '@/lib/supabase';
 import { mapProject } from '@/lib/projects';
 import { slugify } from '@/lib/utils';
 
-type ProjectParamsContext = {
-  params: {
-    projectId: string;
-  };
-};
-
 export async function GET(
   req: NextRequest,
-  context: ProjectParamsContext,
+  context: { params: Record<string, string | string[]> },
 ) {
-  const projectId = context.params.projectId;
+  const projectId = context.params.projectId as string;
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
 
@@ -44,9 +38,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  context: ProjectParamsContext,
+  context: { params: Record<string, string | string[]> },
 ) {
-  const projectId = context.params.projectId;
+  const projectId = context.params.projectId as string;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
@@ -93,9 +87,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  context: ProjectParamsContext,
+  context: { params: Record<string, string | string[]> },
 ) {
-  const projectId = context.params.projectId;
+  const projectId = context.params.projectId as string;
   const body = await req.json().catch(() => ({}));
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : null;
 

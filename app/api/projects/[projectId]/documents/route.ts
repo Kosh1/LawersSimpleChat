@@ -6,17 +6,11 @@ import { mapProjectDocument } from '@/lib/projects';
 
 export const runtime = 'nodejs';
 
-type ProjectParamsContext = {
-  params: {
-    projectId: string;
-  };
-};
-
 export async function GET(
   req: NextRequest,
-  context: ProjectParamsContext,
+  context: { params: Record<string, string | string[]> },
 ) {
-  const projectId = context.params.projectId;
+  const projectId = context.params.projectId as string;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
@@ -45,9 +39,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  context: ProjectParamsContext,
+  context: { params: Record<string, string | string[]> },
 ) {
-  const projectId = context.params.projectId;
+  const projectId = context.params.projectId as string;
 
   if (!projectId) {
     return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
