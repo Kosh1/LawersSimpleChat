@@ -182,7 +182,7 @@ function extractContentFromCompletion(content: unknown): string {
 
   if (Array.isArray(content)) {
     return content
-      .map((item) => {
+      .map((item: any) => {
         if (typeof item === 'string') {
           return item;
         }

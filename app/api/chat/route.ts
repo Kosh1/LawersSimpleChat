@@ -185,7 +185,7 @@ function buildDocumentContext(documents?: ChatRequestDocument[]) {
 
   const prepared = documents
     .slice(0, MAX_CONTEXT_DOCUMENTS)
-    .map((doc, index) => {
+    .map((doc: any, index: number) => {
       if (!doc || typeof doc.text !== 'string' || !doc.text.trim()) {
         return null;
       }
@@ -195,7 +195,7 @@ function buildDocumentContext(documents?: ChatRequestDocument[]) {
         : doc.text;
       return `Источник: ${name}\n\n${text}`;
     })
-    .filter((entry): entry is string => Boolean(entry));
+    .filter((entry: any): entry is string => Boolean(entry));
 
   if (prepared.length === 0) {
     return null;
@@ -234,7 +234,7 @@ function mergeDocumentsForContext(
 ): ChatRequestDocument[] {
   const merged = new Map<string, ChatRequestDocument>();
 
-  sharedDocuments.forEach((doc) => {
+  sharedDocuments.forEach((doc: any) => {
     if (doc.text?.trim()) {
       merged.set(doc.id, {
         id: doc.id,
@@ -245,7 +245,7 @@ function mergeDocumentsForContext(
   });
 
   if (Array.isArray(requestDocuments)) {
-    requestDocuments.forEach((doc) => {
+    requestDocuments.forEach((doc: any) => {
       if (doc?.id && doc.text?.trim()) {
         merged.set(doc.id, {
           id: doc.id,

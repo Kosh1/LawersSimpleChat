@@ -216,8 +216,8 @@ export function ChatPageClient() {
             : [];
 
           const normalizedDocuments = storedDocuments
-            .map((document) => normalizeDocument(document))
-            .filter((document): document is SessionDocument => Boolean(document));
+            .map((document: any) => normalizeDocument(document))
+            .filter((document: any): document is SessionDocument => Boolean(document));
 
           return {
             ...session,
@@ -336,7 +336,7 @@ export function ChatPageClient() {
           const docs: SessionDocument[] = Array.isArray(data?.documents)
             ? (data.documents
                 .map((doc: any) => normalizeDocument(doc))
-                .filter((doc): doc is SessionDocument => Boolean(doc)) as SessionDocument[])
+                .filter((doc: any): doc is SessionDocument => Boolean(doc)) as SessionDocument[])
                 .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
             : [];
 
