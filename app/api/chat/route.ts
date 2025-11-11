@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     // --- OpenAI API call ---
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1", 
+      model: "gpt-5-mini", 
       messages: formattedMessages,
       temperature: 0.7,
       max_tokens: 2000,
@@ -137,8 +137,8 @@ export async function POST(req: NextRequest) {
   }
 }
 
-const MAX_CONTEXT_DOCUMENTS = 5;
-const MAX_CHARACTERS_PER_DOCUMENT = 6000;
+const MAX_CONTEXT_DOCUMENTS = 20;
+const MAX_CHARACTERS_PER_DOCUMENT = 50000;
 
 function buildDocumentContext(documents?: ChatRequestDocument[]) {
   if (!Array.isArray(documents) || documents.length === 0) {
