@@ -3,6 +3,7 @@ import mammoth from 'mammoth';
 import OpenAI from 'openai';
 import pdfParse from 'pdf-parse';
 import { toFile } from 'openai/uploads';
+import WordExtractor from 'word-extractor';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -15,7 +16,7 @@ export type ExtractedDocument = {
   text: string;
   rawTextLength: number;
   truncated: boolean;
-  strategy: 'text' | 'pdf' | 'docx' | 'vision' | 'llm-file';
+  strategy: 'text' | 'pdf' | 'docx' | 'doc' | 'vision' | 'llm-file';
 };
 
 export async function extractTextFromDocument(buffer: Buffer, mimeType: string, filename: string): Promise<ExtractedDocument> {
@@ -30,6 +31,15 @@ export async function extractTextFromDocument(buffer: Buffer, mimeType: string, 
     const docxResult = await extractDocx(buffer);
     if (docxResult) {
       return normalizeResult(docxResult, 'docx');
+    }
+    const llmResult = await extractWithFileAttachment(buffer, filename);
+    return normalizeResult(llmResult, 'llm-file');
+  }
+
+  if (isDoc(mimeType, extension)) {
+    const docResult = await extractDoc(buffer);
+    if (docResult) {
+      return normalizeResult(docResult, 'doc');
     }
     const llmResult = await extractWithFileAttachment(buffer, filename);
     return normalizeResult(llmResult, 'llm-file');
@@ -64,6 +74,10 @@ function isDocx(mimeType: string, extension: string) {
   );
 }
 
+function isDoc(mimeType: string, extension: string) {
+  return mimeType === 'application/msword' || extension === '.doc';
+}
+
 function isPdf(mimeType: string, extension: string) {
   return mimeType === 'application/pdf' || extension === '.pdf';
 }
@@ -78,6 +92,17 @@ async function extractDocx(buffer: Buffer) {
     return result.value?.trim();
   } catch (error) {
     console.warn('Failed to extract DOCX with mammoth:', error);
+    return '';
+  }
+}
+
+async function extractDoc(buffer: Buffer) {
+  try {
+    const extractor = new WordExtractor();
+    const extracted = await extractor.extract(buffer);
+    return extracted.getBody().trim();
+  } catch (error) {
+    console.warn('Failed to extract DOC with word-extractor:', error);
     return '';
   }
 }
