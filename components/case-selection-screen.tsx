@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CreateCaseDialog } from "@/components/create-case-dialog";
 import { Bot, FileText, FolderPlus, Loader2, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project, SessionDocument } from "@/lib/types";
@@ -24,7 +26,7 @@ interface CaseSelectionScreenProps {
   sessions: LocalChatSession[];
   isLoading: boolean;
   onSelectProject: (projectId: string) => void;
-  onCreateProject: () => void;
+  onCreateProject: (name: string) => void;
 }
 
 export function CaseSelectionScreen({
@@ -34,6 +36,16 @@ export function CaseSelectionScreen({
   onSelectProject,
   onCreateProject,
 }: CaseSelectionScreenProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleOpenDialog = () => {
+    setIsDialogOpen(true);
+  };
+
+  const handleCreateProject = (name: string) => {
+    onCreateProject(name);
+  };
+
   const getProjectStats = (projectId: string) => {
     const projectSessions = sessions.filter((s) => s.projectId === projectId);
     const project = projects.find((p) => p.id === projectId);
@@ -64,7 +76,7 @@ export function CaseSelectionScreen({
                 Выберите дело для работы или создайте новое
               </p>
             </div>
-            <Button onClick={onCreateProject} size="lg" className="gap-2">
+            <Button onClick={handleOpenDialog} size="lg" className="gap-2">
               <FolderPlus className="h-5 w-5" />
               Создать новое дело
             </Button>
@@ -84,7 +96,7 @@ export function CaseSelectionScreen({
                 <p className="mt-2 max-w-md text-sm text-muted-foreground">
                   Создайте первое дело, чтобы начать загружать документы и общаться с AI-помощником
                 </p>
-                <Button onClick={onCreateProject} className="mt-6 gap-2">
+                <Button onClick={handleOpenDialog} className="mt-6 gap-2">
                   <FolderPlus className="h-4 w-4" />
                   Создать первое дело
                 </Button>
@@ -156,6 +168,13 @@ export function CaseSelectionScreen({
           )}
         </div>
       </main>
+
+      <CreateCaseDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onConfirm={handleCreateProject}
+        defaultName={`Новое дело ${projects.length + 1}`}
+      />
     </div>
   );
 }

@@ -417,7 +417,7 @@ export function ChatPageClient() {
     setSelectedProjectId(null);
   }, []);
 
-  const handleCreateProject = useCallback(async () => {
+  const handleCreateProject = useCallback(async (name: string) => {
     if (!userId) {
       toast({
         variant: "destructive",
@@ -427,9 +427,8 @@ export function ChatPageClient() {
       return;
     }
 
-    const defaultName = `Новое дело ${projects.length + 1}`;
-    const name = window.prompt("Введите название проекта", defaultName)?.trim();
-    if (!name) {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       return;
     }
 
@@ -437,7 +436,7 @@ export function ChatPageClient() {
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, userId }),
+        body: JSON.stringify({ name: trimmedName, userId }),
       });
 
       if (!response.ok) {
@@ -476,7 +475,7 @@ export function ChatPageClient() {
         description: error instanceof Error ? error.message : "Попробуйте снова чуть позже.",
       });
     }
-  }, [projects.length, toast, userId]);
+  }, [toast, userId]);
 
   const processDocumentFiles = useCallback(
     async (fileList: FileList | null) => {
