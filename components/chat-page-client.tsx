@@ -7,6 +7,7 @@ import { CaseSelectionScreen } from "@/components/case-selection-screen";
 import { CaseWorkspace } from "@/components/case-workspace";
 import type { ChatMessage, Project, SessionDocument } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { useExportMessage } from "@/hooks/use-export-message";
 
 type LocalChatSession = {
   id: string;
@@ -105,6 +106,7 @@ export function ChatPageClient() {
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const { toast } = useToast();
+  const { exportMessage } = useExportMessage();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -677,6 +679,57 @@ export function ChatPageClient() {
     [projectDocuments, selectedProjectId, setProjects, toast, userId],
   );
 
+  const handleExportMessage = useCallback(
+    async (messageIndex: number) => {
+      if (!activeSession || !activeProject) return;
+
+      const message = activeSession.messages[messageIndex];
+      if (!message || message.role !== "assistant") {
+        toast({
+          variant: "destructive",
+          title: "Ошибка экспорта",
+          description: "Можно экспортировать только ответы помощника.",
+        });
+        return;
+      }
+
+      // Найдем предыдущий вопрос пользователя
+      let userQuestion = "";
+      for (let i = messageIndex - 1; i >= 0; i--) {
+        if (activeSession.messages[i].role === "user") {
+          userQuestion = activeSession.messages[i].content;
+          break;
+        }
+      }
+
+      if (!userQuestion) {
+        userQuestion = "Вопрос не найден";
+      }
+
+      const result = await exportMessage({
+        projectName: activeProject.name,
+        sessionTitle: activeSession.title,
+        userQuestion,
+        aiResponse: message.content,
+        timestamp: new Date(),
+      });
+
+      if (result.success) {
+        toast({
+          title: "Документ создан",
+          description: "Ответ успешно экспортирован в формате DOCX.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Ошибка экспорта",
+          description: result.error || "Не удалось создать документ.",
+        });
+      }
+    },
+    [activeSession, activeProject, exportMessage, toast]
+  );
+
   const handleSendMessage = useCallback(async () => {
     if (!activeSession || isLoading) return;
     if (!selectedProjectId) {
@@ -857,6 +910,7 @@ export function ChatPageClient() {
       onSendMessage={handleSendMessage}
       onAttachDocument={processDocumentFiles}
       onRemoveDocument={handleRemoveDocument}
+      onExportMessage={handleExportMessage}
     />
   );
 }

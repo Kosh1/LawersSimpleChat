@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
   Bot,
+  Download,
   FileText,
   FolderOpen,
   Loader2,
@@ -53,6 +54,7 @@ interface CaseWorkspaceProps {
   onSendMessage: () => void;
   onAttachDocument: (files: FileList | null) => void;
   onRemoveDocument: (documentId: string) => void;
+  onExportMessage?: (messageIndex: number) => void;
 }
 
 export function CaseWorkspace({
@@ -70,6 +72,7 @@ export function CaseWorkspace({
   onSendMessage,
   onAttachDocument,
   onRemoveDocument,
+  onExportMessage,
 }: CaseWorkspaceProps) {
   const { toast } = useToast();
   const [isDocumentsPanelOpen, setIsDocumentsPanelOpen] = useState(true);
@@ -285,10 +288,22 @@ export function CaseWorkspace({
                         </div>
                       </div>
                     ) : (
-                      <div className="max-w-full md:max-w-[80%]">
+                      <div className="group relative max-w-full md:max-w-[80%]">
                         <p className="whitespace-pre-wrap text-sm text-foreground/90">
                           {message.content}
                         </p>
+                        {onExportMessage && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute -right-2 -top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                            onClick={() => onExportMessage(index)}
+                            title="Скачать ответ в формате DOCX"
+                          >
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only">Скачать ответ</span>
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>
