@@ -2,7 +2,6 @@ import { Document, Paragraph, TextRun, AlignmentType, HeadingLevel } from "docx"
 
 export interface ExportMessageOptions {
   projectName: string;
-  userQuestion: string;
   aiResponse: string;
   timestamp: Date;
   sessionTitle?: string;
@@ -12,7 +11,7 @@ export interface ExportMessageOptions {
  * Создает DOCX документ с ответом AI
  */
 export function generateResponseDocument(options: ExportMessageOptions): Document {
-  const { projectName, userQuestion, aiResponse, timestamp, sessionTitle } = options;
+  const { projectName, aiResponse, timestamp, sessionTitle } = options;
 
   // Форматируем дату и время
   const formattedDate = timestamp.toLocaleDateString("ru-RU", {
@@ -72,35 +71,7 @@ export function generateResponseDocument(options: ExportMessageOptions): Documen
           new Paragraph({
             text: "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
             spacing: {
-              after: 200,
-            },
-          }),
-
-          // Заголовок "Вопрос"
-          new Paragraph({
-            text: "Вопрос:",
-            heading: HeadingLevel.HEADING_2,
-            spacing: {
-              before: 200,
-              after: 100,
-            },
-          }),
-
-          // Текст вопроса
-          new Paragraph({
-            text: userQuestion,
-            spacing: {
               after: 300,
-            },
-          }),
-
-          // Заголовок "Ответ"
-          new Paragraph({
-            text: "Ответ юридического помощника:",
-            heading: HeadingLevel.HEADING_2,
-            spacing: {
-              before: 200,
-              after: 100,
             },
           }),
 

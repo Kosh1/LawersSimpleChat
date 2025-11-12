@@ -693,23 +693,9 @@ export function ChatPageClient() {
         return;
       }
 
-      // Найдем предыдущий вопрос пользователя
-      let userQuestion = "";
-      for (let i = messageIndex - 1; i >= 0; i--) {
-        if (activeSession.messages[i].role === "user") {
-          userQuestion = activeSession.messages[i].content;
-          break;
-        }
-      }
-
-      if (!userQuestion) {
-        userQuestion = "Вопрос не найден";
-      }
-
       const result = await exportMessage({
         projectName: activeProject.name,
         sessionTitle: activeSession.title,
-        userQuestion,
         aiResponse: message.content,
         timestamp: new Date(),
       });
