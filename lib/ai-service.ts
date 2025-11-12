@@ -219,7 +219,7 @@ export async function generateAIResponse(
 export async function generateSimpleResponse(
   openai: OpenAI,
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-  modelName: ModelName = 'gpt-5'
+  modelName: ModelName = 'primary'
 ): Promise<string> {
   const config = getModelConfig(modelName);
   
@@ -229,8 +229,8 @@ export async function generateSimpleResponse(
     temperature: config.temperature ?? 0.7,
   };
   
-  // Для GPT-5 используем max_completion_tokens
-  if (modelName.startsWith('gpt-5')) {
+  // Для моделей с useMaxCompletionTokens используем max_completion_tokens
+  if (config.useMaxCompletionTokens) {
     requestParams.max_completion_tokens = config.maxTokens;
   } else {
     requestParams.max_tokens = config.maxTokens;
