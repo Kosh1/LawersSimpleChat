@@ -162,14 +162,7 @@ export function ChatPageClient() {
                 new Date(a.updated_at ?? a.created_at).getTime(),
             );
           setProjects(enriched);
-
-          if (enriched.length > 0) {
-            const storedActiveProject = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_PROJECT_STORAGE_KEY) : null;
-            const initialProject = storedActiveProject && enriched.some((project) => project.id === storedActiveProject)
-              ? storedActiveProject
-              : enriched[0].id;
-            setSelectedProjectId(initialProject);
-          }
+          // Не выбираем проект автоматически - пусть пользователь сам выберет из списка
         }
       } catch (error) {
         console.error("Не удалось загрузить проекты:", error);
@@ -462,6 +455,7 @@ export function ChatPageClient() {
           ),
         );
         setSelectedProjectId(project.id);
+        setIsInWorkspace(true);
         toast({
           title: "Проект создан",
           description: `Папка «${project.name}» готова. Добавляйте документы и создавайте чаты.`,
@@ -475,7 +469,7 @@ export function ChatPageClient() {
         description: error instanceof Error ? error.message : "Попробуйте снова чуть позже.",
       });
     }
-  }, [toast, userId]);
+  }, [setProjects, toast, userId]);
 
   const processDocumentFiles = useCallback(
     async (fileList: FileList | null) => {
