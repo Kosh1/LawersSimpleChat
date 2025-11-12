@@ -127,17 +127,12 @@ export function ChatPageClient() {
     const loadProjects = async () => {
       setIsProjectsLoading(true);
       try {
-        console.log('[loadProjects] Fetching projects for userId:', userId);
         const response = await fetch(`/api/projects?userId=${encodeURIComponent(userId)}`);
         let projectsPayload: Project[] = [];
 
         if (response.ok) {
           const data = await response.json();
-          console.log('[loadProjects] Response data:', data);
           projectsPayload = Array.isArray(data?.projects) ? data.projects : [];
-          console.log('[loadProjects] Projects loaded:', projectsPayload.length, projectsPayload);
-        } else {
-          console.error('[loadProjects] Response not ok:', response.status, response.statusText);
         }
 
         if (!projectsPayload.length) {
@@ -166,9 +161,7 @@ export function ChatPageClient() {
                 new Date(b.updated_at ?? b.created_at).getTime() -
                 new Date(a.updated_at ?? a.created_at).getTime(),
             );
-          console.log('[loadProjects] Setting projects state:', enriched.length, enriched);
           setProjects(enriched);
-          // Не выбираем проект автоматически - пусть пользователь сам выберет из списка
         }
       } catch (error) {
         console.error("Не удалось загрузить проекты:", error);

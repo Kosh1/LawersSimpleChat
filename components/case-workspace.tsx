@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, Project, SessionDocument } from "@/lib/types";
@@ -22,7 +21,6 @@ import {
   Send,
   Trash2,
   Upload,
-  User,
   X,
 } from "lucide-react";
 
@@ -278,56 +276,31 @@ export function CaseWorkspace({
                       message.role === "user" ? "justify-end" : "justify-start",
                     )}
                   >
-                    <div
-                      className={cn(
-                        "flex max-w-full items-start gap-3 md:max-w-[80%]",
-                        message.role === "user" && "flex-row-reverse text-right",
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full",
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground",
-                        )}
-                      >
-                        {message.role === "user" ? (
-                          <User className="h-4 w-4" />
-                        ) : (
-                          <Bot className="h-4 w-4" />
-                        )}
+                    {message.role === "user" ? (
+                      <div className="max-w-full md:max-w-[80%]">
+                        <div className="rounded-2xl bg-primary px-4 py-3 text-primary-foreground">
+                          <p className="whitespace-pre-wrap text-sm">
+                            {message.content}
+                          </p>
+                        </div>
                       </div>
-                      <Card
-                        className={cn(
-                          "flex-1 border",
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-card text-card-foreground",
-                        )}
-                      >
-                        <CardContent className="whitespace-pre-wrap p-4 text-sm">
+                    ) : (
+                      <div className="max-w-full md:max-w-[80%]">
+                        <p className="whitespace-pre-wrap text-sm text-foreground">
                           {message.content}
-                        </CardContent>
-                      </Card>
-                    </div>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
 
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="flex max-w-full items-start gap-3 md:max-w-[80%]">
-                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                        <Bot className="h-4 w-4" />
+                    <div className="max-w-full md:max-w-[80%]">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>AI обрабатывает запрос…</span>
                       </div>
-                      <Card className="flex-1 border bg-card text-card-foreground">
-                        <CardContent className="p-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>AI обрабатывает запрос…</span>
-                          </div>
-                        </CardContent>
-                      </Card>
                     </div>
                   </div>
                 )}

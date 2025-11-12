@@ -109,7 +109,6 @@ async function ensureProjectSlugIsUnique(
     }
 
     if (!data) {
-      console.log('[projects][slug] Found unique slug:', candidate);
       return candidate;
     }
 
@@ -118,8 +117,6 @@ async function ensureProjectSlugIsUnique(
   }
 
   // Если не нашли уникальный после 10 попыток, добавляем UUID
-  const finalSlug = `${slugCandidate}-${uuidv4().slice(0, 8)}`;
-  console.log('[projects][slug] Using UUID-based slug:', finalSlug);
-  return finalSlug;
+  return `${slugCandidate}-${uuidv4().slice(0, 8)}`;
 }
 
