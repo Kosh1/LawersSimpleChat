@@ -62,6 +62,26 @@ export interface UTMData {
   landing_type?: string;
 }
 
+/**
+ * Метаданные ответа AI для логирования и аналитики
+ */
+export interface AIResponseMetadata {
+  /** Использованная модель */
+  modelUsed: string;
+  /** Произошел ли fallback на другую модель */
+  fallbackOccurred: boolean;
+  /** Причина fallback (если был) */
+  fallbackReason?: string;
+  /** Количество частей (chunks) в ответе */
+  chunksCount: number;
+  /** Общее количество использованных токенов */
+  totalTokens: number;
+  /** Причина завершения генерации */
+  finishReason: string;
+  /** Время генерации в миллисекундах */
+  responseTimeMs: number;
+}
+
 // Supabase database types
 export interface Database {
   public: {

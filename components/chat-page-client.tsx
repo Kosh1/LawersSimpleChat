@@ -747,6 +747,28 @@ export function ChatPageClient() {
       }
 
       const data = await response.json();
+      
+      // Логируем метаданные AI ответа
+      if (data.metadata) {
+        console.log('[AI Response]', {
+          model: data.metadata.modelUsed,
+          fallback: data.metadata.fallbackOccurred,
+          chunks: data.metadata.chunksCount,
+          tokens: data.metadata.totalTokens,
+          time: `${data.metadata.responseTimeMs}ms`
+        });
+        
+        // Показываем уведомление если было несколько chunks
+        if (data.metadata.chunksCount > 1) {
+          console.info(`✨ Ответ был сгенерирован в ${data.metadata.chunksCount} частей для обеспечения полноты`);
+        }
+        
+        // Показываем уведомление если был fallback
+        if (data.metadata.fallbackOccurred) {
+          console.warn(`⚠️ Была использована резервная модель из-за: ${data.metadata.fallbackReason}`);
+        }
+      }
+      
       const assistantMessage: ChatMessage = {
         role: "assistant",
         content: data.message,

@@ -3,8 +3,9 @@ import OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 import { getUKLawyerPrompt } from '@/lib/prompts';
-import type { ChatMessage, ChatRequestDocument, UTMData } from '@/lib/types';
+import type { ChatMessage, ChatRequestDocument, UTMData, AIResponseMetadata } from '@/lib/types';
 import { projectDocumentToSessionDocument } from '@/lib/projects';
+import { generateAIResponse } from '@/lib/ai-service';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -82,18 +83,43 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    console.log('Sending request to OpenAI with messages:', formattedMessages)
+    console.log('Sending request to AI service with messages:', formattedMessages)
 
-    // --- OpenAI API call ---
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4.1", 
-      messages: formattedMessages,
-      temperature: 0.7,
-      max_tokens: 2000,
-    });
+    // Получаем последнее сообщение пользователя для анализа
+    const lastUserMessage = messages[messages.length - 1]?.content || '';
 
-    const choice = completion.choices[0];
-    let assistantMessage = choice.message?.content || '';
+    // --- AI Service call with automatic fallback and chunking ---
+    const aiResponse = await generateAIResponse(
+      openai,
+      formattedMessages,
+      lastUserMessage
+    );
+
+    const assistantMessage = aiResponse.content;
+    
+    // Логирование метаданных ответа
+    const metadata: AIResponseMetadata = {
+      modelUsed: aiResponse.modelUsed,
+      fallbackOccurred: aiResponse.fallbackOccurred,
+      fallbackReason: aiResponse.fallbackReason,
+      chunksCount: aiResponse.chunksCount,
+      totalTokens: aiResponse.totalTokens,
+      finishReason: aiResponse.finishReason,
+      responseTimeMs: aiResponse.responseTimeMs,
+    };
+    
+    console.log('AI Response metadata:', metadata);
+    
+    // Предупреждение если ответ был обрезан даже после chunking
+    if (aiResponse.finishReason === 'length') {
+      console.warn('Response was truncated even after chunking. Consider reviewing chunking limits.');
+    }
+    
+    // Ensure we have a valid response
+    if (!assistantMessage || assistantMessage.trim() === '') {
+      console.error('AI Service returned empty response', metadata);
+      throw new Error('Empty response from AI Service');
+    }
 
     let currentSessionId = sessionId;
 
@@ -164,12 +190,21 @@ export async function POST(req: NextRequest) {
       message: assistantMessage,
       sessionId: currentSessionId,
       projectId: resolvedProjectId,
+      metadata, // Включаем метаданные в ответ
     });
 
   } catch (error) {
     console.error('Error in chat API:', error);
+    
+    // Provide more specific error information for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }
