@@ -1,0 +1,522 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
+import type { ChatMessage, Project, SessionDocument } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
+import {
+  ArrowLeft,
+  Bot,
+  FileText,
+  FolderOpen,
+  Loader2,
+  Menu,
+  MessageSquare,
+  Paperclip,
+  Plus,
+  Send,
+  Trash2,
+  Upload,
+  User,
+  X,
+} from "lucide-react";
+
+type LocalChatSession = {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  backendSessionId?: string;
+  createdAt: string;
+  documents: SessionDocument[];
+  projectId: string;
+};
+
+type ProjectState = Project & {
+  documents: SessionDocument[];
+};
+
+interface CaseWorkspaceProps {
+  project: ProjectState;
+  sessions: LocalChatSession[];
+  activeSessionId: string | null;
+  input: string;
+  isLoading: boolean;
+  isUploadingDocument: boolean;
+  isDocumentsLoading: boolean;
+  onBack: () => void;
+  onSelectSession: (sessionId: string) => void;
+  onNewChat: () => void;
+  onInputChange: (value: string) => void;
+  onSendMessage: () => void;
+  onAttachDocument: (files: FileList | null) => void;
+  onRemoveDocument: (documentId: string) => void;
+}
+
+export function CaseWorkspace({
+  project,
+  sessions,
+  activeSessionId,
+  input,
+  isLoading,
+  isUploadingDocument,
+  isDocumentsLoading,
+  onBack,
+  onSelectSession,
+  onNewChat,
+  onInputChange,
+  onSendMessage,
+  onAttachDocument,
+  onRemoveDocument,
+}: CaseWorkspaceProps) {
+  const { toast } = useToast();
+  const [isDocumentsPanelOpen, setIsDocumentsPanelOpen] = useState(true);
+  const [isChatListOpen, setIsChatListOpen] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const activeSession = useMemo(
+    () => sessions.find((s) => s.id === activeSessionId) ?? null,
+    [sessions, activeSessionId],
+  );
+
+  const sortedSessions = useMemo(
+    () => [...sessions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [sessions],
+  );
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeSession?.messages]);
+
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      onSendMessage();
+    },
+    [onSendMessage],
+  );
+
+  const handleInputKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        onSendMessage();
+      }
+    },
+    [onSendMessage],
+  );
+
+  const handleAttachButtonClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      onAttachDocument(event.target.files);
+      if (event.target) {
+        event.target.value = "";
+      }
+    },
+    [onAttachDocument],
+  );
+
+  return (
+    <div className="flex h-screen flex-col bg-background">
+      {/* Header */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onBack} className="hidden sm:flex">
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Вернуться к списку дел</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="sm:hidden"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Назад</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsChatListOpen(true)}
+              className="md:hidden"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Открыть список чатов</span>
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="hidden rounded-lg bg-primary/10 p-1.5 sm:block">
+                <Bot className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold leading-tight">{project.name}</span>
+                <span className="hidden text-xs text-muted-foreground sm:block">
+                  {project.documents.length} документов · {sessions.length} чатов
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDocumentsPanelOpen(!isDocumentsPanelOpen)}
+              className="lg:hidden"
+            >
+              <FolderOpen className="h-5 w-5" />
+              <span className="sr-only">Переключить панель документов</span>
+            </Button>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content - Three Columns */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Column - Chats */}
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-40 flex w-80 flex-col border-r bg-muted/30 transition-transform duration-300 md:static md:translate-x-0",
+            isChatListOpen ? "translate-x-0" : "-translate-x-full",
+          )}
+        >
+          <div className="flex items-center justify-between border-b p-4 md:hidden">
+            <h2 className="text-sm font-semibold">Чаты</h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsChatListOpen(false)}
+            >
+              <X className="h-5 w-5" />
+              <span className="sr-only">Закрыть список чатов</span>
+            </Button>
+          </div>
+          <div className="border-b p-4">
+            <Button onClick={onNewChat} className="w-full gap-2">
+              <Plus className="h-4 w-4" />
+              Новый чат
+            </Button>
+          </div>
+          <div className="flex-1 overflow-hidden p-2">
+            <ScrollArea className="h-full">
+              <div className="space-y-1 pb-4">
+                {sortedSessions.length === 0 ? (
+                  <div className="rounded-lg border border-dashed px-4 py-8 text-center">
+                    <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
+                    <p className="mt-2 text-sm text-muted-foreground">Нет чатов</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Создайте первый чат</p>
+                  </div>
+                ) : (
+                  sortedSessions.map((session) => (
+                    <button
+                      key={session.id}
+                      onClick={() => {
+                        onSelectSession(session.id);
+                        setIsChatListOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full flex-col items-start rounded-lg px-3 py-3 text-left transition-all hover:bg-muted",
+                        session.id === activeSessionId
+                          ? "bg-muted shadow-sm"
+                          : "bg-transparent",
+                      )}
+                    >
+                      <div className="flex w-full items-center gap-2">
+                        <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        <span className="flex-1 truncate text-sm font-medium">
+                          {session.title || "Новый чат"}
+                        </span>
+                      </div>
+                      <span className="ml-6 mt-1 text-xs text-muted-foreground">
+                        {new Date(session.createdAt).toLocaleString("ru-RU", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </aside>
+
+        {/* Center Column - Chat Messages */}
+        <main className="flex flex-1 flex-col">
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+                {activeSession && activeSession.messages.length === 0 && !isLoading && (
+                  <div className="mt-10 text-center text-muted-foreground">
+                    <div className="mx-auto mb-4 rounded-full bg-muted p-6 w-fit">
+                      <Bot className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-foreground">С чего начнём?</h2>
+                    <p className="mt-2 text-sm">
+                      Опишите ситуацию, из-за которой вы обращаетесь.
+                      <br />Я помогу разобраться со стратегией и рисками.
+                    </p>
+                  </div>
+                )}
+
+                {activeSession?.messages.map((message, index) => (
+                  <div
+                    key={`${message.role}-${index}`}
+                    className={cn(
+                      "flex w-full",
+                      message.role === "user" ? "justify-end" : "justify-start",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex max-w-full items-start gap-3 md:max-w-[80%]",
+                        message.role === "user" && "flex-row-reverse text-right",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full",
+                          message.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {message.role === "user" ? (
+                          <User className="h-4 w-4" />
+                        ) : (
+                          <Bot className="h-4 w-4" />
+                        )}
+                      </div>
+                      <Card
+                        className={cn(
+                          "flex-1 border",
+                          message.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card text-card-foreground",
+                        )}
+                      >
+                        <CardContent className="whitespace-pre-wrap p-4 text-sm">
+                          {message.content}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                ))}
+
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="flex max-w-full items-start gap-3 md:max-w-[80%]">
+                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                        <Bot className="h-4 w-4" />
+                      </div>
+                      <Card className="flex-1 border bg-card text-card-foreground">
+                        <CardContent className="p-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>AI обрабатывает запрос…</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Message Input */}
+          <div className="border-t bg-background p-4">
+            <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl flex-col gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                multiple
+                accept=".pdf,.doc,.docx,.txt,.md,.rtf,image/*"
+                onChange={handleFileInputChange}
+              />
+
+              <Textarea
+                value={input}
+                onChange={(event) => onInputChange(event.target.value)}
+                onKeyDown={handleInputKeyDown}
+                placeholder="Опишите ситуацию, вопрос или запрос к защитнику…"
+                className="min-h-[100px] resize-none"
+                disabled={isLoading}
+              />
+              <div className="flex items-center justify-between gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAttachButtonClick}
+                  disabled={isUploadingDocument}
+                  className="gap-2"
+                >
+                  {isUploadingDocument ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Paperclip className="h-4 w-4" />
+                  )}
+                  {isUploadingDocument ? "Обработка…" : "Прикрепить"}
+                </Button>
+                <Button type="submit" disabled={isLoading || isUploadingDocument || !input.trim()} className="gap-2">
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  Отправить
+                </Button>
+              </div>
+            </form>
+          </div>
+        </main>
+
+        {/* Right Column - Documents */}
+        <aside
+          className={cn(
+            "fixed inset-y-0 right-0 z-30 flex w-80 flex-col border-l bg-muted/30 transition-transform duration-300 lg:static lg:translate-x-0",
+            isDocumentsPanelOpen ? "translate-x-0" : "translate-x-full",
+          )}
+        >
+          <div className="flex items-center justify-between border-b p-4 lg:hidden">
+            <h3 className="text-sm font-semibold">Документы</h3>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDocumentsPanelOpen(false)}
+            >
+              <X className="h-5 w-5" />
+              <span className="sr-only">Закрыть панель документов</span>
+            </Button>
+          </div>
+          <div className="border-b p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold">Документы</h3>
+              {isDocumentsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+            <Button
+              onClick={handleAttachButtonClick}
+              disabled={isUploadingDocument}
+              variant="outline"
+              className="w-full gap-2"
+              size="sm"
+            >
+              {isUploadingDocument ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              Загрузить документ
+            </Button>
+          </div>
+          <div className="flex-1 overflow-hidden p-2">
+            <ScrollArea className="h-full">
+              <div className="space-y-2 pb-4">
+                {project.documents.length === 0 ? (
+                  <div className="rounded-lg border border-dashed px-4 py-8 text-center">
+                    <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
+                    <p className="mt-2 text-sm text-muted-foreground">Нет документов</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Загрузите документы для работы
+                    </p>
+                  </div>
+                ) : (
+                  project.documents.map((document) => (
+                    <div
+                      key={document.id}
+                      className="group rounded-lg border bg-card p-3 transition-all hover:shadow-sm"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-md bg-primary/10 p-2 text-primary">
+                          <FileText className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 truncate text-sm font-medium leading-tight">
+                            {document.name}
+                          </div>
+                          <div className="space-y-0.5 text-xs text-muted-foreground">
+                            <div>{formatBytes(document.size)}</div>
+                            <div>
+                              {new Date(document.uploadedAt).toLocaleDateString("ru-RU")}
+                            </div>
+                            <div className="text-xs">{formatStrategy(document.strategy)}</div>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          onClick={() => onRemoveDocument(document.id)}
+                          disabled={isUploadingDocument || isDocumentsLoading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Удалить</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </aside>
+      </div>
+
+      {/* Overlays for mobile panels */}
+      {isChatListOpen && (
+        <button
+          type="button"
+          onClick={() => setIsChatListOpen(false)}
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden"
+          aria-label="Закрыть список чатов"
+        />
+      )}
+      {isDocumentsPanelOpen && (
+        <button
+          type="button"
+          onClick={() => setIsDocumentsPanelOpen(false)}
+          className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm lg:hidden"
+          aria-label="Закрыть панель документов"
+        />
+      )}
+    </div>
+  );
+}
+
+function formatBytes(size: number) {
+  if (!size || size < 0) return "—";
+  if (size < 1024) return `${size} Б`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} КБ`;
+  return `${(size / (1024 * 1024)).toFixed(1)} МБ`;
+}
+
+function formatStrategy(strategy: SessionDocument["strategy"]) {
+  switch (strategy) {
+    case "pdf":
+      return "PDF";
+    case "docx":
+      return "Word";
+    case "vision":
+      return "LLM/vision";
+    case "llm-file":
+      return "LLM/файл";
+    default:
+      return "Текст";
+  }
+}
+
