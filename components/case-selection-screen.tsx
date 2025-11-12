@@ -60,7 +60,7 @@ export function CaseSelectionScreen({
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <Bot className="h-6 w-6 text-primary" />
+            <Bot className="h-6 w-6 text-muted-foreground" />
             <h1 className="text-xl font-bold">AI-юрист</h1>
           </div>
           <ThemeToggle />
@@ -76,7 +76,7 @@ export function CaseSelectionScreen({
                 Выберите дело для работы или создайте новое
               </p>
             </div>
-            <Button onClick={handleOpenDialog} size="lg" className="gap-2">
+            <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2">
               <FolderPlus className="h-5 w-5" />
               Создать новое дело
             </Button>
@@ -96,7 +96,7 @@ export function CaseSelectionScreen({
                 <p className="mt-2 max-w-md text-sm text-muted-foreground">
                   Создайте первое дело, чтобы начать загружать документы и общаться с AI-помощником
                 </p>
-                <Button onClick={handleOpenDialog} className="mt-6 gap-2">
+                <Button onClick={handleOpenDialog} variant="secondary" className="mt-6 gap-2">
                   <FolderPlus className="h-4 w-4" />
                   Создать первое дело
                 </Button>
@@ -113,7 +113,7 @@ export function CaseSelectionScreen({
                     <Card
                       key={project.id}
                       className={cn(
-                        "group cursor-pointer transition-all hover:border-primary hover:shadow-md",
+                        "group cursor-pointer transition-all hover:border-foreground/20 hover:shadow-md",
                       )}
                       onClick={() => onSelectProject(project.id)}
                     >
@@ -121,11 +121,11 @@ export function CaseSelectionScreen({
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="mb-4 flex items-center gap-2">
-                              <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                              <div className="rounded-lg bg-muted p-2 text-muted-foreground">
                                 <Bot className="h-5 w-5" />
                               </div>
                             </div>
-                            <h3 className="mb-2 text-lg font-semibold leading-tight group-hover:text-primary">
+                            <h3 className="mb-2 text-lg font-semibold leading-tight">
                               {project.name}
                             </h3>
                             <div className="space-y-2 text-sm text-muted-foreground">

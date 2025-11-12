@@ -152,8 +152,8 @@ export function CaseWorkspace({
               <span className="sr-only">Открыть список чатов</span>
             </Button>
             <div className="flex items-center gap-2">
-              <div className="hidden rounded-lg bg-primary/10 p-1.5 sm:block">
-                <Bot className="h-4 w-4 text-primary" />
+              <div className="hidden rounded-lg bg-muted p-1.5 sm:block">
+                <Bot className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold leading-tight">{project.name}</span>
@@ -199,7 +199,7 @@ export function CaseWorkspace({
             </Button>
           </div>
           <div className="border-b p-4">
-            <Button onClick={onNewChat} className="w-full gap-2">
+            <Button onClick={onNewChat} variant="secondary" className="w-full gap-2">
               <Plus className="h-4 w-4" />
               Новый чат
             </Button>
@@ -278,15 +278,15 @@ export function CaseWorkspace({
                   >
                     {message.role === "user" ? (
                       <div className="max-w-full md:max-w-[80%]">
-                        <div className="rounded-2xl bg-primary px-4 py-3 text-primary-foreground">
-                          <p className="whitespace-pre-wrap text-sm">
+                        <div className="rounded-2xl bg-muted px-4 py-3">
+                          <p className="whitespace-pre-wrap text-sm text-foreground/90">
                             {message.content}
                           </p>
                         </div>
                       </div>
                     ) : (
                       <div className="max-w-full md:max-w-[80%]">
-                        <p className="whitespace-pre-wrap text-sm text-foreground">
+                        <p className="whitespace-pre-wrap text-sm text-foreground/90">
                           {message.content}
                         </p>
                       </div>
@@ -345,14 +345,19 @@ export function CaseWorkspace({
                   )}
                   {isUploadingDocument ? "Обработка…" : "Прикрепить"}
                 </Button>
-                <Button type="submit" disabled={isLoading || isUploadingDocument || !input.trim()} className="gap-2">
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                  Отправить
-                </Button>
+              <Button 
+                type="submit" 
+                disabled={isLoading || isUploadingDocument || !input.trim()} 
+                variant="secondary"
+                className="gap-2"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                Отправить
+              </Button>
               </div>
             </form>
           </div>

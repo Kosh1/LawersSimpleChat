@@ -75,7 +75,7 @@ export function CreateCaseDialog({
             <Button type="button" variant="outline" onClick={handleCancel}>
               Отмена
             </Button>
-            <Button type="submit" disabled={!name.trim()}>
+            <Button type="submit" variant="secondary" disabled={!name.trim()}>
               Создать дело
             </Button>
           </DialogFooter>
