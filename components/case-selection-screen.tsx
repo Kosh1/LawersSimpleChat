@@ -37,6 +37,12 @@ export function CaseSelectionScreen({
   onCreateProject,
 }: CaseSelectionScreenProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  console.log('[CaseSelectionScreen] Rendering with:', { 
+    projectsCount: projects.length, 
+    projects, 
+    isLoading 
+  });
 
   const handleOpenDialog = () => {
     setIsDialogOpen(true);

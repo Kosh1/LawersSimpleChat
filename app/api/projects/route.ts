@@ -70,6 +70,14 @@ export async function POST(req: NextRequest) {
 
     if (error || !data) {
       console.error('[projects][POST] Supabase error:', error);
+      
+      // Обработка ошибки дубликата slug
+      if (error?.code === '23505') {
+        return NextResponse.json({ 
+          error: 'Проект с таким названием уже существует. Попробуйте другое название.' 
+        }, { status: 409 });
+      }
+      
       return NextResponse.json({ error: 'Не удалось создать проект.' }, { status: 500 });
     }
 
@@ -88,11 +96,10 @@ async function ensureProjectSlugIsUnique(
   let candidate = slugCandidate;
   let attempts = 0;
 
-  while (attempts < 5) {
+  while (attempts < 10) {
     const { data, error } = await supabase
       .from('projects')
       .select('id')
-      .eq('user_id', userId)
       .eq('slug', candidate)
       .maybeSingle();
 
@@ -102,13 +109,17 @@ async function ensureProjectSlugIsUnique(
     }
 
     if (!data) {
+      console.log('[projects][slug] Found unique slug:', candidate);
       return candidate;
     }
 
     attempts += 1;
-    candidate = `${slugCandidate}-${attempts + 1}`;
+    candidate = `${slugCandidate}-${attempts}`;
   }
 
-  return `${slugCandidate}-${uuidv4().slice(0, 8)}`;
+  // Если не нашли уникальный после 10 попыток, добавляем UUID
+  const finalSlug = `${slugCandidate}-${uuidv4().slice(0, 8)}`;
+  console.log('[projects][slug] Using UUID-based slug:', finalSlug);
+  return finalSlug;
 }
 
