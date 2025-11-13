@@ -81,44 +81,42 @@ export interface ModelConfig {
  */
 
 // ============================================
-// ТЕКУЩАЯ КОНФИГУРАЦИЯ: GPT-5 MODELS (ноябрь 2025)
-// ============================================
-// GPT-5 выпущена 7 августа 2025, GPT-5.1 - 12 ноября 2025
-// Это актуальные модели, заменившие GPT-4.5, GPT-4.1 и GPT-4o
-//
-// Если GPT-5 недоступна в вашем аккаунте, замените на:
-//   primary/reasoning: 'gpt-4.5' или 'gpt-4o' (проверьте в OpenAI Playground)
+// ВАРИАНТ 1: GPT-5 MODELS (если доступны)
 // ============================================
 export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
   'primary': {
-    name: 'gpt-5', // Актуальная модель GPT-5 (авг 2025) или 'gpt-5.1' (ноя 2025)
+    name: 'gpt-5', // Полное имя: 'gpt-5' или 'gpt-5-chat-latest'
     maxTokens: 32000,
     contextWindow: 400000,
     temperature: 0.7,
     useMaxCompletionTokens: true, // КРИТИЧНО: новые модели требуют max_completion_tokens вместо max_tokens
+    reasoningEffort: 'medium',
+    verbosity: 'medium',
     supportsSystemMessages: true,
     priority: 1,
-    description: 'GPT-5 - актуальная модель с балансом скорости и качества',
+    description: 'GPT-5 основная модель с балансом скорости и качества',
   },
   'reasoning': {
-    name: 'gpt-5', // Актуальная модель GPT-5 для глубокого анализа
+    name: 'gpt-5', // Полное имя: 'gpt-5' или 'gpt-5-mini' для reasoning
     maxTokens: 32000,
     contextWindow: 400000,
     temperature: 0.7,
-    useMaxCompletionTokens: true,
+    useMaxCompletionTokens: true, // КРИТИЧНО: новые модели требуют max_completion_tokens вместо max_tokens
+    reasoningEffort: 'high',
+    verbosity: 'high',
     supportsSystemMessages: true,
     priority: 0,
     description: 'GPT-5 режим глубокого анализа для сложных юридических задач',
   },
   'fallback': {
-    name: 'gpt-4.5', // Fallback на GPT-4.5 (фев 2025) или 'gpt-4o' если 4.5 недоступна
-    maxTokens: 16000,
+    name: 'gpt-4.1', // Полное имя: 'gpt-4-turbo' или 'gpt-4-turbo-2024-04-09'
+    maxTokens: 32000,
     contextWindow: 128000,
     temperature: 0.7,
-    useMaxCompletionTokens: true,
+    useMaxCompletionTokens: true, // ВАЖНО: добавлен флаг для поддержки новых моделей
     supportsSystemMessages: true,
     priority: 2,
-    description: 'GPT-4.5 - надежная fallback модель',
+    description: 'GPT-4.1 - быстрая и надежная fallback модель',
   },
 };
 
