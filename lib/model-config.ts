@@ -81,43 +81,44 @@ export interface ModelConfig {
  */
 
 // ============================================
-// ТЕКУЩАЯ КОНФИГУРАЦИЯ: GPT-4O MODELS
+// ТЕКУЩАЯ КОНФИГУРАЦИЯ: GPT-5 MODELS (ноябрь 2025)
 // ============================================
-// ВАЖНО: Если у вас есть доступ к GPT-5, замените:
-//   name: 'gpt-4o-2024-08-06' -> name: 'gpt-5'
-//   maxTokens: 16000 -> maxTokens: 32000
-//   contextWindow: 128000 -> contextWindow: 400000
-// И проверьте, нужен ли useMaxCompletionTokens для gpt-5
+// GPT-5 выпущена 7 августа 2025, GPT-5.1 - 12 ноября 2025
+// Это актуальные модели, заменившие GPT-4.5, GPT-4.1 и GPT-4o
+//
+// Если GPT-5 недоступна в вашем аккаунте, замените на:
+//   primary/reasoning: 'gpt-4.5' или 'gpt-4o' (проверьте в OpenAI Playground)
 // ============================================
 export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
   'primary': {
-    name: 'gpt-4o-2024-08-06', // Стабильная версия GPT-4o
-    maxTokens: 16000,
-    contextWindow: 128000,
+    name: 'gpt-5', // Актуальная модель GPT-5 (авг 2025) или 'gpt-5.1' (ноя 2025)
+    maxTokens: 32000,
+    contextWindow: 400000,
     temperature: 0.7,
     useMaxCompletionTokens: true, // КРИТИЧНО: новые модели требуют max_completion_tokens вместо max_tokens
     supportsSystemMessages: true,
     priority: 1,
-    description: 'GPT-4o основная модель с балансом скорости и качества',
+    description: 'GPT-5 - актуальная модель с балансом скорости и качества',
   },
   'reasoning': {
-    name: 'gpt-4o-2024-08-06', // Используем стабильную версию GPT-4o
-    maxTokens: 16000,
-    contextWindow: 128000,
+    name: 'gpt-5', // Актуальная модель GPT-5 для глубокого анализа
+    maxTokens: 32000,
+    contextWindow: 400000,
     temperature: 0.7,
-    useMaxCompletionTokens: true, // Новые модели требуют max_completion_tokens
+    useMaxCompletionTokens: true,
     supportsSystemMessages: true,
     priority: 0,
-    description: 'GPT-4o режим глубокого анализа для сложных юридических задач',
+    description: 'GPT-5 режим глубокого анализа для сложных юридических задач',
   },
   'fallback': {
-    name: 'gpt-4-turbo', // Полное имя: 'gpt-4-turbo' или 'gpt-4-turbo-2024-04-09'
+    name: 'gpt-4.5', // Fallback на GPT-4.5 (фев 2025) или 'gpt-4o' если 4.5 недоступна
     maxTokens: 16000,
     contextWindow: 128000,
     temperature: 0.7,
+    useMaxCompletionTokens: true,
     supportsSystemMessages: true,
     priority: 2,
-    description: 'GPT-4 Turbo - быстрая и надежная fallback модель',
+    description: 'GPT-4.5 - надежная fallback модель',
   },
 };
 
