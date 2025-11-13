@@ -590,6 +590,114 @@ export function ChatPageClient() {
     }
   }, [setProjects, toast, user?.id]);
 
+  const handleRenameProject = useCallback(async (projectId: string, newName: string) => {
+    if (!user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Не удалось определить пользователя",
+        description: "Обновите страницу и попробуйте снова.",
+      });
+      return;
+    }
+
+    const trimmedName = newName.trim();
+    if (!trimmedName) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmedName, userId: user.id }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const message =
+          typeof payload?.error === "string" && payload.error.trim()
+            ? payload.error
+            : "Не удалось переименовать проект. Попробуйте снова.";
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      if (data?.project) {
+        setProjects((prev) =>
+          prev.map((p) =>
+            p.id === projectId
+              ? { ...p, name: data.project.name, updated_at: data.project.updated_at }
+              : p
+          ).sort(
+            (a, b) =>
+              new Date(b.updated_at ?? b.created_at).getTime() -
+              new Date(a.updated_at ?? a.created_at).getTime(),
+          )
+        );
+        toast({
+          title: "Проект переименован",
+          description: `Название изменено на «${data.project.name}»`,
+        });
+      }
+    } catch (error) {
+      console.error("Не удалось переименовать проект:", error);
+      toast({
+        variant: "destructive",
+        title: "Не удалось переименовать проект",
+        description: error instanceof Error ? error.message : "Попробуйте снова чуть позже.",
+      });
+    }
+  }, [setProjects, toast, user?.id]);
+
+  const handleDeleteProject = useCallback(async (projectId: string) => {
+    if (!user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Не удалось определить пользователя",
+        description: "Обновите страницу и попробуйте снова.",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const message =
+          typeof payload?.error === "string" && payload.error.trim()
+            ? payload.error
+            : "Не удалось удалить проект. Попробуйте снова.";
+        throw new Error(message);
+      }
+
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      setSessions((prev) => prev.filter((s) => s.projectId !== projectId));
+      
+      // If we're currently viewing the deleted project, go back to selection
+      if (selectedProjectId === projectId) {
+        setIsInWorkspace(false);
+        setSelectedProjectId(null);
+      }
+      
+      toast({
+        title: "Проект удалён",
+        description: "Проект и все его данные были успешно удалены.",
+      });
+    } catch (error) {
+      console.error("Не удалось удалить проект:", error);
+      toast({
+        variant: "destructive",
+        title: "Не удалось удалить проект",
+        description: error instanceof Error ? error.message : "Попробуйте снова чуть позже.",
+      });
+    }
+  }, [setProjects, setSessions, selectedProjectId, toast, user?.id]);
+
   const processDocumentFiles = useCallback(
     async (fileList: FileList | null) => {
       if (!selectedProjectId || !activeSession || !fileList || fileList.length === 0) {
@@ -1027,6 +1135,8 @@ export function ChatPageClient() {
         isLoading={isProjectsLoading}
         onSelectProject={handleSelectProject}
         onCreateProject={handleCreateProject}
+        onRenameProject={handleRenameProject}
+        onDeleteProject={handleDeleteProject}
       />
     );
   }
