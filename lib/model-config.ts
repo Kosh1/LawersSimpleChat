@@ -113,7 +113,7 @@ export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
     maxTokens: 32000,
     contextWindow: 128000,
     temperature: 0.7,
-    useMaxCompletionTokens: true, // ВАЖНО: добавлен флаг для поддержки новых моделей
+    // useMaxCompletionTokens НЕ нужен для gpt-4.1 - работает с обычным max_tokens
     supportsSystemMessages: true,
     priority: 2,
     description: 'GPT-4.1 - быстрая и надежная fallback модель',
