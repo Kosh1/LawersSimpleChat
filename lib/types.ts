@@ -1,6 +1,11 @@
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  metadata?: {
+    modelUsed?: string;
+    thinkingTimeSeconds?: number;
+    wasReasoning?: boolean;
+  };
 }
 
 export interface SessionDocument {

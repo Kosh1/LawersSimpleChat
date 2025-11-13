@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ThinkingIndicator } from "@/components/thinking-indicator";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, Project, SessionDocument } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +46,7 @@ interface CaseWorkspaceProps {
   activeSessionId: string | null;
   input: string;
   isLoading: boolean;
+  isThinking: boolean;
   isUploadingDocument: boolean;
   isDocumentsLoading: boolean;
   onBack: () => void;
@@ -63,6 +65,7 @@ export function CaseWorkspace({
   activeSessionId,
   input,
   isLoading,
+  isThinking,
   isUploadingDocument,
   isDocumentsLoading,
   onBack,
@@ -289,6 +292,15 @@ export function CaseWorkspace({
                       </div>
                     ) : (
                       <div className="group relative max-w-full md:max-w-[80%]">
+                        {message.metadata?.wasReasoning && message.metadata?.thinkingTimeSeconds && (
+                          <div className="mb-2">
+                            <ThinkingIndicator 
+                              isThinking={false}
+                              thinkingTime={message.metadata.thinkingTimeSeconds}
+                              modelName={message.metadata.modelUsed}
+                            />
+                          </div>
+                        )}
                         <p className="whitespace-pre-wrap text-sm text-foreground/90">
                           {message.content}
                         </p>
@@ -312,10 +324,14 @@ export function CaseWorkspace({
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="max-w-full md:max-w-[80%]">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>AI обрабатывает запрос…</span>
-                      </div>
+                      {isThinking ? (
+                        <ThinkingIndicator isThinking={true} />
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>AI обрабатывает запрос…</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

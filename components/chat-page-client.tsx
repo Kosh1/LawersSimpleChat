@@ -103,6 +103,7 @@ export function ChatPageClient() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false); // Для reasoning модели
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const { toast } = useToast();
@@ -754,6 +755,14 @@ export function ChatPageClient() {
 
     setInput("");
     setIsLoading(true);
+    
+    // Определяем, будет ли использоваться reasoning модель
+    const shouldUseReasoning = trimmedMessage.length > 200 || 
+      /проанализируй|анализ|стратегия|риски|подробн|детальн|глубок/i.test(trimmedMessage);
+    
+    if (shouldUseReasoning) {
+      setIsThinking(true);
+    }
 
     setSessions((prev) =>
       prev.map((session) => {
@@ -808,10 +817,24 @@ export function ChatPageClient() {
         }
       }
       
+      // Определяем была ли использована reasoning модель и время размышления
+      const wasReasoning = data.metadata?.modelUsed === 'reasoning' || 
+        (data.metadata?.responseTimeMs && data.metadata.responseTimeMs > 5000);
+      const thinkingTimeSeconds = data.metadata?.responseTimeMs 
+        ? Math.floor(data.metadata.responseTimeMs / 1000) 
+        : undefined;
+      
       const assistantMessage: ChatMessage = {
         role: "assistant",
         content: data.message,
+        metadata: {
+          modelUsed: data.metadata?.modelUsed,
+          thinkingTimeSeconds,
+          wasReasoning,
+        },
       };
+
+      setIsThinking(false);
 
       setSessions((prev) =>
         prev.map((session) => {
@@ -857,6 +880,7 @@ export function ChatPageClient() {
       );
     } finally {
       setIsLoading(false);
+      setIsThinking(false);
     }
   }, [activeSession, input, isLoading, selectedProjectId, toast, userId, utmQuery]);
 
@@ -887,6 +911,7 @@ export function ChatPageClient() {
       activeSessionId={activeSessionId}
       input={input}
       isLoading={isLoading}
+      isThinking={isThinking}
       isUploadingDocument={isUploadingDocument}
       isDocumentsLoading={isDocumentsLoading}
       onBack={handleBackToSelection}
