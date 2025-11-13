@@ -106,6 +106,7 @@ export function ChatPageClient() {
   const [isThinking, setIsThinking] = useState(false); // Для reasoning модели
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
+  const [isLoadingChatsFromDB, setIsLoadingChatsFromDB] = useState(false);
   const { toast } = useToast();
   const { exportMessage } = useExportMessage();
 
@@ -189,6 +190,8 @@ export function ChatPageClient() {
     };
   }, [toast, userId]);
 
+  // Initial load from localStorage (as cache)
+  // Note: Database will be the source of truth when project is selected
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -216,8 +219,11 @@ export function ChatPageClient() {
             projectId: session.projectId ?? "",
           };
         });
+        // Load from localStorage as initial cache
+        // Database will override when project is selected
         setSessions(parsed);
         setHasInitialized(true);
+        console.log('[Cache] Loaded', parsed.length, 'sessions from localStorage');
         return;
       }
     } catch (error) {
@@ -227,12 +233,15 @@ export function ChatPageClient() {
     setHasInitialized(true);
   }, []);
 
+  // Save sessions to localStorage as cache
+  // Database is the source of truth, localStorage is for performance
   useEffect(() => {
     if (!hasInitialized || typeof window === "undefined") return;
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sessions));
+      console.log('[Cache] Saved', sessions.length, 'sessions to localStorage');
     } catch (error) {
-      console.error("Не удалось сохранить чаты:", error);
+      console.error("Не удалось сохранить чаты в localStorage:", error);
     }
   }, [sessions, hasInitialized]);
 
@@ -267,23 +276,137 @@ export function ChatPageClient() {
     });
   }, [hasInitialized, projects, selectedProjectId]);
 
+  // Load chats from database when project is selected
   useEffect(() => {
-    if (!selectedProjectId) return;
-    let newSessionId: string | null = null;
+    if (!selectedProjectId || !userId) return;
+    let isCancelled = false;
 
-    setSessions((prev) => {
-      if (prev.some((session) => session.projectId === selectedProjectId)) {
-        return prev;
+    const loadChatsFromDatabase = async () => {
+      setIsLoadingChatsFromDB(true);
+      try {
+        // Fetch chat sessions from database
+        const response = await fetch(`/api/projects/${selectedProjectId}/chats?userId=${userId}`);
+        if (!response.ok) {
+          throw new Error('Failed to load chats from database');
+        }
+
+        const data = await response.json();
+        const dbChats = Array.isArray(data?.chats) ? data.chats : [];
+
+        if (isCancelled) return;
+
+        // Load messages for each session
+        const sessionsWithMessages = await Promise.all(
+          dbChats.map(async (chat: any) => {
+            try {
+              const messagesResponse = await fetch(`/api/chat/${chat.id}/messages`);
+              if (!messagesResponse.ok) {
+                console.warn(`Failed to load messages for session ${chat.id}`);
+                return null;
+              }
+
+              const messagesData = await messagesResponse.json();
+              const messages = Array.isArray(messagesData?.messages) 
+                ? messagesData.messages.map((msg: any) => ({
+                    role: msg.role,
+                    content: msg.content,
+                  }))
+                : [];
+
+              const localSession: LocalChatSession = {
+                id: chat.id,
+                title: generateTitle(chat.initial_message || 'Новый чат'),
+                messages,
+                backendSessionId: chat.id,
+                createdAt: chat.created_at,
+                documents: [],
+                projectId: chat.project_id,
+              };
+
+              return localSession;
+            } catch (error) {
+              console.error(`Error loading messages for session ${chat.id}:`, error);
+              return null;
+            }
+          })
+        );
+
+        if (isCancelled) return;
+
+        const validSessions = sessionsWithMessages.filter((s): s is LocalChatSession => s !== null);
+
+        // Merge database sessions with localStorage sessions
+        setSessions((prev) => {
+          // Create a map of existing sessions by backend session ID
+          const existingByBackendId = new Map(
+            prev
+              .filter((s) => s.backendSessionId)
+              .map((s) => [s.backendSessionId!, s])
+          );
+
+          // Update or add database sessions
+          const merged = [...prev];
+          validSessions.forEach((dbSession) => {
+            const existingIndex = merged.findIndex(
+              (s) => s.backendSessionId === dbSession.id || s.id === dbSession.id
+            );
+
+            if (existingIndex >= 0) {
+              // Update existing session with database data (database is source of truth)
+              merged[existingIndex] = {
+                ...merged[existingIndex],
+                ...dbSession,
+                // Keep local documents if they exist
+                documents: merged[existingIndex].documents.length > 0 
+                  ? merged[existingIndex].documents 
+                  : dbSession.documents,
+              };
+            } else {
+              // Add new session from database
+              merged.push(dbSession);
+            }
+          });
+
+          // Filter to only include sessions for this project
+          return merged.filter((s) => s.projectId === selectedProjectId);
+        });
+
+        // If no sessions exist, create an empty one
+        setSessions((prev) => {
+          const projectSessions = prev.filter((s) => s.projectId === selectedProjectId);
+          if (projectSessions.length === 0) {
+            const session = createEmptySession(selectedProjectId);
+            setActiveSessionId(session.id);
+            return [session, ...prev];
+          }
+          return prev;
+        });
+
+      } catch (error) {
+        console.error('Error loading chats from database:', error);
+        
+        // Fallback: create empty session if none exist
+        setSessions((prev) => {
+          if (prev.some((session) => session.projectId === selectedProjectId)) {
+            return prev;
+          }
+          const session = createEmptySession(selectedProjectId);
+          setActiveSessionId(session.id);
+          return [session, ...prev];
+        });
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingChatsFromDB(false);
+        }
       }
-      const session = createEmptySession(selectedProjectId);
-      newSessionId = session.id;
-      return [session, ...prev];
-    });
+    };
 
-    if (newSessionId) {
-      setActiveSessionId(newSessionId);
-    }
-  }, [selectedProjectId]);
+    void loadChatsFromDatabase();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedProjectId, userId]);
 
   useEffect(() => {
     if (!selectedProjectId) return;
