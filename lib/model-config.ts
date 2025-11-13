@@ -88,7 +88,7 @@ export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
     name: 'gpt-5', // Полное имя: 'gpt-5' или 'gpt-5-chat-latest'
     maxTokens: 32000,
     contextWindow: 400000,
-    temperature: 0.7,
+    temperature: undefined, // GPT-5 НЕ поддерживает temperature - только дефолтное значение
     useMaxCompletionTokens: true, // КРИТИЧНО: новые модели требуют max_completion_tokens вместо max_tokens
     reasoningEffort: 'medium',
     verbosity: 'medium',
@@ -100,7 +100,7 @@ export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
     name: 'gpt-5', // Полное имя: 'gpt-5' или 'gpt-5-mini' для reasoning
     maxTokens: 32000,
     contextWindow: 400000,
-    temperature: 0.7,
+    temperature: undefined, // GPT-5 НЕ поддерживает temperature - только дефолтное значение
     useMaxCompletionTokens: true, // КРИТИЧНО: новые модели требуют max_completion_tokens вместо max_tokens
     reasoningEffort: 'high',
     verbosity: 'high',
