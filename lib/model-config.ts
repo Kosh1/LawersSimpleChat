@@ -81,39 +81,43 @@ export interface ModelConfig {
  */
 
 // ============================================
-// ВАРИАНТ 1: GPT-5 MODELS (если доступны)
+// ТЕКУЩАЯ КОНФИГУРАЦИЯ: GPT-4O MODELS
+// ============================================
+// ВАЖНО: Если у вас есть доступ к GPT-5, замените:
+//   name: 'gpt-4o-2024-08-06' -> name: 'gpt-5'
+//   maxTokens: 16000 -> maxTokens: 32000
+//   contextWindow: 128000 -> contextWindow: 400000
+// И проверьте, нужен ли useMaxCompletionTokens для gpt-5
 // ============================================
 export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
   'primary': {
-    name: 'gpt-5', // Полное имя: 'gpt-5' или 'gpt-5-chat-latest'
-    maxTokens: 32000,
-    contextWindow: 400000,
+    name: 'gpt-4o-2024-08-06', // Стабильная версия GPT-4o
+    maxTokens: 16000,
+    contextWindow: 128000,
     temperature: 0.7,
-    reasoningEffort: 'medium',
-    verbosity: 'medium',
+    useMaxCompletionTokens: true, // КРИТИЧНО: новые модели требуют max_completion_tokens вместо max_tokens
     supportsSystemMessages: true,
     priority: 1,
-    description: 'GPT-5 основная модель с балансом скорости и качества',
+    description: 'GPT-4o основная модель с балансом скорости и качества',
   },
   'reasoning': {
-    name: 'gpt-5', // Полное имя: 'gpt-5' или 'gpt-5-mini' для reasoning
-    maxTokens: 32000,
-    contextWindow: 400000,
+    name: 'gpt-4o-2024-08-06', // Используем стабильную версию GPT-4o
+    maxTokens: 16000,
+    contextWindow: 128000,
     temperature: 0.7,
-    reasoningEffort: 'high',
-    verbosity: 'high',
+    useMaxCompletionTokens: true, // Новые модели требуют max_completion_tokens
     supportsSystemMessages: true,
     priority: 0,
-    description: 'GPT-5 режим глубокого анализа для сложных юридических задач',
+    description: 'GPT-4o режим глубокого анализа для сложных юридических задач',
   },
   'fallback': {
-    name: 'gpt-4.1', // Полное имя: 'gpt-4-turbo' или 'gpt-4-turbo-2024-04-09'
-    maxTokens: 32000,
+    name: 'gpt-4-turbo', // Полное имя: 'gpt-4-turbo' или 'gpt-4-turbo-2024-04-09'
+    maxTokens: 16000,
     contextWindow: 128000,
     temperature: 0.7,
     supportsSystemMessages: true,
     priority: 2,
-    description: 'GPT-4.1 - быстрая и надежная fallback модель',
+    description: 'GPT-4 Turbo - быстрая и надежная fallback модель',
   },
 };
 
