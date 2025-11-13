@@ -1,18 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+// This file is deprecated - use lib/supabase/server.ts for API routes
+// and lib/supabase/client.ts for client components
+import { createClient as createServerClient } from './supabase/server'
 
-let supabase: ReturnType<typeof createClient> | null = null
-
-export const getSupabase = () => {
-  if (!supabase) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Missing Supabase environment variables')
-    }
-
-    supabase = createClient(supabaseUrl, supabaseAnonKey)
-  }
-  
-  return supabase
+export const getSupabase = async () => {
+  return await createServerClient()
 }

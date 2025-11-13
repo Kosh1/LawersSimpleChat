@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { CaseSelectionScreen } from "@/components/case-selection-screen";
 import { CaseWorkspace } from "@/components/case-workspace";
 import type { ChatMessage, Project, SessionDocument } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useExportMessage } from "@/hooks/use-export-message";
+import { useAuth } from "@/hooks/use-auth";
 
 type LocalChatSession = {
   id: string;
@@ -25,7 +26,6 @@ type ProjectState = Project & {
 
 const LOCAL_STORAGE_KEY = "legal-assistant-chat-sessions-v2";
 const LEGACY_LOCAL_STORAGE_KEY = "legal-assistant-chat-sessions";
-const USER_STORAGE_KEY = "legal-assistant-user-id";
 const ACTIVE_PROJECT_STORAGE_KEY = "legal-assistant-active-project-id";
 const DEFAULT_PROJECT_NAME = "Мои дела";
 
@@ -82,6 +82,9 @@ function isValidDocumentStrategy(value: unknown): value is SessionDocument["stra
 
 export function ChatPageClient() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  
   const utmQuery = useMemo(() => {
     const params = new URLSearchParams();
     searchParams.forEach((value, key) => {
@@ -92,8 +95,6 @@ export function ChatPageClient() {
     const query = params.toString();
     return query ? `?${query}` : "";
   }, [searchParams]);
-
-  const [userId, setUserId] = useState<string | null>(null);
   const [projects, setProjects] = useState<ProjectState[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isInWorkspace, setIsInWorkspace] = useState<boolean>(false);
@@ -110,28 +111,21 @@ export function ChatPageClient() {
   const { toast } = useToast();
   const { exportMessage } = useExportMessage();
 
+  // Redirect to auth if not authenticated
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      let storedUserId = localStorage.getItem(USER_STORAGE_KEY);
-      if (!storedUserId) {
-        storedUserId = uuidv4();
-        localStorage.setItem(USER_STORAGE_KEY, storedUserId);
-      }
-      setUserId(storedUserId);
-    } catch (error) {
-      console.error("Не удалось получить идентификатор пользователя:", error);
+    if (!authLoading && !user) {
+      router.push("/auth");
     }
-  }, []);
+  }, [authLoading, user, router]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!user?.id) return;
     let isCancelled = false;
 
     const loadProjects = async () => {
       setIsProjectsLoading(true);
       try {
-        const response = await fetch(`/api/projects?userId=${encodeURIComponent(userId)}`);
+        const response = await fetch(`/api/projects?userId=${encodeURIComponent(user.id)}`);
         let projectsPayload: Project[] = [];
 
         if (response.ok) {
@@ -143,7 +137,7 @@ export function ChatPageClient() {
           const createResponse = await fetch(`/api/projects`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: DEFAULT_PROJECT_NAME, userId }),
+            body: JSON.stringify({ name: DEFAULT_PROJECT_NAME, userId: user.id }),
           });
 
           if (createResponse.ok) {
@@ -188,7 +182,7 @@ export function ChatPageClient() {
     return () => {
       isCancelled = true;
     };
-  }, [toast, userId]);
+  }, [toast, user?.id]);
 
   // Initial load from localStorage (as cache)
   // Note: Database will be the source of truth when project is selected
@@ -278,14 +272,14 @@ export function ChatPageClient() {
 
   // Load chats from database when project is selected
   useEffect(() => {
-    if (!selectedProjectId || !userId) return;
+    if (!selectedProjectId || !user?.id) return;
     let isCancelled = false;
 
     const loadChatsFromDatabase = async () => {
       setIsLoadingChatsFromDB(true);
       try {
         // Fetch chat sessions from database
-        const response = await fetch(`/api/projects/${selectedProjectId}/chats?userId=${userId}`);
+        const response = await fetch(`/api/projects/${selectedProjectId}/chats?userId=${user.id}`);
         if (!response.ok) {
           throw new Error('Failed to load chats from database');
         }
@@ -406,7 +400,7 @@ export function ChatPageClient() {
     return () => {
       isCancelled = true;
     };
-  }, [selectedProjectId, userId]);
+  }, [selectedProjectId, user?.id]);
 
   useEffect(() => {
     if (!selectedProjectId) return;
@@ -536,7 +530,7 @@ export function ChatPageClient() {
   }, []);
 
   const handleCreateProject = useCallback(async (name: string) => {
-    if (!userId) {
+    if (!user?.id) {
       toast({
         variant: "destructive",
         title: "Не удалось определить пользователя",
@@ -554,7 +548,7 @@ export function ChatPageClient() {
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmedName, userId }),
+        body: JSON.stringify({ name: trimmedName, userId: user.id }),
       });
 
       if (!response.ok) {
@@ -594,14 +588,14 @@ export function ChatPageClient() {
         description: error instanceof Error ? error.message : "Попробуйте снова чуть позже.",
       });
     }
-  }, [setProjects, toast, userId]);
+  }, [setProjects, toast, user?.id]);
 
   const processDocumentFiles = useCallback(
     async (fileList: FileList | null) => {
       if (!selectedProjectId || !activeSession || !fileList || fileList.length === 0) {
         return;
       }
-      if (!userId) {
+      if (!user?.id) {
         toast({
           variant: "destructive",
           title: "Не удалось определить пользователя",
@@ -618,7 +612,7 @@ export function ChatPageClient() {
         try {
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("userId", userId);
+          formData.append("userId", user.id);
 
           const response = await fetch(`/api/projects/${selectedProjectId}/documents`, {
             method: "POST",
@@ -700,7 +694,7 @@ export function ChatPageClient() {
 
       setIsUploadingDocument(false);
     },
-    [activeSession, selectedProjectId, setSessions, setProjects, toast, userId],
+    [activeSession, selectedProjectId, setSessions, setProjects, toast, user?.id],
   );
 
   const handleDocumentInputChange = useCallback(
@@ -718,7 +712,7 @@ export function ChatPageClient() {
       if (!selectedProjectId) {
         return;
       }
-      if (!userId) {
+      if (!user?.id) {
         toast({
           variant: "destructive",
           title: "Не удалось определить пользователя",
@@ -751,7 +745,7 @@ export function ChatPageClient() {
         const response = await fetch(`/api/projects/${selectedProjectId}/documents/${documentId}`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
+          body: JSON.stringify({ userId: user.id }),
         });
 
         if (!response.ok) {
@@ -800,7 +794,7 @@ export function ChatPageClient() {
         });
       }
     },
-    [projectDocuments, selectedProjectId, setProjects, toast, userId],
+    [projectDocuments, selectedProjectId, setProjects, toast, user?.id],
   );
 
   const handleExportMessage = useCallback(
@@ -850,7 +844,7 @@ export function ChatPageClient() {
       });
       return;
     }
-    if (!userId) {
+    if (!user?.id) {
       toast({
         variant: "destructive",
         title: "Не удалось определить пользователя",
@@ -909,7 +903,7 @@ export function ChatPageClient() {
           sessionId: backendSessionId,
           documents: documentsForRequest,
           projectId: selectedProjectId,
-          userId,
+          userId: user.id,
         }),
       });
 
@@ -1005,11 +999,28 @@ export function ChatPageClient() {
       setIsLoading(false);
       setIsThinking(false);
     }
-  }, [activeSession, input, isLoading, selectedProjectId, toast, userId, utmQuery]);
+  }, [activeSession, input, isLoading, selectedProjectId, toast, user?.id, utmQuery]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+          <p className="mt-4 text-muted-foreground">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to auth is handled in useEffect
+  if (!user) {
+    return null;
+  }
 
   // Render appropriate screen based on navigation state
   if (!isInWorkspace || !selectedProjectId) {
-  return (
+    return (
       <CaseSelectionScreen
         projects={projects}
         sessions={sessions}

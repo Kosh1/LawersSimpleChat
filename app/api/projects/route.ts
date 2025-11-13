@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { getSupabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth-helpers';
 import { mapProject } from '@/lib/projects';
 import { slugify } from '@/lib/utils';
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId');
-
-  if (!userId) {
-    return NextResponse.json({ error: 'userId is required' }, { status: 400 });
-  }
+  // Check authentication
+  const { user, response: authResponse } = await requireAuth();
+  if (authResponse) return authResponse;
 
   try {
-    const supabase = getSupabase() as any;
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from('projects')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user!.id)
       .order('updated_at', { ascending: false });
 
     if (error) {
@@ -34,28 +32,29 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Check authentication
+  const { user, response: authResponse } = await requireAuth();
+  if (authResponse) return authResponse;
+
   try {
     const body = await req.json();
     const name = typeof body?.name === 'string' ? body.name.trim() : '';
     const providedSlug = typeof body?.slug === 'string' ? body.slug.trim() : '';
-    const userId = typeof body?.userId === 'string' && body.userId.trim() ? body.userId.trim() : null;
 
     if (!name) {
       return NextResponse.json({ error: 'Название проекта обязательно.' }, { status: 400 });
     }
 
-    const supabase = getSupabase() as any;
+    const supabase = await createClient();
     const baseSlug = providedSlug || slugify(name);
     let slugCandidate = baseSlug || uuidv4();
 
-    if (userId) {
-      slugCandidate = await ensureProjectSlugIsUnique(supabase, slugCandidate, userId);
-    }
+    slugCandidate = await ensureProjectSlugIsUnique(supabase, slugCandidate, user!.id);
 
     const now = new Date().toISOString();
     const newProject = {
       id: uuidv4(),
-      user_id: userId,
+      user_id: user!.id,
       name,
       slug: slugCandidate,
       created_at: now,
@@ -89,7 +88,7 @@ export async function POST(req: NextRequest) {
 }
 
 async function ensureProjectSlugIsUnique(
-  supabase: ReturnType<typeof getSupabase>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   slugCandidate: string,
   userId: string,
 ) {

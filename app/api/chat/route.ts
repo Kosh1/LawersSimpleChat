@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
-import { getSupabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import { getUKLawyerPrompt } from '@/lib/prompts';
 import type { ChatMessage, ChatRequestDocument, UTMData, AIResponseMetadata } from '@/lib/types';
 import { projectDocumentToSessionDocument } from '@/lib/projects';
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     const lawyerPrompt = getUKLawyerPrompt();
 
-    const supabase = getSupabase() as any;
+    const supabase = await createClient();
     let resolvedProjectId = projectId;
     if (!resolvedProjectId && sessionId) {
       try {
@@ -240,7 +240,7 @@ function buildDocumentContext(documents?: ChatRequestDocument[]) {
 }
 
 async function loadProjectDocumentsForContext(
-  supabase: ReturnType<typeof getSupabase>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   projectId: string,
 ) {
   try {
