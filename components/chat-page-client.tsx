@@ -380,14 +380,14 @@ export function ChatPageClient() {
         console.error('Error loading chats from database:', error);
         
         // Fallback: create empty session if none exist
-        setSessions((prev) => {
-          if (prev.some((session) => session.projectId === selectedProjectId)) {
-            return prev;
-          }
-          const session = createEmptySession(selectedProjectId);
+    setSessions((prev) => {
+      if (prev.some((session) => session.projectId === selectedProjectId)) {
+        return prev;
+      }
+      const session = createEmptySession(selectedProjectId);
           setActiveSessionId(session.id);
-          return [session, ...prev];
-        });
+      return [session, ...prev];
+    });
       } finally {
         if (!isCancelled) {
           setIsLoadingChatsFromDB(false);
@@ -981,13 +981,8 @@ export function ChatPageClient() {
     setInput("");
     setIsLoading(true);
     
-    // Определяем, будет ли использоваться reasoning модель
-    const shouldUseReasoning = trimmedMessage.length > 200 || 
-      /проанализируй|анализ|стратегия|риски|подробн|детальн|глубок/i.test(trimmedMessage);
-    
-    if (shouldUseReasoning) {
-      setIsThinking(true);
-    }
+    // Reasoning модель включена на постоянку - всегда показываем thinking indicator
+    setIsThinking(true);
 
     setSessions((prev) =>
       prev.map((session) => {
@@ -1128,7 +1123,7 @@ export function ChatPageClient() {
 
   // Render appropriate screen based on navigation state
   if (!isInWorkspace || !selectedProjectId) {
-    return (
+  return (
       <CaseSelectionScreen
         projects={projects}
         sessions={sessions}

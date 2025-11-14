@@ -299,13 +299,16 @@ export function selectModel(
     return forceModel;
   }
   
-  // Если нужен глубокий анализ - используем reasoning модель
+  // ВСЕГДА используем reasoning модель для максимального качества ответов
+  // Для юридического помощника важнее качество, чем скорость
+  return 'reasoning';
+  
+  /* СТАРАЯ ЛОГИКА (условное включение):
   if (shouldUseThinkingModel(userMessage)) {
     return 'reasoning';
   }
-  
-  // Иначе используем основную модель
   return 'primary';
+  */
 }
 
 /**
