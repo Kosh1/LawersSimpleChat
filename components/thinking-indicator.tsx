@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Brain, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 
 interface ThinkingIndicatorProps {
   isThinking: boolean;
@@ -51,7 +51,6 @@ export function ThinkingIndicator({ isThinking, thinkingTime, modelName }: Think
   if (isThinking) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Brain className="h-4 w-4 animate-pulse text-primary" />
         <span className="font-medium">Думаю</span>
         <div className="flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5" />
