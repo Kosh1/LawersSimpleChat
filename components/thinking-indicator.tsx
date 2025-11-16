@@ -40,14 +40,8 @@ export function ThinkingIndicator({ isThinking, thinkingTime, modelName }: Think
   if (thinkingTime && !isThinking) {
     return (
       <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-        <Brain className="h-3.5 w-3.5" />
         <span>
           Я подумал {formatTime(thinkingTime)}
-          {modelName && (
-            <span className="ml-1 opacity-70">
-              ({modelName})
-            </span>
-          )}
         </span>
       </div>
     );
