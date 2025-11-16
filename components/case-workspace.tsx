@@ -420,7 +420,7 @@ export function CaseWorkspace({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="absolute -right-2 top-0 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                            className="absolute -right-10 top-0 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
                             onClick={() => onExportMessage(index)}
                             title="Скачать ответ в формате DOCX"
                           >
