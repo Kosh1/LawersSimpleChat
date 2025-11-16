@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase() as any;
+    const supabase = await getSupabase();
 
     // Fetch all messages for this session
     const { data, error } = await supabase
