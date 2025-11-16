@@ -1153,6 +1153,7 @@ export function ChatPageClient() {
       isThinking={isThinking}
       isUploadingDocument={isUploadingDocument}
       isDocumentsLoading={isDocumentsLoading}
+      isLoadingChats={isLoadingChatsFromDB}
       onBack={handleBackToSelection}
       onSelectSession={handleSelectSession}
       onNewChat={handleNewChat}

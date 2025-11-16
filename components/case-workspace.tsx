@@ -48,6 +48,7 @@ interface CaseWorkspaceProps {
   isThinking: boolean;
   isUploadingDocument: boolean;
   isDocumentsLoading: boolean;
+  isLoadingChats: boolean;
   onBack: () => void;
   onSelectSession: (sessionId: string) => void;
   onNewChat: () => void;
@@ -67,6 +68,7 @@ export function CaseWorkspace({
   isThinking,
   isUploadingDocument,
   isDocumentsLoading,
+  isLoadingChats,
   onBack,
   onSelectSession,
   onNewChat,
@@ -163,7 +165,19 @@ export function CaseWorkspace({
               <div className="flex flex-col">
                 <span className="text-sm font-semibold leading-tight">{project.name}</span>
                 <span className="hidden text-xs text-muted-foreground sm:block">
-                  {project.documents.length} документов · {sessions.length} чатов
+                  {isDocumentsLoading ? (
+                    <>
+                      <Loader2 className="inline h-3 w-3 animate-spin" /> документов
+                    </>
+                  ) : (
+                    `${project.documents.length} документов`
+                  )} · {isLoadingChats ? (
+                    <>
+                      <Loader2 className="inline h-3 w-3 animate-spin" /> чатов
+                    </>
+                  ) : (
+                    `${sessions.length} чатов`
+                  )}
                 </span>
               </div>
             </div>
@@ -238,6 +252,10 @@ export function CaseWorkspace({
           {sidebarView === 'chats' && (
             <>
               <div className="border-b p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Чаты проекта</h3>
+                  {isLoadingChats && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                </div>
                 <Button onClick={onNewChat} variant="secondary" className="w-full gap-2">
                   <Plus className="h-4 w-4" />
                   Новый чат
@@ -246,7 +264,15 @@ export function CaseWorkspace({
               <div className="flex-1 overflow-hidden p-2">
                 <ScrollArea className="h-full">
                   <div className="space-y-1 pb-4">
-                    {sortedSessions.length === 0 ? (
+                    {isLoadingChats ? (
+                      <div className="rounded-lg border border-dashed px-4 py-8 text-center">
+                        <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground">Загрузка чатов...</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Получаем историю разговоров
+                        </p>
+                      </div>
+                    ) : sortedSessions.length === 0 ? (
                       <div className="rounded-lg border border-dashed px-4 py-8 text-center">
                         <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
                         <p className="mt-2 text-sm text-muted-foreground">Нет чатов</p>
@@ -316,7 +342,15 @@ export function CaseWorkspace({
               <div className="flex-1 overflow-hidden p-2">
                 <ScrollArea className="h-full">
                   <div className="space-y-2 pb-4">
-                    {project.documents.length === 0 ? (
+                    {isDocumentsLoading ? (
+                      <div className="rounded-lg border border-dashed px-4 py-8 text-center">
+                        <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground">Загрузка документов...</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Получаем прикрепленные файлы
+                        </p>
+                      </div>
+                    ) : project.documents.length === 0 ? (
                       <div className="rounded-lg border border-dashed px-4 py-8 text-center">
                         <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
                         <p className="mt-2 text-sm text-muted-foreground">Нет документов</p>
@@ -373,7 +407,18 @@ export function CaseWorkspace({
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full">
               <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-6">
-                {activeSession && activeSession.messages.length === 0 && !isLoading && (
+                {isLoadingChats && !activeSession ? (
+                  <div className="mt-10 text-center text-muted-foreground">
+                    <div className="mx-auto mb-4 rounded-full bg-muted p-6 w-fit">
+                      <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-foreground">Загрузка чатов...</h2>
+                    <p className="mt-2 text-sm">
+                      Получаем вашу историю разговоров
+                      <br />Подождите немного
+                    </p>
+                  </div>
+                ) : activeSession && activeSession.messages.length === 0 && !isLoading && (
                   <div className="mt-10 text-center text-muted-foreground">
                     <div className="mx-auto mb-4 rounded-full bg-muted p-6 w-fit">
                       <Bot className="h-12 w-12 text-muted-foreground" />
@@ -471,7 +516,7 @@ export function CaseWorkspace({
                 onKeyDown={handleInputKeyDown}
                 placeholder="Опишите ситуацию, вопрос или запрос к защитнику…"
                 className="min-h-[100px] resize-none"
-                disabled={isLoading}
+                disabled={isLoading || isLoadingChats}
               />
               <div className="flex items-center justify-between gap-3">
                 <Button
@@ -490,16 +535,16 @@ export function CaseWorkspace({
                 </Button>
               <Button 
                 type="submit" 
-                disabled={isLoading || isUploadingDocument || !input.trim()} 
+                disabled={isLoading || isUploadingDocument || isLoadingChats || !input.trim()} 
                 variant="secondary"
                 className="gap-2"
               >
-                {isLoading ? (
+                {isLoading || isLoadingChats ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
-                Отправить
+                {isLoadingChats ? "Загрузка..." : "Отправить"}
               </Button>
               </div>
             </form>
