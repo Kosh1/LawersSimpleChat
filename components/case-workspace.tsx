@@ -14,7 +14,6 @@ import {
   Bot,
   Download,
   FileText,
-  FolderOpen,
   Loader2,
   Menu,
   MessageSquare,
@@ -78,8 +77,8 @@ export function CaseWorkspace({
   onExportMessage,
 }: CaseWorkspaceProps) {
   const { toast } = useToast();
-  const [isDocumentsPanelOpen, setIsDocumentsPanelOpen] = useState(true);
-  const [isChatListOpen, setIsChatListOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarView, setSidebarView] = useState<'chats' | 'documents'>('chats');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -151,11 +150,11 @@ export function CaseWorkspace({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsChatListOpen(true)}
+              onClick={() => setIsSidebarOpen(true)}
               className="md:hidden"
             >
               <Menu className="h-5 w-5" />
-              <span className="sr-only">Открыть список чатов</span>
+              <span className="sr-only">Открыть меню</span>
             </Button>
             <div className="flex items-center gap-2">
               <div className="hidden rounded-lg bg-muted p-1.5 sm:block">
@@ -170,97 +169,210 @@ export function CaseWorkspace({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsDocumentsPanelOpen(!isDocumentsPanelOpen)}
-              className="lg:hidden"
-            >
-              <FolderOpen className="h-5 w-5" />
-              <span className="sr-only">Переключить панель документов</span>
-            </Button>
             <ThemeToggle />
           </div>
         </div>
       </header>
 
-      {/* Main Content - Three Columns */}
+      {/* Main Content - Two Columns */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Column - Chats */}
+        {/* Left Sidebar - Chats & Documents with Toggle */}
         <aside
           className={cn(
             "fixed inset-y-0 left-0 z-40 flex w-80 flex-col border-r bg-muted/30 transition-transform duration-300 md:static md:translate-x-0",
-            isChatListOpen ? "translate-x-0" : "-translate-x-full",
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
+          {/* Mobile Header */}
           <div className="flex items-center justify-between border-b p-4 md:hidden">
-            <h2 className="text-sm font-semibold">Чаты</h2>
+            <h2 className="text-sm font-semibold">
+              {sidebarView === 'chats' ? 'Чаты' : 'Документы'}
+            </h2>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsChatListOpen(false)}
+              onClick={() => setIsSidebarOpen(false)}
             >
               <X className="h-5 w-5" />
-              <span className="sr-only">Закрыть список чатов</span>
+              <span className="sr-only">Закрыть панель</span>
             </Button>
           </div>
-          <div className="border-b p-4">
-            <Button onClick={onNewChat} variant="secondary" className="w-full gap-2">
-              <Plus className="h-4 w-4" />
-              Новый чат
-            </Button>
-          </div>
-          <div className="flex-1 overflow-hidden p-2">
-            <ScrollArea className="h-full">
-              <div className="space-y-1 pb-4">
-                {sortedSessions.length === 0 ? (
-                  <div className="rounded-lg border border-dashed px-4 py-8 text-center">
-                    <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
-                    <p className="mt-2 text-sm text-muted-foreground">Нет чатов</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Создайте первый чат</p>
-                  </div>
-                ) : (
-                  sortedSessions.map((session) => (
-                    <button
-                      key={session.id}
-                      onClick={() => {
-                        onSelectSession(session.id);
-                        setIsChatListOpen(false);
-                      }}
-                      className={cn(
-                        "flex w-full flex-col items-start rounded-lg px-3 py-3 text-left transition-all hover:bg-muted",
-                        session.id === activeSessionId
-                          ? "bg-muted shadow-sm"
-                          : "bg-transparent",
-                      )}
-                    >
-                      <div className="flex w-full items-center gap-2">
-                        <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                        <span className="flex-1 truncate text-sm font-medium">
-                          {session.title || "Новый чат"}
-                        </span>
-                      </div>
-                      <span className="ml-6 mt-1 text-xs text-muted-foreground">
-                        {new Date(session.createdAt).toLocaleString("ru-RU", {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </button>
-                  ))
+
+          {/* Tab Switcher */}
+          <div className="border-b bg-background/50">
+            <div className="flex">
+              <button
+                onClick={() => setSidebarView('chats')}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all",
+                  sidebarView === 'chats'
+                    ? "border-b-2 border-primary text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
-              </div>
-            </ScrollArea>
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>Чаты</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                  {sessions.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setSidebarView('documents')}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all",
+                  sidebarView === 'documents'
+                    ? "border-b-2 border-primary text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <FileText className="h-4 w-4" />
+                <span>Документы</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                  {project.documents.length}
+                </span>
+              </button>
+            </div>
           </div>
+
+          {/* Chats View */}
+          {sidebarView === 'chats' && (
+            <>
+              <div className="border-b p-4">
+                <Button onClick={onNewChat} variant="secondary" className="w-full gap-2">
+                  <Plus className="h-4 w-4" />
+                  Новый чат
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden p-2">
+                <ScrollArea className="h-full">
+                  <div className="space-y-1 pb-4">
+                    {sortedSessions.length === 0 ? (
+                      <div className="rounded-lg border border-dashed px-4 py-8 text-center">
+                        <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground">Нет чатов</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Создайте первый чат</p>
+                      </div>
+                    ) : (
+                      sortedSessions.map((session) => (
+                        <button
+                          key={session.id}
+                          onClick={() => {
+                            onSelectSession(session.id);
+                            setIsSidebarOpen(false);
+                          }}
+                          className={cn(
+                            "flex w-full flex-col items-start rounded-lg px-3 py-3 text-left transition-all hover:bg-muted",
+                            session.id === activeSessionId
+                              ? "bg-muted shadow-sm"
+                              : "bg-transparent",
+                          )}
+                        >
+                          <div className="flex w-full items-center gap-2">
+                            <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                            <span className="flex-1 truncate text-sm font-medium">
+                              {session.title || "Новый чат"}
+                            </span>
+                          </div>
+                          <span className="ml-6 mt-1 text-xs text-muted-foreground">
+                            {new Date(session.createdAt).toLocaleString("ru-RU", {
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+            </>
+          )}
+
+          {/* Documents View */}
+          {sidebarView === 'documents' && (
+            <>
+              <div className="border-b p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Документы проекта</h3>
+                  {isDocumentsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                </div>
+                <Button
+                  onClick={handleAttachButtonClick}
+                  disabled={isUploadingDocument}
+                  variant="outline"
+                  className="w-full gap-2"
+                  size="sm"
+                >
+                  {isUploadingDocument ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                  Загрузить документ
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden p-2">
+                <ScrollArea className="h-full">
+                  <div className="space-y-2 pb-4">
+                    {project.documents.length === 0 ? (
+                      <div className="rounded-lg border border-dashed px-4 py-8 text-center">
+                        <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground">Нет документов</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Загрузите документы для работы
+                        </p>
+                      </div>
+                    ) : (
+                      project.documents.map((document) => (
+                        <div
+                          key={document.id}
+                          className="group rounded-lg border bg-card p-3 transition-all hover:shadow-sm"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="rounded-md bg-primary/10 p-2 text-primary">
+                              <FileText className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="mb-1 truncate text-sm font-medium leading-tight">
+                                {document.name}
+                              </div>
+                              <div className="space-y-0.5 text-xs text-muted-foreground">
+                                <div>{formatBytes(document.size)}</div>
+                                <div>
+                                  {new Date(document.uploadedAt).toLocaleDateString("ru-RU")}
+                                </div>
+                                <div className="text-xs">{formatStrategy(document.strategy)}</div>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                              onClick={() => onRemoveDocument(document.id)}
+                              disabled={isUploadingDocument || isDocumentsLoading}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Удалить</span>
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+            </>
+          )}
         </aside>
 
-        {/* Center Column - Chat Messages */}
+        {/* Center Column - Chat Messages (Expanded) */}
         <main className="flex flex-1 flex-col">
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full">
-              <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+              <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-6">
                 {activeSession && activeSession.messages.length === 0 && !isLoading && (
                   <div className="mt-10 text-center text-muted-foreground">
                     <div className="mx-auto mb-4 rounded-full bg-muted p-6 w-fit">
@@ -343,7 +455,7 @@ export function CaseWorkspace({
 
           {/* Message Input */}
           <div className="border-t bg-background p-4">
-            <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl flex-col gap-3">
+            <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-4xl flex-col gap-3">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -393,114 +505,15 @@ export function CaseWorkspace({
             </form>
           </div>
         </main>
-
-        {/* Right Column - Documents */}
-        <aside
-          className={cn(
-            "fixed inset-y-0 right-0 z-30 flex w-80 flex-col border-l bg-muted/30 transition-transform duration-300 lg:static lg:translate-x-0",
-            isDocumentsPanelOpen ? "translate-x-0" : "translate-x-full",
-          )}
-        >
-          <div className="flex items-center justify-between border-b p-4 lg:hidden">
-            <h3 className="text-sm font-semibold">Документы</h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsDocumentsPanelOpen(false)}
-            >
-              <X className="h-5 w-5" />
-              <span className="sr-only">Закрыть панель документов</span>
-            </Button>
-          </div>
-          <div className="border-b p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Документы</h3>
-              {isDocumentsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            </div>
-            <Button
-              onClick={handleAttachButtonClick}
-              disabled={isUploadingDocument}
-              variant="outline"
-              className="w-full gap-2"
-              size="sm"
-            >
-              {isUploadingDocument ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4" />
-              )}
-              Загрузить документ
-            </Button>
-          </div>
-          <div className="flex-1 overflow-hidden p-2">
-            <ScrollArea className="h-full">
-              <div className="space-y-2 pb-4">
-                {project.documents.length === 0 ? (
-                  <div className="rounded-lg border border-dashed px-4 py-8 text-center">
-                    <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
-                    <p className="mt-2 text-sm text-muted-foreground">Нет документов</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Загрузите документы для работы
-                    </p>
-                  </div>
-                ) : (
-                  project.documents.map((document) => (
-                    <div
-                      key={document.id}
-                      className="group rounded-lg border bg-card p-3 transition-all hover:shadow-sm"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-md bg-primary/10 p-2 text-primary">
-                          <FileText className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="mb-1 truncate text-sm font-medium leading-tight">
-                            {document.name}
-                          </div>
-                          <div className="space-y-0.5 text-xs text-muted-foreground">
-                            <div>{formatBytes(document.size)}</div>
-                            <div>
-                              {new Date(document.uploadedAt).toLocaleDateString("ru-RU")}
-                            </div>
-                            <div className="text-xs">{formatStrategy(document.strategy)}</div>
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-                          onClick={() => onRemoveDocument(document.id)}
-                          disabled={isUploadingDocument || isDocumentsLoading}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Удалить</span>
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-        </aside>
       </div>
 
-      {/* Overlays for mobile panels */}
-      {isChatListOpen && (
+      {/* Overlay for mobile sidebar */}
+      {isSidebarOpen && (
         <button
           type="button"
-          onClick={() => setIsChatListOpen(false)}
+          onClick={() => setIsSidebarOpen(false)}
           className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden"
-          aria-label="Закрыть список чатов"
-        />
-      )}
-      {isDocumentsPanelOpen && (
-        <button
-          type="button"
-          onClick={() => setIsDocumentsPanelOpen(false)}
-          className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm lg:hidden"
-          aria-label="Закрыть панель документов"
+          aria-label="Закрыть панель"
         />
       )}
     </div>
