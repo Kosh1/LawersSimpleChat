@@ -19,6 +19,9 @@ export function AuthForm() {
   const router = useRouter();
   const { toast } = useToast();
 
+  // Check if form is valid for submission
+  const isFormValid = email.trim() !== "" && password.trim() !== "" && password.length >= 6;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -133,8 +136,8 @@ export function AuthForm() {
           <CardFooter className="flex flex-col space-y-4">
             <Button
               type="submit"
-              className="w-full"
-              disabled={loading}
+              className="w-full transition-all duration-200"
+              disabled={loading || !isFormValid}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isSignUp ? "Зарегистрироваться" : "Войти"}
