@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path?: string[] } }
+  { params }: { params: Promise<{ path?: string[] }> }
 ) {
-  const path = params.path ? params.path.join('/') : '';
+  const resolvedParams = await params;
+  const path = resolvedParams.path ? resolvedParams.path.join('/') : '';
   const targetUrl = `https://j-helper-usefullpage-nais54ukg-kosh1s-projects.vercel.app/usefull/${path}`;
   
   // Копируем query параметры
@@ -76,9 +77,10 @@ export async function GET(
 // Поддержка POST запросов
 export async function POST(
   request: NextRequest,
-  { params }: { params: { path?: string[] } }
+  { params }: { params: Promise<{ path?: string[] }> }
 ) {
-  const path = params.path ? params.path.join('/') : '';
+  const resolvedParams = await params;
+  const path = resolvedParams.path ? resolvedParams.path.join('/') : '';
   const targetUrl = `https://j-helper-usefullpage-nais54ukg-kosh1s-projects.vercel.app/usefull/${path}`;
   
   const searchParams = request.nextUrl.searchParams.toString();
