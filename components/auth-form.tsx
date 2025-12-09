@@ -11,13 +11,15 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 export function AuthForm() {
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Ссылка на Calendly для записи на консультацию
+  const CALENDLY_URL = "https://calendly.com/glebtuzov/30-minute-call-with-tuzov-gleb-opencv?month=2025-12";
 
   // Check if form is valid for submission
   const isFormValid = email.trim() !== "" && password.trim() !== "" && password.length >= 6;
@@ -46,40 +48,24 @@ export function AuthForm() {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await signUp(email, password);
-        
-        if (error) {
-          throw error;
-        }
-
-        toast({
-          title: "Регистрация успешна!",
-          description: "Проверьте email для подтверждения аккаунта",
-        });
-        
-        // После регистрации можно сразу войти
-        setIsSignUp(false);
-      } else {
-        const { error } = await signIn(email, password);
-        
-        if (error) {
-          throw error;
-        }
-
-        toast({
-          title: "Вход выполнен",
-          description: "Добро пожаловать!",
-        });
-
-        router.push("/");
-        router.refresh();
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        throw error;
       }
+
+      toast({
+        title: "Вход выполнен",
+        description: "Добро пожаловать!",
+      });
+
+      router.push("/");
+      router.refresh();
     } catch (error: any) {
       console.error("Auth error:", error);
       toast({
         variant: "destructive",
-        title: isSignUp ? "Ошибка регистрации" : "Ошибка входа",
+        title: "Ошибка входа",
         description: error.message || "Проверьте введенные данные и попробуйте снова",
       });
     } finally {
@@ -87,17 +73,19 @@ export function AuthForm() {
     }
   };
 
+  const handleCalendlyClick = () => {
+    window.open(CALENDLY_URL, '_blank');
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">
-            {isSignUp ? "Создать аккаунт" : "Войти"}
+            Войти
           </CardTitle>
           <CardDescription>
-            {isSignUp
-              ? "Введите email и пароль для регистрации"
-              : "Введите email и пароль для входа"}
+            Введите email и пароль для входа
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -126,11 +114,6 @@ export function AuthForm() {
                 required
                 minLength={6}
               />
-              {isSignUp && (
-                <p className="text-xs text-muted-foreground">
-                  Минимум 6 символов
-                </p>
-              )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
@@ -140,19 +123,22 @@ export function AuthForm() {
               disabled={loading || !isFormValid}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSignUp ? "Зарегистрироваться" : "Войти"}
+              Войти
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-              disabled={loading}
-            >
-              {isSignUp
-                ? "Уже есть аккаунт? Войти"
-                : "Нет аккаунта? Зарегистрироваться"}
-            </Button>
+            <div className="text-center space-y-2 w-full">
+              <p className="text-sm text-muted-foreground">
+                Нет доступа к системе?
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleCalendlyClick}
+                disabled={loading}
+              >
+                Записаться на консультацию
+              </Button>
+            </div>
           </CardFooter>
         </form>
       </Card>
