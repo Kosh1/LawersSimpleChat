@@ -30,16 +30,30 @@ export async function GET(
     if (contentType.includes('text/html') || contentType.includes('text/css') || contentType.includes('application/javascript')) {
       body = await response.text();
       
-      // Заменяем абсолютные ссылки на относительные
+      // Заменяем полный домен на пустую строку (чтобы использовались относительные пути)
       body = body.replace(
-        /https:\/\/j-helper-usefullpage-nais54ukg-kosh1s-projects\.vercel\.app\/usefull/g,
-        '/usefull'
+        /https:\/\/j-helper-usefullpage-nais54ukg-kosh1s-projects\.vercel\.app/g,
+        ''
       );
       
-      // Также заменяем ссылки без https (на случай если есть protocol-relative URLs)
+      // Также заменяем protocol-relative URLs
       body = body.replace(
-        /\/\/j-helper-usefullpage-nais54ukg-kosh1s-projects\.vercel\.app\/usefull/g,
-        '/usefull'
+        /\/\/j-helper-usefullpage-nais54ukg-kosh1s-projects\.vercel\.app/g,
+        ''
+      );
+      
+      // Заменяем возможные строковые литералы в JavaScript с этим доменом
+      body = body.replace(
+        /'https:\/\/j-helper-usefullpage-nais54ukg-kosh1s-projects\.vercel\.app'/g,
+        "''"
+      );
+      body = body.replace(
+        /"https:\/\/j-helper-usefullpage-nais54ukg-kosh1s-projects\.vercel\.app"/g,
+        '""'
+      );
+      body = body.replace(
+        /`https:\/\/j-helper-usefullpage-nais54ukg-kosh1s-projects\.vercel\.app`/g,
+        '``'
       );
     } else {
       // Для бинарного контента (изображения, шрифты и т.д.)
