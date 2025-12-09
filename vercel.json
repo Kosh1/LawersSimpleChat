@@ -3,11 +3,5 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "regions": ["lhr1"],
-  "rewrites": [
-    {
-      "source": "/usefull/:path*",
-      "destination": "https://j-helper-usefullpage-nais54ukg-kosh1s-projects.vercel.app/usefull/:path*"
-    }
-  ]
+  "regions": ["lhr1"]
 }
