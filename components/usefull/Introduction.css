@@ -1,0 +1,86 @@
+.introduction {
+  padding: 120px 0 60px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  margin-top: 0;
+}
+
+.introduction-content {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.introduction-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 2rem;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.introduction-text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #4a4a4a;
+}
+
+.lead {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #2c3e50;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.introduction-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin-top: 3rem;
+}
+
+.intro-block {
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 8px;
+  border-left: 4px solid #4a90e2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.intro-block h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.75rem;
+}
+
+.intro-block p {
+  margin: 0;
+  color: #555;
+  line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+  .introduction {
+    padding: 100px 0 40px;
+  }
+  
+  .introduction-title {
+    font-size: 2rem;
+  }
+  
+  .lead {
+    font-size: 1.1rem;
+  }
+  
+  .intro-block h2 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .introduction {
+    padding-top: 90px;
+  }
+}
+
