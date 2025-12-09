@@ -127,7 +127,7 @@ export function AuthForm() {
             </Button>
             <div className="text-center space-y-2 w-full">
               <p className="text-sm text-muted-foreground">
-                Нет доступа к системе?
+                Регистрация доступна только после звонка
               </p>
               <Button
                 type="button"
@@ -136,7 +136,7 @@ export function AuthForm() {
                 onClick={handleCalendlyClick}
                 disabled={loading}
               >
-                Записаться на консультацию
+                Записаться на звонок
               </Button>
             </div>
           </CardFooter>
