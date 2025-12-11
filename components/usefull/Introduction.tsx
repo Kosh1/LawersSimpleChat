@@ -24,7 +24,7 @@ const Introduction = () => {
               Анализируйте документы, готовьте заключения, работайте с делами эффективнее.
             </p>
             
-            <div className="cta-section" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+            <div className="cta-section" style={{ marginTop: '2rem', marginBottom: '2rem', textAlign: 'center' }}>
               <button 
                 onClick={handleGetStarted}
                 className="cta-button bg-primary hover:opacity-90 text-primary-foreground"
@@ -49,9 +49,6 @@ const Introduction = () => {
               >
                 Записаться на звонок
               </button>
-              <p style={{ marginTop: '1rem', fontSize: '0.95rem', color: 'hsl(var(--muted-foreground))' }}>
-                Доступ к системе предоставляется после консультации
-              </p>
             </div>
             
             <div className="introduction-sections">
