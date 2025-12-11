@@ -7,12 +7,12 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Legal Assistant — чат с адвокатом",
-  description: "Общайтесь с цифровым адвокатом: стратегия защиты, срочные действия, подготовка к допросу и анализ рисков на русском языке.",
-  keywords: "уголовный адвокат, стратегия защиты, чат с юристом, налоговые риски, подготовка к допросу",
-  authors: [{ name: "AI Legal Assistant" }],
-  creator: "AI Legal Assistant",
-  publisher: "AI Legal Assistant",
+  title: "jHelper — ИИ-помощник для юристов",
+  description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
+  keywords: "юридический ИИ, помощник юриста, анализ документов, подготовка исков, работа с договорами, искусственный интеллект для юристов",
+  authors: [{ name: "jHelper" }],
+  creator: "jHelper",
+  publisher: "jHelper",
   formatDetection: {
     email: false,
     address: false,
@@ -23,18 +23,18 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "AI Legal Assistant — чат с адвокатом",
-    description: "Общайтесь с цифровым адвокатом: стратегия защиты, срочные действия, подготовка к допросу и анализ рисков на русском языке.",
+    title: "jHelper — ИИ-помощник для юристов",
+    description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
     url: '/',
-    siteName: 'AI Legal Assistant UK',
+    siteName: 'jHelper',
     type: "website",
-    locale: "en_GB",
-    countryName: "United Kingdom",
+    locale: "ru_RU",
+    countryName: "Russia",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Legal Assistant — чат с адвокатом",
-    description: "Общайтесь с цифровым адвокатом: стратегия защиты, срочные действия, подготовка к допросу и анализ рисков на русском языке.",
+    title: "jHelper — ИИ-помощник для юристов",
+    description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
   },
   robots: {
     index: true,
