@@ -206,11 +206,13 @@ export async function generateAIResponse(
     const openRouterClient = createOpenRouterClient();
     if (openRouterClient) {
       try {
-        console.log(`[AI Service] Attempting OpenRouter with model: ${selectedModel}`);
+        // TypeScript type narrowing для исключения 'thinking'
+        const openRouterModel = selectedModel as Exclude<SelectedModel, 'thinking'>;
+        console.log(`[AI Service] Attempting OpenRouter with model: ${openRouterModel}`);
         const result = await generateWithOpenRouter(
           openRouterClient,
           messages,
-          selectedModel
+          openRouterModel
         );
         
         const responseTimeMs = Date.now() - startTime;
