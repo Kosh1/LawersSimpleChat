@@ -108,6 +108,13 @@ function getErrorDescription(error: any): string {
 }
 
 /**
+ * Type guard для проверки, что модель не является 'thinking'
+ */
+function isOpenRouterModel(model: SelectedModel | undefined): model is Exclude<SelectedModel, 'thinking'> {
+  return model !== undefined && model !== 'thinking';
+}
+
+/**
  * Основная функция генерации ответа с автоматическим fallback
  * Пробует OpenRouter сначала (если доступен и выбран), затем fallback на OpenAI
  */
@@ -202,17 +209,15 @@ export async function generateAIResponse(
   }
   
   // Если выбран OpenRouter и он доступен - пробуем сначала его
-  if (selectedModel && selectedModel !== 'thinking' && isOpenRouterAvailable()) {
+  if (isOpenRouterModel(selectedModel) && isOpenRouterAvailable()) {
     const openRouterClient = createOpenRouterClient();
     if (openRouterClient) {
       try {
-        // TypeScript type narrowing для исключения 'thinking'
-        const openRouterModel = selectedModel as Exclude<SelectedModel, 'thinking'>;
-        console.log(`[AI Service] Attempting OpenRouter with model: ${openRouterModel}`);
+        console.log(`[AI Service] Attempting OpenRouter with model: ${selectedModel}`);
         const result = await generateWithOpenRouter(
           openRouterClient,
           messages,
-          openRouterModel
+          selectedModel
         );
         
         const responseTimeMs = Date.now() - startTime;
