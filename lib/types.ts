@@ -92,7 +92,7 @@ export interface AIResponseMetadata {
 /**
  * Доступные модели для выбора пользователем
  */
-export type SelectedModel = 'openai' | 'anthropic' | 'gemini';
+export type SelectedModel = 'openai' | 'anthropic' | 'gemini' | 'thinking';
 
 /**
  * Провайдер AI (OpenRouter или OpenAI)

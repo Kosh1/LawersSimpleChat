@@ -120,8 +120,89 @@ export async function generateAIResponse(
 ): Promise<AIResponse> {
   const startTime = Date.now();
   
+  // Если выбрана модель "thinking" - используем OpenAI напрямую с reasoning моделью
+  if (selectedModel === 'thinking') {
+    console.log(`[AI Service] Using Thinking model (OpenAI reasoning)`);
+    const primaryModel = 'reasoning'; // Всегда используем reasoning для thinking
+    const fallbackModels = getFallbackModels(primaryModel);
+    const modelsToTry: ModelName[] = [primaryModel, ...fallbackModels];
+    
+    let lastError: any = null;
+    let fallbackOccurred = false;
+    let fallbackReason: string | undefined = undefined;
+    
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const modelName = modelsToTry[i];
+      const config = getModelConfig(modelName);
+      
+      console.log(`[AI Service] Attempting model: ${modelName} (${i + 1}/${modelsToTry.length})`);
+      
+      try {
+        let adaptedMessages = messages;
+        
+        if (config.useDeveloperMessage || !config.supportsSystemMessages) {
+          adaptedMessages = messages.map(msg => {
+            if (msg.role === 'system') {
+              return {
+                role: 'developer' as any,
+                content: msg.content,
+              };
+            }
+            return msg;
+          });
+        }
+        
+        const additionalParams: any = {};
+        if (config.reasoningEffort) {
+          additionalParams.reasoning_effort = config.reasoningEffort;
+        }
+        if (config.verbosity) {
+          additionalParams.verbosity = config.verbosity;
+        }
+        if (config.useMaxCompletionTokens) {
+          additionalParams.useMaxCompletionTokens = true;
+        }
+        
+        const result: ChunkedResponse = await generateWithChunking(
+          openai,
+          config.name,
+          adaptedMessages,
+          config.maxTokens,
+          config.temperature,
+          additionalParams
+        );
+        
+        const responseTimeMs = Date.now() - startTime;
+        
+        return {
+          content: result.content,
+          modelUsed: 'thinking',
+          fallbackOccurred,
+          fallbackReason,
+          chunksCount: result.chunksCount,
+          totalTokens: result.totalTokens,
+          finishReason: result.finishReason,
+          responseTimeMs,
+          provider: 'openai',
+        };
+      } catch (error: any) {
+        console.error(`[AI Service] Error with model ${modelName}:`, error);
+        lastError = error;
+        
+        if (i < modelsToTry.length - 1 && shouldFallback(error)) {
+          fallbackOccurred = true;
+          fallbackReason = getErrorDescription(error);
+          continue;
+        }
+        throw error;
+      }
+    }
+    
+    throw lastError || new Error('All models failed to generate response');
+  }
+  
   // Если выбран OpenRouter и он доступен - пробуем сначала его
-  if (selectedModel && isOpenRouterAvailable()) {
+  if (selectedModel && selectedModel !== 'thinking' && isOpenRouterAvailable()) {
     const openRouterClient = createOpenRouterClient();
     if (openRouterClient) {
       try {
@@ -264,9 +345,13 @@ export async function generateAIResponse(
 async function generateWithOpenRouter(
   openRouterClient: OpenAI,
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-  selectedModel: SelectedModel
+  selectedModel: Exclude<SelectedModel, 'thinking'>
 ): Promise<ChunkedResponse> {
   const config = getOpenRouterModelConfig(selectedModel);
+  
+  if (!config) {
+    throw new Error(`Model config not found for ${selectedModel}`);
+  }
   
   // Адаптируем messages для моделей с особыми требованиями
   let adaptedMessages = messages;

@@ -335,15 +335,15 @@ export function getFallbackModels(primaryModel: ModelName): ModelName[] {
  * Конфигурация моделей для OpenRouter
  * OpenRouter использует формат provider/model-name
  */
-export const OPENROUTER_MODEL_CONFIGS: Record<SelectedModel, ModelConfig> = {
+export const OPENROUTER_MODEL_CONFIGS: Record<Exclude<SelectedModel, 'thinking'>, ModelConfig> = {
   'openai': {
-    name: 'openai/gpt-4o', // Последняя модель OpenAI через OpenRouter
+    name: 'openai/gpt-4-turbo', // Последняя модель OpenAI через OpenRouter (gpt-4-turbo или gpt-4o-2024-11-20)
     maxTokens: 16000,
     contextWindow: 128000,
     temperature: 0.7,
     supportsSystemMessages: true,
     priority: 1,
-    description: 'OpenAI GPT-4o - последняя модель OpenAI',
+    description: 'OpenAI GPT-4 Turbo - последняя модель OpenAI',
   },
   'anthropic': {
     name: 'anthropic/claude-3.5-sonnet', // Последняя модель Anthropic через OpenRouter
@@ -355,22 +355,25 @@ export const OPENROUTER_MODEL_CONFIGS: Record<SelectedModel, ModelConfig> = {
     description: 'Anthropic Claude 3.5 Sonnet - последняя модель Anthropic',
   },
   'gemini': {
-    name: 'google/gemini-pro', // Модель Google через OpenRouter (или google/gemini-2.0-flash-exp если доступна)
+    name: 'google/gemini-pro-1.5', // Последняя модель Google через OpenRouter (gemini-pro-1.5 или gemini-2.0-flash-exp)
     maxTokens: 16000,
     contextWindow: 1000000, // Gemini имеет большое контекстное окно
     temperature: 0.7,
     supportsSystemMessages: true,
     priority: 1,
-    description: 'Google Gemini Pro - модель Google',
+    description: 'Google Gemini Pro 1.5 - последняя модель Google',
   },
 };
 
 /**
  * Получает конфигурацию модели OpenRouter по выбранной модели
  * @param selectedModel - выбранная модель пользователем
- * @returns конфигурация модели для OpenRouter
+ * @returns конфигурация модели для OpenRouter или null если это thinking модель
  */
-export function getOpenRouterModelConfig(selectedModel: SelectedModel): ModelConfig {
+export function getOpenRouterModelConfig(selectedModel: SelectedModel): ModelConfig | null {
+  if (selectedModel === 'thinking') {
+    return null; // Thinking модель использует OpenAI напрямую
+  }
   return OPENROUTER_MODEL_CONFIGS[selectedModel];
 }
 
@@ -390,9 +393,10 @@ export function getOpenRouterModelName(selectedModel: SelectedModel): string {
  */
 export function getModelDisplayName(selectedModel: SelectedModel): string {
   const displayNames: Record<SelectedModel, string> = {
-    'openai': 'GPT-4o',
+    'openai': 'GPT-4 Turbo',
     'anthropic': 'Claude 3.5 Sonnet',
-    'gemini': 'Gemini Pro',
+    'gemini': 'Gemini Pro 1.5',
+    'thinking': 'Thinking',
   };
   return displayNames[selectedModel];
 }

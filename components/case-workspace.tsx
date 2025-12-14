@@ -226,6 +226,12 @@ export function CaseWorkspace({
                 >
                   {getModelDisplayName('gemini')}
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onModelChange('thinking')}
+                  className={selectedModel === 'thinking' ? 'bg-accent' : ''}
+                >
+                  {getModelDisplayName('thinking')}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <ThemeToggle />
