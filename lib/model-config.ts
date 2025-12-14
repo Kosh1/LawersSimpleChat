@@ -379,10 +379,10 @@ export function getOpenRouterModelConfig(selectedModel: SelectedModel): ModelCon
 
 /**
  * Получает имя модели OpenRouter по выбранной модели
- * @param selectedModel - выбранная модель пользователем
+ * @param selectedModel - выбранная модель пользователем (не 'thinking')
  * @returns имя модели в формате OpenRouter (provider/model-name)
  */
-export function getOpenRouterModelName(selectedModel: SelectedModel): string {
+export function getOpenRouterModelName(selectedModel: Exclude<SelectedModel, 'thinking'>): string {
   return OPENROUTER_MODEL_CONFIGS[selectedModel].name;
 }
 
