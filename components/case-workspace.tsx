@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -458,9 +460,62 @@ export function CaseWorkspace({
                             />
                           </div>
                         )}
-                        <p className="whitespace-pre-wrap text-sm text-foreground/90">
-                          {message.content}
-                        </p>
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              h1: ({ children }) => <h1 className="text-xl font-bold mb-2 mt-4 first:mt-0">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-lg font-bold mb-2 mt-4 first:mt-0">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h3>,
+                              h4: ({ children }) => <h4 className="text-sm font-bold mb-2 mt-3 first:mt-0">{children}</h4>,
+                              h5: ({ children }) => <h5 className="text-sm font-semibold mb-2 mt-2 first:mt-0">{children}</h5>,
+                              h6: ({ children }) => <h6 className="text-sm font-semibold mb-2 mt-2 first:mt-0">{children}</h6>,
+                              ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1 ml-4">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1 ml-4">{children}</ol>,
+                              li: ({ children }) => <li className="text-sm">{children}</li>,
+                              blockquote: ({ children }) => <blockquote className="border-l-4 border-muted-foreground/30 pl-4 italic my-2">{children}</blockquote>,
+                              code: ({ className, children, ...props }) => {
+                                const isInline = !className;
+                                if (isInline) {
+                                  return (
+                                    <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono" {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                }
+                                return (
+                                  <code className="block bg-muted p-3 rounded text-xs font-mono overflow-x-auto my-2" {...props}>
+                                    {children}
+                                  </code>
+                                );
+                              },
+                              pre: ({ children }) => <pre className="mb-2">{children}</pre>,
+                              strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                              a: ({ children, href }) => (
+                                <a href={href} className="text-primary underline hover:text-primary/80" target="_blank" rel="noopener noreferrer">
+                                  {children}
+                                </a>
+                              ),
+                              hr: () => <hr className="my-4 border-border" />,
+                              table: ({ children }) => (
+                                <div className="overflow-x-auto my-2">
+                                  <table className="min-w-full border-collapse border border-border">
+                                    {children}
+                                  </table>
+                                </div>
+                              ),
+                              thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
+                              tbody: ({ children }) => <tbody>{children}</tbody>,
+                              tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
+                              th: ({ children }) => <th className="border border-border px-2 py-1 text-left font-semibold text-sm">{children}</th>,
+                              td: ({ children }) => <td className="border border-border px-2 py-1 text-sm">{children}</td>,
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
                         {onExportMessage && (
                           <Button
                             variant="ghost"
