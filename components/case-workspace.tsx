@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { ThinkingIndicator } from "@/components/thinking-indicator";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, Project, SessionDocument, SelectedModel } from "@/lib/types";
+import { getModelDisplayName } from "@/lib/model-config";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -201,9 +202,7 @@ export function CaseWorkspace({
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="hidden sm:flex">
                   <span className="text-xs">
-                    {selectedModel === 'openai' && 'OpenAI'}
-                    {selectedModel === 'anthropic' && 'Anthropic'}
-                    {selectedModel === 'gemini' && 'Gemini'}
+                    {getModelDisplayName(selectedModel)}
                   </span>
                   <ChevronDown className="ml-2 h-3 w-3" />
                 </Button>
@@ -213,19 +212,19 @@ export function CaseWorkspace({
                   onClick={() => onModelChange('openai')}
                   className={selectedModel === 'openai' ? 'bg-accent' : ''}
                 >
-                  OpenAI
+                  {getModelDisplayName('openai')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onModelChange('anthropic')}
                   className={selectedModel === 'anthropic' ? 'bg-accent' : ''}
                 >
-                  Anthropic
+                  {getModelDisplayName('anthropic')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onModelChange('gemini')}
                   className={selectedModel === 'gemini' ? 'bg-accent' : ''}
                 >
-                  Gemini
+                  {getModelDisplayName('gemini')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

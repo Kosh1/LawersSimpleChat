@@ -383,3 +383,17 @@ export function getOpenRouterModelName(selectedModel: SelectedModel): string {
   return OPENROUTER_MODEL_CONFIGS[selectedModel].name;
 }
 
+/**
+ * Получает отображаемое название модели для UI
+ * @param selectedModel - выбранная модель пользователем
+ * @returns читаемое название модели
+ */
+export function getModelDisplayName(selectedModel: SelectedModel): string {
+  const displayNames: Record<SelectedModel, string> = {
+    'openai': 'GPT-4o',
+    'anthropic': 'Claude 3.5 Sonnet',
+    'gemini': 'Gemini Pro',
+  };
+  return displayNames[selectedModel];
+}
+
