@@ -177,3 +177,5 @@ Then open http://localhost:3000 in your browser.
 - Consider removing it if it's no longer needed
 - All authentication logic is handled on the client side using the `useAuth()` hook
 - The workspace redirect happens automatically with a smooth loading transition
+
+

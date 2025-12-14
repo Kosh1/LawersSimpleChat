@@ -85,7 +85,19 @@ export interface AIResponseMetadata {
   finishReason: string;
   /** Время генерации в миллисекундах */
   responseTimeMs: number;
+  /** Использованный провайдер (openrouter или openai) */
+  provider?: 'openrouter' | 'openai';
 }
+
+/**
+ * Доступные модели для выбора пользователем
+ */
+export type SelectedModel = 'openai' | 'anthropic' | 'gemini';
+
+/**
+ * Провайдер AI (OpenRouter или OpenAI)
+ */
+export type AIProvider = 'openrouter' | 'openai';
 
 // Supabase database types
 export interface Database {

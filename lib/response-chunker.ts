@@ -29,9 +29,10 @@ export interface ChunkedResponse {
 
 /**
  * Генерирует ответ с автоматическим chunking при необходимости
+ * Работает с OpenAI и OpenRouter клиентами (оба используют OpenAI-compatible API)
  * 
- * @param openai - инстанс OpenAI клиента
- * @param model - имя модели
+ * @param openai - инстанс OpenAI или OpenRouter клиента
+ * @param model - имя модели (для OpenRouter используйте формат provider/model-name)
  * @param messages - массив сообщений для контекста
  * @param maxTokens - максимальное количество токенов для одного ответа
  * @param temperature - температура генерации (undefined если модель не поддерживает)

@@ -39,6 +39,8 @@
  * Проверить доступные модели: https://platform.openai.com/playground
  */
 
+import type { SelectedModel } from './types';
+
 export type ModelName = 'primary' | 'reasoning' | 'fallback';
 
 export interface ModelConfig {
@@ -327,5 +329,57 @@ export function getFallbackModels(primaryModel: ModelName): ModelName[] {
       const configB = MODEL_CONFIGS[b];
       return configA.priority - configB.priority;
     });
+}
+
+/**
+ * Конфигурация моделей для OpenRouter
+ * OpenRouter использует формат provider/model-name
+ */
+export const OPENROUTER_MODEL_CONFIGS: Record<SelectedModel, ModelConfig> = {
+  'openai': {
+    name: 'openai/gpt-4o', // Последняя модель OpenAI через OpenRouter
+    maxTokens: 16000,
+    contextWindow: 128000,
+    temperature: 0.7,
+    supportsSystemMessages: true,
+    priority: 1,
+    description: 'OpenAI GPT-4o - последняя модель OpenAI',
+  },
+  'anthropic': {
+    name: 'anthropic/claude-3.5-sonnet', // Последняя модель Anthropic через OpenRouter
+    maxTokens: 16000,
+    contextWindow: 200000,
+    temperature: 0.7,
+    supportsSystemMessages: true,
+    priority: 1,
+    description: 'Anthropic Claude 3.5 Sonnet - последняя модель Anthropic',
+  },
+  'gemini': {
+    name: 'google/gemini-pro', // Модель Google через OpenRouter (или google/gemini-2.0-flash-exp если доступна)
+    maxTokens: 16000,
+    contextWindow: 1000000, // Gemini имеет большое контекстное окно
+    temperature: 0.7,
+    supportsSystemMessages: true,
+    priority: 1,
+    description: 'Google Gemini Pro - модель Google',
+  },
+};
+
+/**
+ * Получает конфигурацию модели OpenRouter по выбранной модели
+ * @param selectedModel - выбранная модель пользователем
+ * @returns конфигурация модели для OpenRouter
+ */
+export function getOpenRouterModelConfig(selectedModel: SelectedModel): ModelConfig {
+  return OPENROUTER_MODEL_CONFIGS[selectedModel];
+}
+
+/**
+ * Получает имя модели OpenRouter по выбранной модели
+ * @param selectedModel - выбранная модель пользователем
+ * @returns имя модели в формате OpenRouter (provider/model-name)
+ */
+export function getOpenRouterModelName(selectedModel: SelectedModel): string {
+  return OPENROUTER_MODEL_CONFIGS[selectedModel].name;
 }
 

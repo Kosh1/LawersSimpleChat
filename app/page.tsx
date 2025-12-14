@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import Header from '@/components/usefull/Header';
@@ -14,21 +14,15 @@ import '@/app/usefull/index.css';
 export default function HomePage() {
   const router = useRouter();
   const { user, loading } = useAuth();
-  const [shouldRedirect, setShouldRedirect] = useState(false);
 
+  // Fallback redirect in case middleware doesn't catch it
   useEffect(() => {
-    // If user is authenticated, redirect to workspace
     if (!loading && user) {
-      setShouldRedirect(true);
-      // Small delay to show loading state
-      const timer = setTimeout(() => {
-        router.push('/workspace');
-      }, 100);
-      return () => clearTimeout(timer);
+      router.replace('/workspace');
     }
   }, [user, loading, router]);
 
-  // Show loading while checking auth
+  // Show loading while checking auth (fallback)
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -40,8 +34,8 @@ export default function HomePage() {
     );
   }
 
-  // If redirecting to workspace
-  if (shouldRedirect) {
+  // If user is authenticated, show loading while redirecting (fallback)
+  if (user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">

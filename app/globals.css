@@ -59,3 +59,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Универсальный класс для информационных плашек с серыми границами и тенью */
+  .info-box {
+    @apply rounded-lg border border-border/60 bg-muted/30 text-card-foreground shadow-sm transition-all;
+  }
+  
+  .info-box-muted {
+    @apply rounded-lg border border-border/60 bg-muted/30 text-card-foreground shadow-sm transition-all;
+  }
+}

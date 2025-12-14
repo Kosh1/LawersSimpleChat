@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { CaseSelectionScreen } from "@/components/case-selection-screen";
 import { CaseWorkspace } from "@/components/case-workspace";
-import type { ChatMessage, Project, SessionDocument } from "@/lib/types";
+import type { ChatMessage, Project, SessionDocument, SelectedModel } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useExportMessage } from "@/hooks/use-export-message";
 import { useAuth } from "@/hooks/use-auth";
@@ -108,6 +108,7 @@ export function ChatPageClient() {
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [isLoadingChatsFromDB, setIsLoadingChatsFromDB] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<SelectedModel>('openai'); // Выбранная модель для OpenRouter
   const { toast } = useToast();
   const { exportMessage } = useExportMessage();
 
@@ -1007,6 +1008,7 @@ export function ChatPageClient() {
           documents: documentsForRequest,
           projectId: selectedProjectId,
           userId: user.id,
+          selectedModel, // Передаем выбранную модель для OpenRouter
         }),
       });
 
@@ -1102,7 +1104,7 @@ export function ChatPageClient() {
       setIsLoading(false);
       setIsThinking(false);
     }
-  }, [activeSession, input, isLoading, selectedProjectId, toast, user?.id, utmQuery]);
+  }, [activeSession, input, isLoading, selectedProjectId, selectedModel, toast, user?.id, utmQuery]);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -1154,6 +1156,8 @@ export function ChatPageClient() {
       isUploadingDocument={isUploadingDocument}
       isDocumentsLoading={isDocumentsLoading}
       isLoadingChats={isLoadingChatsFromDB}
+      selectedModel={selectedModel}
+      onModelChange={setSelectedModel}
       onBack={handleBackToSelection}
       onSelectSession={handleSelectSession}
       onNewChat={handleNewChat}

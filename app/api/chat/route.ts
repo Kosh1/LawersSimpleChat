@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@/lib/supabase/server';
 import { getUKLawyerPrompt } from '@/lib/prompts';
-import type { ChatMessage, ChatRequestDocument, UTMData, AIResponseMetadata } from '@/lib/types';
+import type { ChatMessage, ChatRequestDocument, UTMData, AIResponseMetadata, SelectedModel } from '@/lib/types';
 import { projectDocumentToSessionDocument } from '@/lib/projects';
 import { generateAIResponse } from '@/lib/ai-service';
 
@@ -19,12 +19,14 @@ export async function POST(req: NextRequest) {
       userId,
       documents,
       projectId,
+      selectedModel,
     }: {
       messages: ChatMessage[];
       sessionId?: string;
       userId?: string;
       documents?: ChatRequestDocument[];
       projectId?: string;
+      selectedModel?: SelectedModel;
     } = await req.json();
 
     if (!messages || messages.length === 0) {
@@ -89,10 +91,14 @@ export async function POST(req: NextRequest) {
     const lastUserMessage = messages[messages.length - 1]?.content || '';
 
     // --- AI Service call with automatic fallback and chunking ---
+    // OpenRouter будет использован первым, если selectedModel указан и OpenRouter доступен
+    // В противном случае используется OpenAI с fallback между моделями
     const aiResponse = await generateAIResponse(
       openai,
       formattedMessages,
-      lastUserMessage
+      lastUserMessage,
+      undefined, // forceModel - используем автоматический выбор
+      selectedModel // selectedModel для OpenRouter
     );
 
     const assistantMessage = aiResponse.content;
@@ -106,6 +112,7 @@ export async function POST(req: NextRequest) {
       totalTokens: aiResponse.totalTokens,
       finishReason: aiResponse.finishReason,
       responseTimeMs: aiResponse.responseTimeMs,
+      provider: aiResponse.provider, // Добавляем информацию о провайдере
     };
     
     console.log('AI Response metadata:', metadata);

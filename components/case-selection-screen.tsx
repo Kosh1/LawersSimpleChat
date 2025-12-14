@@ -120,14 +120,14 @@ export function CaseSelectionScreen({
 
       <main className="container flex-1 px-4 py-8">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div className="flex-1">
               <h2 className="text-3xl font-bold tracking-tight">Мои дела</h2>
               <p className="mt-2 text-muted-foreground">
                 Выберите дело для работы или создайте новое
               </p>
             </div>
-            <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2">
+            <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2 shrink-0">
               <FolderPlus className="h-5 w-5" />
               Создать новое дело
             </Button>
@@ -155,7 +155,7 @@ export function CaseSelectionScreen({
             </Card>
           ) : (
             <ScrollArea className="h-[calc(100vh-280px)]">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                 {projects.map((project) => {
                   const stats = getProjectStats(project.id);
                   const lastUpdate = new Date(project.updated_at ?? project.created_at);
@@ -164,79 +164,75 @@ export function CaseSelectionScreen({
                     <Card
                       key={project.id}
                       className={cn(
-                        "group cursor-pointer transition-all hover:border-foreground/20 hover:shadow-md",
+                        "group cursor-pointer transition-all hover:border-foreground/20 hover:shadow-md flex flex-col",
                       )}
                       onClick={() => onSelectProject(project.id)}
                     >
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="mb-4 flex items-center justify-between gap-2">
-                              <div className="rounded-lg bg-muted p-2 text-muted-foreground">
-                                <Bot className="h-5 w-5" />
-                              </div>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                    <span className="sr-only">Открыть меню</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={(e) => handleOpenRenameDialog(project, e)}
-                                  >
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Переименовать
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={(e) => handleOpenDeleteAlert(project, e)}
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Удалить
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                            <h3 className="mb-2 text-lg font-semibold leading-tight">
-                              {project.name}
-                            </h3>
-                            <div className="space-y-2 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
-                                <span>
-                                  {stats.documentCount}{" "}
-                                  {stats.documentCount === 1
-                                    ? "документ"
-                                    : stats.documentCount < 5
-                                    ? "документа"
-                                    : "документов"}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <MessageSquare className="h-4 w-4" />
-                                <span>
-                                  {stats.chatCount}{" "}
-                                  {stats.chatCount === 1
-                                    ? "чат"
-                                    : stats.chatCount < 5
-                                    ? "чата"
-                                    : "чатов"}
-                                </span>
-                              </div>
-                              <div className="mt-3 pt-3 border-t">
-                                <span className="text-xs">
-                                  Обновлено: {lastUpdate.toLocaleDateString("ru-RU")}
-                                </span>
-                              </div>
-                            </div>
+                      <CardContent className="p-6 flex flex-col flex-1">
+                        <div className="mb-4 flex items-center justify-between gap-2">
+                          <div className="rounded-lg bg-muted p-2 text-muted-foreground shrink-0">
+                            <Bot className="h-5 w-5" />
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">Открыть меню</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={(e) => handleOpenRenameDialog(project, e)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Переименовать
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={(e) => handleOpenDeleteAlert(project, e)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Удалить
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                        <h3 className="mb-3 text-lg font-semibold leading-tight">
+                          {project.name}
+                        </h3>
+                        <div className="space-y-2 text-sm text-muted-foreground flex-1">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 shrink-0" />
+                            <span>
+                              {stats.documentCount}{" "}
+                              {stats.documentCount === 1
+                                ? "документ"
+                                : stats.documentCount < 5
+                                ? "документа"
+                                : "документов"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="h-4 w-4 shrink-0" />
+                            <span>
+                              {stats.chatCount}{" "}
+                              {stats.chatCount === 1
+                                ? "чат"
+                                : stats.chatCount < 5
+                                ? "чата"
+                                : "чатов"}
+                            </span>
+                          </div>
+                          <div className="mt-auto pt-3 border-t">
+                            <span className="text-xs">
+                              Обновлено: {lastUpdate.toLocaleDateString("ru-RU")}
+                            </span>
                           </div>
                         </div>
                       </CardContent>

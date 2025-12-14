@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ThinkingIndicator } from "@/components/thinking-indicator";
 import { cn } from "@/lib/utils";
-import type { ChatMessage, Project, SessionDocument } from "@/lib/types";
+import type { ChatMessage, Project, SessionDocument, SelectedModel } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -25,7 +25,14 @@ import {
   Trash2,
   Upload,
   X,
+  ChevronDown,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type LocalChatSession = {
   id: string;
@@ -51,6 +58,8 @@ interface CaseWorkspaceProps {
   isUploadingDocument: boolean;
   isDocumentsLoading: boolean;
   isLoadingChats: boolean;
+  selectedModel: SelectedModel;
+  onModelChange: (model: SelectedModel) => void;
   onBack: () => void;
   onSelectSession: (sessionId: string) => void;
   onNewChat: () => void;
@@ -71,6 +80,8 @@ export function CaseWorkspace({
   isUploadingDocument,
   isDocumentsLoading,
   isLoadingChats,
+  selectedModel,
+  onModelChange,
   onBack,
   onSelectSession,
   onNewChat,
@@ -185,6 +196,39 @@ export function CaseWorkspace({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Model Selection Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="hidden sm:flex">
+                  <span className="text-xs">
+                    {selectedModel === 'openai' && 'OpenAI'}
+                    {selectedModel === 'anthropic' && 'Anthropic'}
+                    {selectedModel === 'gemini' && 'Gemini'}
+                  </span>
+                  <ChevronDown className="ml-2 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => onModelChange('openai')}
+                  className={selectedModel === 'openai' ? 'bg-accent' : ''}
+                >
+                  OpenAI
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onModelChange('anthropic')}
+                  className={selectedModel === 'anthropic' ? 'bg-accent' : ''}
+                >
+                  Anthropic
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onModelChange('gemini')}
+                  className={selectedModel === 'gemini' ? 'bg-accent' : ''}
+                >
+                  Gemini
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <ThemeToggle />
           </div>
         </div>

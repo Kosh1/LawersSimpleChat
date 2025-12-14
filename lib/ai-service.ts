@@ -1,5 +1,6 @@
 /**
  * AI Service для работы с несколькими моделями с автоматическим fallback
+ * Поддерживает OpenRouter (primary) и OpenAI (fallback)
  */
 
 import OpenAI from 'openai';
@@ -8,8 +9,11 @@ import {
   getModelConfig,
   selectModel,
   getFallbackModels,
+  getOpenRouterModelConfig,
 } from './model-config';
 import { generateWithChunking, ChunkedResponse } from './response-chunker';
+import { createOpenRouterClient, isOpenRouterAvailable } from './openrouter-client';
+import type { SelectedModel, AIProvider } from './types';
 
 /**
  * Результат генерации ответа
@@ -31,6 +35,8 @@ export interface AIResponse {
   finishReason: string;
   /** Время генерации в миллисекундах */
   responseTimeMs: number;
+  /** Использованный провайдер (openrouter или openai) */
+  provider?: AIProvider;
 }
 
 /**
@@ -103,14 +109,52 @@ function getErrorDescription(error: any): string {
 
 /**
  * Основная функция генерации ответа с автоматическим fallback
+ * Пробует OpenRouter сначала (если доступен и выбран), затем fallback на OpenAI
  */
 export async function generateAIResponse(
   openai: OpenAI,
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
   userMessage: string,
-  forceModel?: ModelName
+  forceModel?: ModelName,
+  selectedModel?: SelectedModel
 ): Promise<AIResponse> {
   const startTime = Date.now();
+  
+  // Если выбран OpenRouter и он доступен - пробуем сначала его
+  if (selectedModel && isOpenRouterAvailable()) {
+    const openRouterClient = createOpenRouterClient();
+    if (openRouterClient) {
+      try {
+        console.log(`[AI Service] Attempting OpenRouter with model: ${selectedModel}`);
+        const result = await generateWithOpenRouter(
+          openRouterClient,
+          messages,
+          selectedModel
+        );
+        
+        const responseTimeMs = Date.now() - startTime;
+        console.log(`[AI Service] Success with OpenRouter model: ${selectedModel}`);
+        console.log(`[AI Service] Response: ${result.content.length} chars, ${result.chunksCount} chunks, ${result.totalTokens} tokens, ${responseTimeMs}ms`);
+        
+        return {
+          content: result.content,
+          modelUsed: result.model,
+          fallbackOccurred: false,
+          chunksCount: result.chunksCount,
+          totalTokens: result.totalTokens,
+          finishReason: result.finishReason,
+          responseTimeMs,
+          provider: 'openrouter',
+        };
+      } catch (error: any) {
+        console.warn(`[AI Service] OpenRouter failed, falling back to OpenAI:`, error);
+        // Продолжаем к OpenAI fallback
+      }
+    }
+  }
+  
+  // Fallback на OpenAI (существующая логика)
+  console.log(`[AI Service] Using OpenAI fallback`);
   
   // Выбираем основную модель
   const primaryModel = selectModel(userMessage, forceModel);
@@ -189,6 +233,7 @@ export async function generateAIResponse(
         totalTokens: result.totalTokens,
         finishReason: result.finishReason,
         responseTimeMs,
+        provider: 'openai',
       };
       
     } catch (error: any) {
@@ -211,6 +256,39 @@ export async function generateAIResponse(
   // Если дошли сюда - все модели упали
   console.error('[AI Service] All models failed');
   throw lastError || new Error('All models failed to generate response');
+}
+
+/**
+ * Генерирует ответ используя OpenRouter
+ */
+async function generateWithOpenRouter(
+  openRouterClient: OpenAI,
+  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+  selectedModel: SelectedModel
+): Promise<ChunkedResponse> {
+  const config = getOpenRouterModelConfig(selectedModel);
+  
+  // Адаптируем messages для моделей с особыми требованиями
+  let adaptedMessages = messages;
+  
+  // Подготовка дополнительных параметров модели
+  const additionalParams: any = {};
+  
+  if (config.useMaxCompletionTokens) {
+    additionalParams.useMaxCompletionTokens = true;
+  }
+  
+  // Генерируем ответ с chunking
+  const result = await generateWithChunking(
+    openRouterClient,
+    config.name,
+    adaptedMessages,
+    config.maxTokens,
+    config.temperature,
+    additionalParams
+  );
+  
+  return result;
 }
 
 /**

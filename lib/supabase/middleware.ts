@@ -54,7 +54,25 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const pathname = request.nextUrl.pathname
+
+  // Redirect authenticated users from home page or auth page to workspace
+  if (user && (pathname === '/' || pathname === '/auth')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/workspace'
+    return NextResponse.redirect(url)
+  }
+
+  // Redirect unauthenticated users from workspace to home
+  if (!user && pathname === '/workspace') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
 
   return response
 }
