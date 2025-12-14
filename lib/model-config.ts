@@ -337,31 +337,31 @@ export function getFallbackModels(primaryModel: ModelName): ModelName[] {
  */
 export const OPENROUTER_MODEL_CONFIGS: Record<Exclude<SelectedModel, 'thinking'>, ModelConfig> = {
   'openai': {
-    name: 'openai/gpt-4-turbo', // Последняя модель OpenAI через OpenRouter (gpt-4-turbo или gpt-4o-2024-11-20)
+    name: 'openai/gpt-5-mini', // Последняя модель OpenAI через OpenRouter
     maxTokens: 16000,
     contextWindow: 128000,
     temperature: 0.7,
     supportsSystemMessages: true,
     priority: 1,
-    description: 'OpenAI GPT-4 Turbo - последняя модель OpenAI',
+    description: 'OpenAI GPT-5 Mini - последняя модель OpenAI',
   },
   'anthropic': {
-    name: 'anthropic/claude-3.5-sonnet', // Последняя модель Anthropic через OpenRouter
+    name: 'anthropic/claude-opus-4.5', // Последняя модель Anthropic через OpenRouter
     maxTokens: 16000,
     contextWindow: 200000,
     temperature: 0.7,
     supportsSystemMessages: true,
     priority: 1,
-    description: 'Anthropic Claude 3.5 Sonnet - последняя модель Anthropic',
+    description: 'Anthropic Claude Opus 4.5 - последняя модель Anthropic',
   },
   'gemini': {
-    name: 'google/gemini-pro-1.5', // Последняя модель Google через OpenRouter (gemini-pro-1.5 или gemini-2.0-flash-exp)
+    name: 'google/gemini-2.5-flash', // Последняя модель Google через OpenRouter
     maxTokens: 16000,
     contextWindow: 1000000, // Gemini имеет большое контекстное окно
     temperature: 0.7,
     supportsSystemMessages: true,
     priority: 1,
-    description: 'Google Gemini Pro 1.5 - последняя модель Google',
+    description: 'Google Gemini 2.5 Flash - последняя модель Google',
   },
 };
 
@@ -393,9 +393,9 @@ export function getOpenRouterModelName(selectedModel: Exclude<SelectedModel, 'th
  */
 export function getModelDisplayName(selectedModel: SelectedModel): string {
   const displayNames: Record<SelectedModel, string> = {
-    'openai': 'GPT-4 Turbo',
-    'anthropic': 'Claude 3.5 Sonnet',
-    'gemini': 'Gemini Pro 1.5',
+    'openai': 'GPT-5 Mini',
+    'anthropic': 'Claude Opus 4.5',
+    'gemini': 'Gemini 2.5 Flash',
     'thinking': 'Thinking',
   };
   return displayNames[selectedModel];
