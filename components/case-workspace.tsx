@@ -184,7 +184,7 @@ export function CaseWorkspace({
             </Button>
             <div className="flex items-center gap-2">
               <div className="hidden rounded-lg bg-muted p-1.5 sm:block" style={{ background: sidebarBg }}>
-                <Bot className="h-4 w-4 text-muted-foreground" style={{ color: '#982525' }} />
+                <Bot className="h-4 w-4 text-muted-foreground" style={{ color: isDarkMode ? textColor : '#982525' }} />
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold leading-tight" style={{ color: textColor }}>{project.name}</span>
@@ -249,6 +249,7 @@ export function CaseWorkspace({
               size="icon"
               onClick={() => setIsDarkMode(!isDarkMode)}
               title={isDarkMode ? "Светлая тема" : "Темная тема"}
+              style={{ color: textColor }}
             >
               {isDarkMode ? (
                 <Sun className="h-5 w-5" />
@@ -257,7 +258,6 @@ export function CaseWorkspace({
               )}
               <span className="sr-only">Переключить тему чата</span>
             </Button>
-            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -334,7 +334,7 @@ export function CaseWorkspace({
                   {isLoadingChats && <Loader2 className="h-4 w-4 animate-spin" style={{ color: mutedTextColor }} />}
                 </div>
                 <Button onClick={onNewChat} variant="outline" className="w-full gap-2" style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', color: textColor }}>
-                  <Plus className="h-4 w-4" style={{ color: '#982525' }} />
+                  <Plus className="h-4 w-4" style={{ color: isDarkMode ? textColor : '#982525' }} />
                   Новый чат
                 </Button>
               </div>
@@ -372,7 +372,7 @@ export function CaseWorkspace({
                           style={{ 
                             background: session.id === activeSessionId ? (isDarkMode ? '#334155' : '#f0f0eb') : 'transparent', 
                             color: textColor,
-                            borderLeftColor: session.id === activeSessionId ? '#982525' : 'transparent',
+                            borderLeftColor: session.id === activeSessionId ? (isDarkMode ? textColor : '#982525') : 'transparent',
                             borderLeftWidth: session.id === activeSessionId ? '2px' : '0',
                             maxWidth: '100%',
                             overflow: 'hidden'
@@ -452,14 +452,14 @@ export function CaseWorkspace({
                           style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5' }}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="rounded-md bg-primary/10 p-2 text-primary">
-                              <FileText className="h-4 w-4" />
+                            <div className="rounded-md p-2" style={{ background: isDarkMode ? '#334155' : '#f0f0eb' }}>
+                              <FileText className="h-4 w-4" style={{ color: isDarkMode ? textColor : '#982525' }} />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className="mb-1 truncate text-sm font-medium leading-tight">
+                              <div className="mb-1 truncate text-sm font-medium leading-tight" style={{ color: textColor }}>
                                 {document.name}
                               </div>
-                              <div className="space-y-0.5 text-xs text-muted-foreground">
+                              <div className="space-y-0.5 text-xs" style={{ color: mutedTextColor }}>
                                 <div>{formatBytes(document.size)}</div>
                                 <div>
                                   {new Date(document.uploadedAt).toLocaleDateString("ru-RU")}
@@ -558,8 +558,8 @@ export function CaseWorkspace({
                               h6: ({ children }) => <h6 className="text-sm font-bold mb-2 mt-3 first:mt-0">{children}</h6>,
                               ul: ({ children }) => <ul className="list-disc list-outside mb-3 space-y-1 ml-6">{children}</ul>,
                               ol: ({ children }) => <ol className="list-decimal list-outside mb-3 space-y-1 ml-6">{children}</ol>,
-                              li: ({ children }) => <li className="text-sm font-normal leading-relaxed" style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}>{children}</li>,
-                              blockquote: ({ children }) => <blockquote className="border-l-4 border-muted-foreground/30 pl-4 italic my-3 text-sm font-normal leading-relaxed">{children}</blockquote>,
+                              li: ({ children }) => <li className="text-sm font-normal leading-relaxed" style={{ wordBreak: 'normal', overflowWrap: 'break-word', color: textColor }}>{children}</li>,
+                              blockquote: ({ children }) => <blockquote className="border-l-4 border-muted-foreground/30 pl-4 italic my-3 text-sm font-normal leading-relaxed" style={{ color: textColor, borderLeftColor: isDarkMode ? '#475569' : undefined }}>{children}</blockquote>,
                               code: ({ className, children, ...props }) => {
                                 const isInline = !className;
                                 if (isInline) {
@@ -594,8 +594,8 @@ export function CaseWorkspace({
                               thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
                               tbody: ({ children }) => <tbody>{children}</tbody>,
                               tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
-                              th: ({ children }) => <th className="border border-border px-2 py-1 text-left font-bold text-sm">{children}</th>,
-                              td: ({ children }) => <td className="border border-border px-2 py-1 text-sm font-normal">{children}</td>,
+                              th: ({ children }) => <th className="border border-border px-2 py-1 text-left font-bold text-sm" style={{ color: textColor, borderColor: borderColor }}>{children}</th>,
+                              td: ({ children }) => <td className="border border-border px-2 py-1 text-sm font-normal" style={{ color: textColor, borderColor: borderColor }}>{children}</td>,
                             }}
                           >
                             {message.content}
