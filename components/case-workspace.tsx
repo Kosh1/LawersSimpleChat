@@ -506,7 +506,7 @@ export function CaseWorkspace({
                     {message.role === "user" ? (
                       <div className="max-w-full md:max-w-[80%]">
                         <div className="rounded-2xl bg-muted px-4 py-3" style={{ background: '#fafaf5', border: '1px solid #000' }}>
-                          <p className="whitespace-pre-wrap text-sm text-foreground/90">
+                          <p className="whitespace-pre-wrap text-base font-normal leading-relaxed text-foreground/90">
                             {message.content}
                           </p>
                         </div>
