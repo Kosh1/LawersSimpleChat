@@ -436,7 +436,7 @@ export function CaseWorkspace({
               </div>
               <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-2 pb-4 px-2">
+                  <div className="space-y-2 pb-4 px-2 pt-2">
                     {isDocumentsLoading ? (
                       <div className="rounded-lg border border-dashed px-4 py-8 text-center" style={{ borderColor: borderColor }}>
                         <Loader2 className="mx-auto h-8 w-8 animate-spin" style={{ color: mutedTextColor }} />
@@ -458,7 +458,7 @@ export function CaseWorkspace({
                         <div
                           key={document.id}
                           className="group rounded-lg border bg-card p-3 transition-all hover:shadow-sm"
-                          style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', width: '100%' }}
+                          style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem' }}
                         >
                           <div className="flex items-start gap-3" style={{ width: '100%' }}>
                             <div className="rounded-md p-2 shrink-0" style={{ background: isDarkMode ? '#334155' : '#f0f0eb' }}>
