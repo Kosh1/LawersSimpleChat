@@ -29,7 +29,7 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border border-gray-200 dark:border-gray-700 bg-white dark:bg-[hsl(var(--background))] text-foreground",
+        default: "border border-gray-200 dark:border-gray-700 bg-white dark:bg-[hsl(var(--background))] text-foreground [body[data-chat-theme='light']_&]:border-[1px] [body[data-chat-theme='light']_&]:border-black [body[data-chat-theme='light']_&]:bg-[#fafaf5] [body[data-chat-theme='light']_&]:text-black [body[data-chat-theme='light']_&]:shadow-[0_4px_8px_rgba(0,0,0,0.15),0_8px_16px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5)] [body[data-chat-theme='dark']_&]:border-[1px] [body[data-chat-theme='dark']_&]:border-[#334155] [body[data-chat-theme='dark']_&]:bg-[#253141] [body[data-chat-theme='dark']_&]:text-white [body[data-chat-theme='dark']_&]:shadow-[0_4px_8px_rgba(0,0,0,0.3),0_8px_16px_rgba(0,0,0,0.2)]",
         destructive:
           "destructive border-destructive bg-destructive text-destructive-foreground",
       },
@@ -94,7 +94,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold", className)}
+    className={cn("text-sm font-semibold [body[data-chat-theme='light']_&]:font-bold [body[data-chat-theme='light']_&]:text-black [body[data-chat-theme='dark']_&]:text-white", className)}
     {...props}
   />
 ))
@@ -106,7 +106,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-sm opacity-90", className)}
+    className={cn("text-sm opacity-90 [body[data-chat-theme='light']_&]:text-black [body[data-chat-theme='dark']_&]:text-[#cbd5e1]", className)}
     {...props}
   />
 ))

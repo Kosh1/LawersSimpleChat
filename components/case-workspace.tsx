@@ -154,6 +154,14 @@ export function CaseWorkspace({
   const messageAiBg = isDarkMode ? '#253141' : '#f0f0eb';
   const mutedTextColor = isDarkMode ? '#cbd5e1' : '#666';
 
+  // Устанавливаем data-атрибут для темы toast
+  useEffect(() => {
+    document.body.setAttribute('data-chat-theme', isDarkMode ? 'dark' : 'light');
+    return () => {
+      document.body.removeAttribute('data-chat-theme');
+    };
+  }, [isDarkMode]);
+
   return (
     <div className="flex h-screen flex-col bg-background" style={{ background: bgColor, fontFamily: 'var(--font-roboto), Roboto, sans-serif', fontWeight: 400, color: textColor }}>
       {/* Header */}
@@ -302,7 +310,7 @@ export function CaseWorkspace({
               >
                 <MessageSquare className="h-4 w-4" style={{ color: sidebarView === 'chats' ? (isDarkMode ? textColor : '#982525') : mutedTextColor }} />
                 <span>Чаты</span>
-                <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: isDarkMode ? textColor : '#982525', color: isDarkMode ? textColor : '#982525', background: 'transparent' }}>
+                <span className="text-xs" style={{ color: mutedTextColor }}>
                   {sessions.length}
                 </span>
               </button>
@@ -318,7 +326,7 @@ export function CaseWorkspace({
               >
                 <FileText className="h-4 w-4" style={{ color: sidebarView === 'documents' ? (isDarkMode ? textColor : '#982525') : mutedTextColor }} />
                 <span>Документы</span>
-                <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: isDarkMode ? textColor : '#982525', color: isDarkMode ? textColor : '#982525', background: 'transparent' }}>
+                <span className="text-xs" style={{ color: mutedTextColor }}>
                   {project.documents.length}
                 </span>
               </button>
