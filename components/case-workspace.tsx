@@ -458,14 +458,14 @@ export function CaseWorkspace({
                         <div
                           key={document.id}
                           className="group rounded-lg border bg-card p-3 transition-all hover:shadow-sm"
-                          style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5' }}
+                          style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', width: '100%' }}
                         >
-                          <div className="flex items-start gap-3">
-                            <div className="rounded-md p-2" style={{ background: isDarkMode ? '#334155' : '#f0f0eb' }}>
+                          <div className="flex items-start gap-3" style={{ width: '100%' }}>
+                            <div className="rounded-md p-2 shrink-0" style={{ background: isDarkMode ? '#334155' : '#f0f0eb' }}>
                               <FileText className="h-4 w-4" style={{ color: isDarkMode ? textColor : '#982525' }} />
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="mb-1 truncate text-sm font-medium leading-tight" style={{ color: textColor }}>
+                            <div className="min-w-0 flex-1" style={{ minWidth: 0, overflow: 'hidden' }}>
+                              <div className="mb-1 text-sm font-medium leading-tight" style={{ color: textColor, wordBreak: 'break-word', overflowWrap: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                                 {document.name}
                               </div>
                               <div className="space-y-0.5 text-xs" style={{ color: mutedTextColor }}>
@@ -480,11 +480,11 @@ export function CaseWorkspace({
                               type="button"
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                              className="h-8 w-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                               onClick={() => onRemoveDocument(document.id)}
                               disabled={isUploadingDocument || isDocumentsLoading}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" style={{ color: mutedTextColor }} />
                               <span className="sr-only">Удалить</span>
                             </Button>
                           </div>
