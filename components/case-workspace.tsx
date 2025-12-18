@@ -298,11 +298,11 @@ export function CaseWorkspace({
                     ? "border-b-2 border-primary text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
-                style={{ borderBottomColor: sidebarView === 'chats' ? '#982525' : 'transparent', color: textColor }}
+                style={{ borderBottomColor: sidebarView === 'chats' ? (isDarkMode ? textColor : '#982525') : 'transparent', color: textColor }}
               >
-                <MessageSquare className="h-4 w-4" style={{ color: sidebarView === 'chats' ? '#982525' : mutedTextColor }} />
+                <MessageSquare className="h-4 w-4" style={{ color: sidebarView === 'chats' ? (isDarkMode ? textColor : '#982525') : mutedTextColor }} />
                 <span>Чаты</span>
-                <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: '#982525', color: '#982525', background: 'transparent' }}>
+                <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: isDarkMode ? textColor : '#982525', color: isDarkMode ? textColor : '#982525', background: 'transparent' }}>
                   {sessions.length}
                 </span>
               </button>
@@ -314,11 +314,11 @@ export function CaseWorkspace({
                     ? "border-b-2 border-primary text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
-                style={{ borderBottomColor: sidebarView === 'documents' ? '#982525' : 'transparent', color: textColor }}
+                style={{ borderBottomColor: sidebarView === 'documents' ? (isDarkMode ? textColor : '#982525') : 'transparent', color: textColor }}
               >
-                <FileText className="h-4 w-4" style={{ color: sidebarView === 'documents' ? '#982525' : mutedTextColor }} />
+                <FileText className="h-4 w-4" style={{ color: sidebarView === 'documents' ? (isDarkMode ? textColor : '#982525') : mutedTextColor }} />
                 <span>Документы</span>
-                <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: '#982525', color: '#982525', background: 'transparent' }}>
+                <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: isDarkMode ? textColor : '#982525', color: isDarkMode ? textColor : '#982525', background: 'transparent' }}>
                   {project.documents.length}
                 </span>
               </button>
@@ -379,7 +379,7 @@ export function CaseWorkspace({
                           }}
                         >
                           <div className="flex w-full items-start gap-2 min-w-0" style={{ width: '100%' }}>
-                            <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: '#982525' }} />
+                            <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: isDarkMode ? textColor : '#982525' }} />
                             <span className="flex-1 text-sm font-medium break-words" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', lineHeight: '1.4', minWidth: 0, color: textColor }}>
                               {session.title || "Новый чат"}
                             </span>
@@ -420,7 +420,7 @@ export function CaseWorkspace({
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Upload className="h-4 w-4" style={{ color: '#982525' }} />
+                    <Upload className="h-4 w-4" style={{ color: isDarkMode ? textColor : '#982525' }} />
                   )}
                   Загрузить документ
                 </Button>
@@ -671,7 +671,7 @@ export function CaseWorkspace({
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Paperclip className="h-4 w-4" style={{ color: '#982525' }} />
+                    <Paperclip className="h-4 w-4" style={{ color: isDarkMode ? textColor : '#982525' }} />
                   )}
                   {isUploadingDocument ? "Обработка…" : "Прикрепить"}
                 </Button>
@@ -685,7 +685,7 @@ export function CaseWorkspace({
                 {isLoading || isLoadingChats ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" style={{ color: '#982525' }} />
+                  <Send className="h-4 w-4" style={{ color: isDarkMode ? textColor : '#982525' }} />
                 )}
                 {isLoadingChats ? "Загрузка..." : "Отправить"}
               </Button>
