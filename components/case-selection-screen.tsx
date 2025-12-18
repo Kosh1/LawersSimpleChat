@@ -109,7 +109,7 @@ export function CaseSelectionScreen({
   return (
     <div className="flex min-h-screen flex-col bg-background" style={{ background: '#fafaf5' }}>
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '1px solid #982525' }}>
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-4" style={{ maxWidth: '100%', margin: '0 auto', paddingLeft: '1rem', paddingRight: '1rem' }}>
           <div className="flex items-center gap-3">
             <Bot className="h-6 w-6" style={{ color: '#982525' }} />
             <h1 className="text-xl font-bold" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>МОИ ДЕЛА</h1>
@@ -118,8 +118,8 @@ export function CaseSelectionScreen({
         </div>
       </header>
 
-      <main className="container flex-1 px-4 py-8">
-        <div className="max-w-5xl">
+      <main className="flex-1 px-4 py-8" style={{ maxWidth: '100%', margin: '0', paddingLeft: '1rem', paddingRight: '1rem' }}>
+        <div style={{ maxWidth: '100%' }}>
           <div className="mb-8 flex items-start justify-between gap-4 mt-8">
             <div className="flex-1"></div>
             <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2 shrink-0" style={{ background: '#982525', color: '#fff', border: '1px solid #000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', textTransform: 'uppercase' }}>
