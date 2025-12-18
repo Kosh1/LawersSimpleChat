@@ -1,8 +1,7 @@
 /* Ретро-стиль для toast уведомлений */
 
-/* Светлая тема - применяется по умолчанию и когда data-chat-theme='light' */
-[data-radix-toast-root],
-body[data-chat-theme='light'] [data-radix-toast-root] {
+/* Светлая тема */
+.retro-toast-light {
   background: #fafaf5 !important;
   border: 1px solid #000 !important;
   color: #000 !important;
@@ -13,19 +12,17 @@ body[data-chat-theme='light'] [data-radix-toast-root] {
   font-family: var(--font-roboto), 'Roboto', sans-serif !important;
 }
 
-[data-radix-toast-root] [data-radix-toast-title],
-body[data-chat-theme='light'] [data-radix-toast-root] [data-radix-toast-title] {
+.retro-toast-light [data-radix-toast-title] {
   color: #000 !important;
   font-weight: bold !important;
 }
 
-[data-radix-toast-root] [data-radix-toast-description],
-body[data-chat-theme='light'] [data-radix-toast-root] [data-radix-toast-description] {
+.retro-toast-light [data-radix-toast-description] {
   color: #000 !important;
 }
 
-/* Темная тема - переопределяет светлую */
-body[data-chat-theme='dark'] [data-radix-toast-root] {
+/* Темная тема */
+.retro-toast-dark {
   background: #253141 !important;
   border: 1px solid #334155 !important;
   color: #ffffff !important;
@@ -35,12 +32,24 @@ body[data-chat-theme='dark'] [data-radix-toast-root] {
   font-family: var(--font-roboto), 'Roboto', sans-serif !important;
 }
 
-body[data-chat-theme='dark'] [data-radix-toast-root] [data-radix-toast-title] {
+.retro-toast-dark [data-radix-toast-title] {
   color: #ffffff !important;
   font-weight: bold !important;
 }
 
-body[data-chat-theme='dark'] [data-radix-toast-root] [data-radix-toast-description] {
+.retro-toast-dark [data-radix-toast-description] {
   color: #cbd5e1 !important;
+}
+
+/* Fallback для случаев, когда классы не применены */
+[data-radix-toast-root]:not(.retro-toast-dark) {
+  background: #fafaf5 !important;
+  border: 1px solid #000 !important;
+  color: #000 !important;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  font-family: var(--font-roboto), 'Roboto', sans-serif !important;
 }
 
