@@ -20,9 +20,11 @@ import {
   Loader2,
   Menu,
   MessageSquare,
+  Moon,
   Paperclip,
   Plus,
   Send,
+  Sun,
   Trash2,
   Upload,
   X,
@@ -95,6 +97,7 @@ export function CaseWorkspace({
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarView, setSidebarView] = useState<'chats' | 'documents'>('chats');
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -144,10 +147,17 @@ export function CaseWorkspace({
     [onAttachDocument],
   );
 
+  const bgColor = isDarkMode ? '#1e293b' : '#fafaf5';
+  const textColor = isDarkMode ? '#ffffff' : '#000';
+  const borderColor = isDarkMode ? '#334155' : '#982525';
+  const sidebarBg = isDarkMode ? '#253141' : '#f0f0eb';
+  const messageAiBg = isDarkMode ? '#253141' : '#f0f0eb';
+  const mutedTextColor = isDarkMode ? '#cbd5e1' : '#666';
+
   return (
-    <div className="flex h-screen flex-col bg-background" style={{ background: '#fafaf5', fontFamily: 'var(--font-roboto), Roboto, sans-serif', fontWeight: 400 }}>
+    <div className="flex h-screen flex-col bg-background" style={{ background: bgColor, fontFamily: 'var(--font-roboto), Roboto, sans-serif', fontWeight: 400, color: textColor }}>
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '1px solid #982525' }}>
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: bgColor, borderBottom: `1px solid ${borderColor}` }}>
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onBack} className="hidden sm:flex">
@@ -173,12 +183,12 @@ export function CaseWorkspace({
               <span className="sr-only">Открыть меню</span>
             </Button>
             <div className="flex items-center gap-2">
-              <div className="hidden rounded-lg bg-muted p-1.5 sm:block" style={{ background: '#f0f0eb' }}>
+              <div className="hidden rounded-lg bg-muted p-1.5 sm:block" style={{ background: sidebarBg }}>
                 <Bot className="h-4 w-4 text-muted-foreground" style={{ color: '#982525' }} />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold leading-tight">{project.name}</span>
-                <span className="hidden text-xs text-muted-foreground sm:block" style={{ color: '#666' }}>
+                <span className="text-sm font-semibold leading-tight" style={{ color: textColor }}>{project.name}</span>
+                <span className="hidden text-xs text-muted-foreground sm:block" style={{ color: mutedTextColor }}>
                   {isDocumentsLoading ? (
                     <>
                       <Loader2 className="inline h-3 w-3 animate-spin" /> документов
@@ -234,6 +244,19 @@ export function CaseWorkspace({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              title={isDarkMode ? "Светлая тема" : "Темная тема"}
+            >
+              {isDarkMode ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+              <span className="sr-only">Переключить тему чата</span>
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -247,11 +270,11 @@ export function CaseWorkspace({
             "fixed inset-y-0 left-0 z-40 flex w-80 flex-col border-r bg-muted/30 transition-transform duration-300 md:static md:translate-x-0",
             isSidebarOpen ? "translate-x-0" : "-translate-x-full",
           )}
-          style={{ background: '#f0f0eb', borderRight: '1px solid #000' }}
+          style={{ background: sidebarBg, borderRight: `1px solid ${borderColor}` }}
         >
           {/* Mobile Header */}
-          <div className="flex items-center justify-between border-b p-4 md:hidden">
-            <h2 className="text-sm font-semibold">
+          <div className="flex items-center justify-between border-b p-4 md:hidden" style={{ borderBottomColor: borderColor }}>
+            <h2 className="text-sm font-semibold" style={{ color: textColor }}>
               {sidebarView === 'chats' ? 'Чаты' : 'Документы'}
             </h2>
             <Button
@@ -265,7 +288,7 @@ export function CaseWorkspace({
           </div>
 
           {/* Tab Switcher */}
-          <div className="border-b bg-background/50" style={{ background: '#f0f0eb', borderBottom: '1px solid #000' }}>
+          <div className="border-b bg-background/50" style={{ background: sidebarBg, borderBottom: `1px solid ${borderColor}` }}>
             <div className="flex">
               <button
                 onClick={() => setSidebarView('chats')}
@@ -275,9 +298,9 @@ export function CaseWorkspace({
                     ? "border-b-2 border-primary text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
-                style={{ borderBottomColor: sidebarView === 'chats' ? '#982525' : 'transparent', color: '#000' }}
+                style={{ borderBottomColor: sidebarView === 'chats' ? '#982525' : 'transparent', color: textColor }}
               >
-                <MessageSquare className="h-4 w-4" style={{ color: sidebarView === 'chats' ? '#982525' : '#666' }} />
+                <MessageSquare className="h-4 w-4" style={{ color: sidebarView === 'chats' ? '#982525' : mutedTextColor }} />
                 <span>Чаты</span>
                 <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: '#982525', color: '#982525', background: 'transparent' }}>
                   {sessions.length}
@@ -291,9 +314,9 @@ export function CaseWorkspace({
                     ? "border-b-2 border-primary text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
-                style={{ borderBottomColor: sidebarView === 'documents' ? '#982525' : 'transparent', color: '#000' }}
+                style={{ borderBottomColor: sidebarView === 'documents' ? '#982525' : 'transparent', color: textColor }}
               >
-                <FileText className="h-4 w-4" style={{ color: sidebarView === 'documents' ? '#982525' : '#666' }} />
+                <FileText className="h-4 w-4" style={{ color: sidebarView === 'documents' ? '#982525' : mutedTextColor }} />
                 <span>Документы</span>
                 <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: '#982525', color: '#982525', background: 'transparent' }}>
                   {project.documents.length}
@@ -305,12 +328,12 @@ export function CaseWorkspace({
           {/* Chats View */}
           {sidebarView === 'chats' && (
             <>
-              <div className="border-b p-4">
+              <div className="border-b p-4" style={{ borderBottomColor: borderColor }}>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Чаты проекта</h3>
-                  {isLoadingChats && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                  <h3 className="text-sm font-semibold" style={{ color: textColor }}>Чаты проекта</h3>
+                  {isLoadingChats && <Loader2 className="h-4 w-4 animate-spin" style={{ color: mutedTextColor }} />}
                 </div>
-                <Button onClick={onNewChat} variant="outline" className="w-full gap-2" style={{ border: '1px solid #000', background: '#fafaf5' }}>
+                <Button onClick={onNewChat} variant="outline" className="w-full gap-2" style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', color: textColor }}>
                   <Plus className="h-4 w-4" style={{ color: '#982525' }} />
                   Новый чат
                 </Button>
@@ -319,18 +342,18 @@ export function CaseWorkspace({
                 <ScrollArea className="h-full">
                   <div className="space-y-1 pb-4 px-2 pt-2">
                     {isLoadingChats ? (
-                      <div className="rounded-lg border border-dashed px-4 py-8 text-center">
-                        <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-                        <p className="mt-2 text-sm text-muted-foreground">Загрузка чатов...</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                      <div className="rounded-lg border border-dashed px-4 py-8 text-center" style={{ borderColor: borderColor }}>
+                        <Loader2 className="mx-auto h-8 w-8 animate-spin" style={{ color: mutedTextColor }} />
+                        <p className="mt-2 text-sm" style={{ color: mutedTextColor }}>Загрузка чатов...</p>
+                        <p className="mt-1 text-xs" style={{ color: mutedTextColor }}>
                           Получаем историю разговоров
                         </p>
                       </div>
                     ) : sortedSessions.length === 0 ? (
-                      <div className="rounded-lg border border-dashed px-4 py-8 text-center">
-                        <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
-                        <p className="mt-2 text-sm text-muted-foreground">Нет чатов</p>
-                        <p className="mt-1 text-xs text-muted-foreground">Создайте первый чат</p>
+                      <div className="rounded-lg border border-dashed px-4 py-8 text-center" style={{ borderColor: borderColor }}>
+                        <MessageSquare className="mx-auto h-8 w-8" style={{ color: mutedTextColor }} />
+                        <p className="mt-2 text-sm" style={{ color: mutedTextColor }}>Нет чатов</p>
+                        <p className="mt-1 text-xs" style={{ color: mutedTextColor }}>Создайте первый чат</p>
                       </div>
                     ) : (
                       sortedSessions.map((session) => (
@@ -347,8 +370,8 @@ export function CaseWorkspace({
                               : "bg-transparent",
                           )}
                           style={{ 
-                            background: session.id === activeSessionId ? '#f0f0eb' : 'transparent', 
-                            color: '#000',
+                            background: session.id === activeSessionId ? (isDarkMode ? '#334155' : '#f0f0eb') : 'transparent', 
+                            color: textColor,
                             borderLeftColor: session.id === activeSessionId ? '#982525' : 'transparent',
                             borderLeftWidth: session.id === activeSessionId ? '2px' : '0',
                             maxWidth: '100%',
@@ -357,11 +380,11 @@ export function CaseWorkspace({
                         >
                           <div className="flex w-full items-start gap-2 min-w-0" style={{ width: '100%' }}>
                             <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: '#982525' }} />
-                            <span className="flex-1 text-sm font-medium break-words" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', lineHeight: '1.4', minWidth: 0 }}>
+                            <span className="flex-1 text-sm font-medium break-words" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', lineHeight: '1.4', minWidth: 0, color: textColor }}>
                               {session.title || "Новый чат"}
                             </span>
                           </div>
-                          <span className="ml-6 mt-1 text-xs text-muted-foreground" style={{ color: '#666' }}>
+                          <span className="ml-6 mt-1 text-xs text-muted-foreground" style={{ color: mutedTextColor }}>
                             {new Date(session.createdAt).toLocaleString("ru-RU", {
                               day: "numeric",
                               month: "short",
@@ -406,18 +429,18 @@ export function CaseWorkspace({
                 <ScrollArea className="h-full">
                   <div className="space-y-2 pb-4 px-2">
                     {isDocumentsLoading ? (
-                      <div className="rounded-lg border border-dashed px-4 py-8 text-center">
-                        <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-                        <p className="mt-2 text-sm text-muted-foreground">Загрузка документов...</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                      <div className="rounded-lg border border-dashed px-4 py-8 text-center" style={{ borderColor: borderColor }}>
+                        <Loader2 className="mx-auto h-8 w-8 animate-spin" style={{ color: mutedTextColor }} />
+                        <p className="mt-2 text-sm" style={{ color: mutedTextColor }}>Загрузка документов...</p>
+                        <p className="mt-1 text-xs" style={{ color: mutedTextColor }}>
                           Получаем прикрепленные файлы
                         </p>
                       </div>
                     ) : project.documents.length === 0 ? (
-                      <div className="rounded-lg border border-dashed px-4 py-8 text-center">
-                        <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
-                        <p className="mt-2 text-sm text-muted-foreground">Нет документов</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                      <div className="rounded-lg border border-dashed px-4 py-8 text-center" style={{ borderColor: borderColor }}>
+                        <FileText className="mx-auto h-8 w-8" style={{ color: mutedTextColor }} />
+                        <p className="mt-2 text-sm" style={{ color: mutedTextColor }}>Нет документов</p>
+                        <p className="mt-1 text-xs" style={{ color: mutedTextColor }}>
                           Загрузите документы для работы
                         </p>
                       </div>
@@ -426,7 +449,7 @@ export function CaseWorkspace({
                         <div
                           key={document.id}
                           className="group rounded-lg border bg-card p-3 transition-all hover:shadow-sm"
-                          style={{ border: '1px solid #000', background: '#fafaf5' }}
+                          style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5' }}
                         >
                           <div className="flex items-start gap-3">
                             <div className="rounded-md bg-primary/10 p-2 text-primary">
@@ -506,7 +529,7 @@ export function CaseWorkspace({
                     {message.role === "user" ? (
                       <div className="max-w-full md:max-w-[80%]">
                         <div className="rounded-2xl bg-muted px-4 py-3" style={{ background: 'transparent' }}>
-                          <p className="whitespace-pre-wrap text-sm font-normal leading-relaxed text-foreground/90" style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}>
+                          <p className="whitespace-pre-wrap text-sm font-normal leading-relaxed text-foreground/90" style={{ wordBreak: 'normal', overflowWrap: 'break-word', color: textColor }}>
                             {message.content}
                           </p>
                         </div>
@@ -522,7 +545,7 @@ export function CaseWorkspace({
                             />
                           </div>
                         )}
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90" style={{ background: '#f0f0eb', padding: '1rem', borderRadius: '0.5rem', wordBreak: 'normal', overflowWrap: 'break-word' }}>
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90" style={{ background: messageAiBg, padding: '1rem', borderRadius: '0.5rem', wordBreak: 'normal', overflowWrap: 'break-word', color: textColor }}>
                             <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
@@ -616,7 +639,7 @@ export function CaseWorkspace({
           </div>
 
           {/* Message Input */}
-          <div className="border-t bg-background p-4" style={{ background: '#fafaf5', borderTop: '1px solid #000' }}>
+          <div className="border-t bg-background p-4" style={{ background: bgColor, borderTop: `1px solid ${borderColor}` }}>
             <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-4xl flex-col gap-3">
               <input
                 ref={fileInputRef}
@@ -634,7 +657,7 @@ export function CaseWorkspace({
                 placeholder="Опишите ситуацию, вопрос или запрос к защитнику…"
                 className="min-h-[100px] resize-none"
                 disabled={isLoading || isLoadingChats}
-                style={{ border: '1px solid #000', background: '#fafaf5' }}
+                style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', color: textColor }}
               />
               <div className="flex items-center justify-between gap-3">
                 <Button
@@ -643,7 +666,7 @@ export function CaseWorkspace({
                   onClick={handleAttachButtonClick}
                   disabled={isUploadingDocument}
                   className="gap-2"
-                  style={{ border: '1px solid #000', background: '#fafaf5' }}
+                  style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', color: textColor }}
                 >
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -657,7 +680,7 @@ export function CaseWorkspace({
                 disabled={isLoading || isUploadingDocument || isLoadingChats || !input.trim()} 
                 variant="outline"
                 className="gap-2"
-                style={{ border: '1px solid #000', background: '#fafaf5' }}
+                style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', color: textColor }}
               >
                 {isLoading || isLoadingChats ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
