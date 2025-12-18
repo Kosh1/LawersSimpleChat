@@ -156,10 +156,11 @@ export function CaseWorkspace({
 
   // Устанавливаем data-атрибут для темы toast
   useEffect(() => {
-    document.body.setAttribute('data-chat-theme', isDarkMode ? 'dark' : 'light');
-    return () => {
-      document.body.removeAttribute('data-chat-theme');
-    };
+    if (isDarkMode) {
+      document.body.setAttribute('data-chat-theme', 'dark');
+    } else {
+      document.body.setAttribute('data-chat-theme', 'light');
+    }
   }, [isDarkMode]);
 
   return (

@@ -1,6 +1,7 @@
 /* Ретро-стиль для toast уведомлений */
 
-/* Светлая тема */
+/* Светлая тема - применяется по умолчанию и когда data-chat-theme='light' */
+[data-radix-toast-root],
 body[data-chat-theme='light'] [data-radix-toast-root] {
   background: #fafaf5 !important;
   border: 1px solid #000 !important;
@@ -12,16 +13,18 @@ body[data-chat-theme='light'] [data-radix-toast-root] {
   font-family: var(--font-roboto), 'Roboto', sans-serif !important;
 }
 
+[data-radix-toast-root] [data-radix-toast-title],
 body[data-chat-theme='light'] [data-radix-toast-root] [data-radix-toast-title] {
   color: #000 !important;
   font-weight: bold !important;
 }
 
+[data-radix-toast-root] [data-radix-toast-description],
 body[data-chat-theme='light'] [data-radix-toast-root] [data-radix-toast-description] {
   color: #000 !important;
 }
 
-/* Темная тема */
+/* Темная тема - переопределяет светлую */
 body[data-chat-theme='dark'] [data-radix-toast-root] {
   background: #253141 !important;
   border: 1px solid #334155 !important;
