@@ -49,9 +49,10 @@
     0 4px 8px rgba(0, 0, 0, 0.15),
     0 8px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  padding: 1.5rem;
+  padding: 0;
   transition: all 0.3s ease;
   cursor: pointer;
+  height: auto;
 }
 
 .retro-workspace-card:hover {

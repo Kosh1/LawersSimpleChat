@@ -111,7 +111,7 @@ export function CaseSelectionScreen({
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Bot className="h-6 w-6" style={{ color: '#982525' }} />
-            <h1 className="retro-workspace h1">ДЖИХЕЛПЕР</h1>
+            <h1 className="retro-workspace h1">МОИ ДЕЛА</h1>
           </div>
           <ThemeToggle />
         </div>
@@ -121,7 +121,6 @@ export function CaseSelectionScreen({
         <div className="mx-auto max-w-5xl">
           <div className="mb-8 flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h2 className="retro-workspace h2">МОИ ДЕЛА</h2>
               <p className="mt-2" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
                 Выберите дело для работы или создайте новое
               </p>
@@ -153,20 +152,18 @@ export function CaseSelectionScreen({
               </div>
             </div>
           ) : (
-            <ScrollArea className="h-[calc(100vh-280px)]">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-                {projects.map((project) => {
-                  const stats = getProjectStats(project.id);
-                  const lastUpdate = new Date(project.updated_at ?? project.created_at);
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {projects.map((project) => {
+                const stats = getProjectStats(project.id);
+                const lastUpdate = new Date(project.updated_at ?? project.created_at);
 
-                  return (
-                    <div
-                      key={project.id}
-                      className="retro-workspace-card group flex flex-col"
-                      onClick={() => onSelectProject(project.id)}
-                      style={{ minHeight: '200px' }}
-                    >
-                      <div className="p-6 flex flex-col flex-1" style={{ minHeight: 0 }}>
+                return (
+                  <div
+                    key={project.id}
+                    className="retro-workspace-card group flex flex-col cursor-pointer"
+                    onClick={() => onSelectProject(project.id)}
+                  >
+                    <div className="p-6 flex flex-col flex-1">
                         <div className="mb-4 flex items-center justify-between gap-2">
                           <div className="rounded-lg p-2 shrink-0" style={{ background: '#f0f0eb' }}>
                             <Bot className="h-5 w-5" style={{ color: '#982525' }} />
@@ -237,8 +234,7 @@ export function CaseSelectionScreen({
                     </div>
                   );
                 })}
-              </div>
-            </ScrollArea>
+            </div>
           )}
         </div>
       </main>
