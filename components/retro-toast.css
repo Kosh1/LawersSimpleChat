@@ -1,0 +1,43 @@
+/* Ретро-стиль для toast уведомлений */
+
+/* Светлая тема */
+body[data-chat-theme='light'] [data-radix-toast-root] {
+  background: #fafaf5 !important;
+  border: 1px solid #000 !important;
+  color: #000 !important;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  font-family: var(--font-roboto), 'Roboto', sans-serif !important;
+}
+
+body[data-chat-theme='light'] [data-radix-toast-root] [data-radix-toast-title] {
+  color: #000 !important;
+  font-weight: bold !important;
+}
+
+body[data-chat-theme='light'] [data-radix-toast-root] [data-radix-toast-description] {
+  color: #000 !important;
+}
+
+/* Темная тема */
+body[data-chat-theme='dark'] [data-radix-toast-root] {
+  background: #253141 !important;
+  border: 1px solid #334155 !important;
+  color: #ffffff !important;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  font-family: var(--font-roboto), 'Roboto', sans-serif !important;
+}
+
+body[data-chat-theme='dark'] [data-radix-toast-root] [data-radix-toast-title] {
+  color: #ffffff !important;
+  font-weight: bold !important;
+}
+
+body[data-chat-theme='dark'] [data-radix-toast-root] [data-radix-toast-description] {
+  color: #cbd5e1 !important;
+}
+
