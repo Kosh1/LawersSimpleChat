@@ -506,7 +506,7 @@ export function CaseWorkspace({
                     {message.role === "user" ? (
                       <div className="max-w-full md:max-w-[80%]">
                         <div className="rounded-2xl bg-muted px-4 py-3" style={{ background: 'transparent' }}>
-                          <p className="whitespace-pre-wrap text-base font-normal leading-relaxed text-foreground/90" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
+                          <p className="whitespace-pre-wrap text-base font-normal leading-relaxed text-foreground/90" style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}>
                             {message.content}
                           </p>
                         </div>
@@ -522,11 +522,11 @@ export function CaseWorkspace({
                             />
                           </div>
                         )}
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90" style={{ background: '#f0f0eb', padding: '1rem', borderRadius: '0.5rem', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90" style={{ background: '#f0f0eb', padding: '1rem', borderRadius: '0.5rem', wordBreak: 'normal', overflowWrap: 'break-word' }}>
                             <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
-                              p: ({ children }) => <p className="text-base font-normal leading-relaxed mb-3 last:mb-0" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{children}</p>,
+                              p: ({ children }) => <p className="text-base font-normal leading-relaxed mb-3 last:mb-0" style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}>{children}</p>,
                               h1: ({ children }) => <h1 className="text-xl font-bold mb-3 mt-6 first:mt-0">{children}</h1>,
                               h2: ({ children }) => <h2 className="text-lg font-bold mb-3 mt-5 first:mt-0">{children}</h2>,
                               h3: ({ children }) => <h3 className="text-base font-bold mb-2 mt-4 first:mt-0">{children}</h3>,
@@ -535,7 +535,7 @@ export function CaseWorkspace({
                               h6: ({ children }) => <h6 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h6>,
                               ul: ({ children }) => <ul className="list-disc list-outside mb-3 space-y-1 ml-6">{children}</ul>,
                               ol: ({ children }) => <ol className="list-decimal list-outside mb-3 space-y-1 ml-6">{children}</ol>,
-                              li: ({ children }) => <li className="text-base font-normal leading-relaxed" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{children}</li>,
+                              li: ({ children }) => <li className="text-base font-normal leading-relaxed" style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}>{children}</li>,
                               blockquote: ({ children }) => <blockquote className="border-l-4 border-muted-foreground/30 pl-4 italic my-3 text-base font-normal leading-relaxed">{children}</blockquote>,
                               code: ({ className, children, ...props }) => {
                                 const isInline = !className;
