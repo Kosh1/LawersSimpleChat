@@ -120,13 +120,8 @@ export function CaseSelectionScreen({
 
       <main className="container flex-1 px-4 py-8">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-8 flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>Мои дела</h2>
-              <p className="mt-2 text-muted-foreground" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
-                Выберите дело для работы или создайте новое
-              </p>
-            </div>
+          <div className="mb-8 flex items-start justify-between gap-4 mt-8">
+            <div className="flex-1"></div>
             <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2 shrink-0" style={{ background: '#982525', color: '#fff', border: '3px solid #000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', textTransform: 'uppercase' }}>
               <FolderPlus className="h-5 w-5" />
               Создать новое дело
