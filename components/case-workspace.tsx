@@ -275,11 +275,11 @@ export function CaseWorkspace({
                     ? "border-b-2 border-primary text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
-                style={{ borderBottomColor: sidebarView === 'chats' ? '#982525' : 'transparent', color: sidebarView === 'chats' ? '#982525' : '#666' }}
+                style={{ borderBottomColor: sidebarView === 'chats' ? '#982525' : 'transparent', color: '#000' }}
               >
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4" style={{ color: sidebarView === 'chats' ? '#982525' : '#666' }} />
                 <span>Чаты</span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs" style={{ background: '#982525', color: '#fff' }}>
+                <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: '#982525', color: '#982525', background: 'transparent' }}>
                   {sessions.length}
                 </span>
               </button>
@@ -291,11 +291,11 @@ export function CaseWorkspace({
                     ? "border-b-2 border-primary text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
-                style={{ borderBottomColor: sidebarView === 'documents' ? '#982525' : 'transparent', color: sidebarView === 'documents' ? '#982525' : '#666' }}
+                style={{ borderBottomColor: sidebarView === 'documents' ? '#982525' : 'transparent', color: '#000' }}
               >
-                <FileText className="h-4 w-4" />
+                <FileText className="h-4 w-4" style={{ color: sidebarView === 'documents' ? '#982525' : '#666' }} />
                 <span>Документы</span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs" style={{ background: '#982525', color: '#fff' }}>
+                <span className="rounded-full border px-2 py-0.5 text-xs" style={{ borderColor: '#982525', color: '#982525', background: 'transparent' }}>
                   {project.documents.length}
                 </span>
               </button>
@@ -310,14 +310,14 @@ export function CaseWorkspace({
                   <h3 className="text-sm font-semibold">Чаты проекта</h3>
                   {isLoadingChats && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                 </div>
-                <Button onClick={onNewChat} variant="secondary" className="w-full gap-2" style={{ background: '#982525', color: '#fff', border: '1px solid #000' }}>
-                  <Plus className="h-4 w-4" />
+                <Button onClick={onNewChat} variant="outline" className="w-full gap-2" style={{ border: '1px solid #000', background: '#fafaf5' }}>
+                  <Plus className="h-4 w-4" style={{ color: '#982525' }} />
                   Новый чат
                 </Button>
               </div>
-              <div className="flex-1 overflow-hidden p-2">
+              <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-1 pb-4">
+                  <div className="space-y-1 pb-4 px-2">
                     {isLoadingChats ? (
                       <div className="rounded-lg border border-dashed px-4 py-8 text-center">
                         <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
@@ -343,18 +343,23 @@ export function CaseWorkspace({
                           className={cn(
                             "flex w-full flex-col items-start rounded-lg px-3 py-3 text-left transition-all hover:bg-muted",
                             session.id === activeSessionId
-                              ? "bg-muted shadow-sm"
+                              ? "bg-muted shadow-sm border-l-2"
                               : "bg-transparent",
                           )}
-                          style={{ background: session.id === activeSessionId ? '#982525' : 'transparent', color: session.id === activeSessionId ? '#fff' : '#000' }}
+                          style={{ 
+                            background: session.id === activeSessionId ? '#f0f0eb' : 'transparent', 
+                            color: '#000',
+                            borderLeftColor: session.id === activeSessionId ? '#982525' : 'transparent',
+                            borderLeftWidth: session.id === activeSessionId ? '2px' : '0'
+                          }}
                         >
                           <div className="flex w-full items-center gap-2">
-                            <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" style={{ color: session.id === activeSessionId ? '#fff' : '#982525' }} />
+                            <MessageSquare className="h-4 w-4 flex-shrink-0" style={{ color: '#982525' }} />
                             <span className="flex-1 truncate text-sm font-medium">
                               {session.title || "Новый чат"}
                             </span>
                           </div>
-                          <span className="ml-6 mt-1 text-xs text-muted-foreground" style={{ color: session.id === activeSessionId ? '#fff' : '#666' }}>
+                          <span className="ml-6 mt-1 text-xs text-muted-foreground" style={{ color: '#666' }}>
                             {new Date(session.createdAt).toLocaleString("ru-RU", {
                               day: "numeric",
                               month: "short",
@@ -390,14 +395,14 @@ export function CaseWorkspace({
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Upload className="h-4 w-4" />
+                    <Upload className="h-4 w-4" style={{ color: '#982525' }} />
                   )}
                   Загрузить документ
                 </Button>
               </div>
-              <div className="flex-1 overflow-hidden p-2">
+              <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-2 pb-4">
+                  <div className="space-y-2 pb-4 px-2">
                     {isDocumentsLoading ? (
                       <div className="rounded-lg border border-dashed px-4 py-8 text-center">
                         <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
@@ -419,7 +424,7 @@ export function CaseWorkspace({
                         <div
                           key={document.id}
                           className="group rounded-lg border bg-card p-3 transition-all hover:shadow-sm"
-                          style={{ border: '2px solid #000', background: '#fafaf5' }}
+                          style={{ border: '1px solid #000', background: '#fafaf5' }}
                         >
                           <div className="flex items-start gap-3">
                             <div className="rounded-md bg-primary/10 p-2 text-primary">
@@ -498,7 +503,7 @@ export function CaseWorkspace({
                   >
                     {message.role === "user" ? (
                       <div className="max-w-full md:max-w-[80%]">
-                        <div className="rounded-2xl bg-muted px-4 py-3" style={{ background: '#fafaf5', border: '2px solid #000', borderLeft: '4px solid #982525' }}>
+                        <div className="rounded-2xl bg-muted px-4 py-3" style={{ background: '#fafaf5', border: '1px solid #000' }}>
                           <p className="whitespace-pre-wrap text-sm text-foreground/90">
                             {message.content}
                           </p>
@@ -515,7 +520,7 @@ export function CaseWorkspace({
                             />
                           </div>
                         )}
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90" style={{ background: '#f0f0eb', border: '2px solid #000', borderLeft: '4px solid #304c7a', padding: '1rem', borderRadius: '0.5rem' }}>
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90" style={{ background: '#f0f0eb', border: '1px solid #000', padding: '1rem', borderRadius: '0.5rem' }}>
                             <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
@@ -627,7 +632,7 @@ export function CaseWorkspace({
                 placeholder="Опишите ситуацию, вопрос или запрос к защитнику…"
                 className="min-h-[100px] resize-none"
                 disabled={isLoading || isLoadingChats}
-                style={{ border: '3px solid #000', background: '#fafaf5' }}
+                style={{ border: '1px solid #000', background: '#fafaf5' }}
               />
               <div className="flex items-center justify-between gap-3">
                 <Button
@@ -641,21 +646,21 @@ export function CaseWorkspace({
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Paperclip className="h-4 w-4" />
+                    <Paperclip className="h-4 w-4" style={{ color: '#982525' }} />
                   )}
                   {isUploadingDocument ? "Обработка…" : "Прикрепить"}
                 </Button>
               <Button 
                 type="submit" 
                 disabled={isLoading || isUploadingDocument || isLoadingChats || !input.trim()} 
-                variant="secondary"
+                variant="outline"
                 className="gap-2"
-                style={{ background: '#982525', color: '#fff', border: '1px solid #000' }}
+                style={{ border: '1px solid #000', background: '#fafaf5' }}
               >
                 {isLoading || isLoadingChats ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-4 w-4" style={{ color: '#982525' }} />
                 )}
                 {isLoadingChats ? "Загрузка..." : "Отправить"}
               </Button>
