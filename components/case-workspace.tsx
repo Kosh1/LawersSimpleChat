@@ -317,7 +317,7 @@ export function CaseWorkspace({
               </div>
               <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-1 pb-4 px-2">
+                  <div className="space-y-1 pb-4 px-2 pt-2">
                     {isLoadingChats ? (
                       <div className="rounded-lg border border-dashed px-4 py-8 text-center">
                         <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
@@ -353,9 +353,9 @@ export function CaseWorkspace({
                             borderLeftWidth: session.id === activeSessionId ? '2px' : '0'
                           }}
                         >
-                          <div className="flex w-full items-center gap-2">
+                          <div className="flex w-full items-center gap-2 min-w-0">
                             <MessageSquare className="h-4 w-4 flex-shrink-0" style={{ color: '#982525' }} />
-                            <span className="flex-1 truncate text-sm font-medium">
+                            <span className="flex-1 text-sm font-medium break-words overflow-wrap-anywhere" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                               {session.title || "Новый чат"}
                             </span>
                           </div>
