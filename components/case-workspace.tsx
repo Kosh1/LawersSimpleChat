@@ -526,7 +526,7 @@ export function CaseWorkspace({
                             <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
-                              p: ({ children }) => <p className="text-base font-normal leading-relaxed mb-3 last:mb-0">{children}</p>,
+                              p: ({ children }) => <p className="text-base font-normal leading-relaxed mb-3 last:mb-0" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{children}</p>,
                               h1: ({ children }) => <h1 className="text-xl font-bold mb-3 mt-6 first:mt-0">{children}</h1>,
                               h2: ({ children }) => <h2 className="text-lg font-bold mb-3 mt-5 first:mt-0">{children}</h2>,
                               h3: ({ children }) => <h3 className="text-base font-bold mb-2 mt-4 first:mt-0">{children}</h3>,
