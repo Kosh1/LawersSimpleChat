@@ -160,10 +160,10 @@ export function CaseSelectionScreen({
                 return (
                   <div
                     key={project.id}
-                    className="retro-workspace-card group flex flex-col cursor-pointer"
+                    className="retro-workspace-card group cursor-pointer"
                     onClick={() => onSelectProject(project.id)}
                   >
-                    <div className="p-6 flex flex-col flex-1">
+                    <div className="p-6 flex flex-col">
                         <div className="mb-4 flex items-center justify-between gap-2">
                           <div className="rounded-lg p-2 shrink-0" style={{ background: '#f0f0eb' }}>
                             <Bot className="h-5 w-5" style={{ color: '#982525' }} />
@@ -201,7 +201,7 @@ export function CaseSelectionScreen({
                         <h3 className="retro-workspace h3 mb-3 leading-tight" style={{ fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', fontSize: '1rem', textTransform: 'uppercase', color: '#000' }}>
                           {project.name.toUpperCase()}
                         </h3>
-                        <div className="flex flex-col flex-1 space-y-2" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace", fontSize: '0.85rem' }}>
+                        <div className="flex flex-col space-y-2" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace", fontSize: '0.85rem' }}>
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 shrink-0" style={{ color: '#982525' }} />
                             <span>
@@ -224,7 +224,7 @@ export function CaseSelectionScreen({
                                 : "чатов"}
                             </span>
                           </div>
-                          <div className="mt-auto pt-3 border-t" style={{ borderTop: '1px solid #000', marginTop: 'auto' }}>
+                          <div className="pt-3 border-t" style={{ borderTop: '1px solid #000' }}>
                             <span className="text-xs" style={{ fontFamily: "'Courier New', 'Monaco', monospace" }}>
                               Обновлено: {lastUpdate.toLocaleDateString("ru-RU")}
                             </span>
