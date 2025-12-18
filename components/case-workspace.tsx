@@ -413,10 +413,10 @@ export function CaseWorkspace({
           {/* Documents View */}
           {sidebarView === 'documents' && (
             <>
-              <div className="border-b p-4">
+              <div className="border-b p-4" style={{ borderBottom: `1px solid ${borderColor}` }}>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Документы проекта</h3>
-                  {isDocumentsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                  <h3 className="text-sm font-semibold" style={{ color: textColor }}>Документы проекта</h3>
+                  {isDocumentsLoading && <Loader2 className="h-4 w-4 animate-spin" style={{ color: mutedTextColor }} />}
                 </div>
                 <Button
                   onClick={handleAttachButtonClick}
@@ -424,14 +424,14 @@ export function CaseWorkspace({
                   variant="outline"
                   className="w-full gap-2"
                   size="sm"
-                  style={{ border: '1px solid #000', background: '#fafaf5' }}
+                  style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', color: textColor }}
                 >
                   {isUploadingDocument ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: textColor }} />
                   ) : (
                     <Upload className="h-4 w-4" style={{ color: isDarkMode ? textColor : '#982525' }} />
                   )}
-                  Загрузить документ
+                  <span style={{ color: textColor }}>Загрузить документ</span>
                 </Button>
               </div>
               <div className="flex-1 overflow-hidden">
