@@ -147,7 +147,7 @@ export function CaseWorkspace({
   return (
     <div className="flex h-screen flex-col bg-background" style={{ background: '#fafaf5' }}>
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '3px solid #982525' }}>
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '1px solid #982525' }}>
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onBack} className="hidden sm:flex">
@@ -247,7 +247,7 @@ export function CaseWorkspace({
             "fixed inset-y-0 left-0 z-40 flex w-80 flex-col border-r bg-muted/30 transition-transform duration-300 md:static md:translate-x-0",
             isSidebarOpen ? "translate-x-0" : "-translate-x-full",
           )}
-          style={{ background: '#f0f0eb', borderRight: '3px solid #000' }}
+          style={{ background: '#f0f0eb', borderRight: '1px solid #000' }}
         >
           {/* Mobile Header */}
           <div className="flex items-center justify-between border-b p-4 md:hidden">
@@ -265,7 +265,7 @@ export function CaseWorkspace({
           </div>
 
           {/* Tab Switcher */}
-          <div className="border-b bg-background/50" style={{ background: '#f0f0eb', borderBottom: '3px solid #000' }}>
+          <div className="border-b bg-background/50" style={{ background: '#f0f0eb', borderBottom: '1px solid #000' }}>
             <div className="flex">
               <button
                 onClick={() => setSidebarView('chats')}
@@ -310,7 +310,7 @@ export function CaseWorkspace({
                   <h3 className="text-sm font-semibold">Чаты проекта</h3>
                   {isLoadingChats && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                 </div>
-                <Button onClick={onNewChat} variant="secondary" className="w-full gap-2" style={{ background: '#982525', color: '#fff', border: '3px solid #000' }}>
+                <Button onClick={onNewChat} variant="secondary" className="w-full gap-2" style={{ background: '#982525', color: '#fff', border: '1px solid #000' }}>
                   <Plus className="h-4 w-4" />
                   Новый чат
                 </Button>
@@ -385,7 +385,7 @@ export function CaseWorkspace({
                   variant="outline"
                   className="w-full gap-2"
                   size="sm"
-                  style={{ border: '3px solid #000', background: '#fafaf5' }}
+                  style={{ border: '1px solid #000', background: '#fafaf5' }}
                 >
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -609,7 +609,7 @@ export function CaseWorkspace({
           </div>
 
           {/* Message Input */}
-          <div className="border-t bg-background p-4" style={{ background: '#fafaf5', borderTop: '3px solid #000' }}>
+          <div className="border-t bg-background p-4" style={{ background: '#fafaf5', borderTop: '1px solid #000' }}>
             <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-4xl flex-col gap-3">
               <input
                 ref={fileInputRef}
@@ -636,7 +636,7 @@ export function CaseWorkspace({
                   onClick={handleAttachButtonClick}
                   disabled={isUploadingDocument}
                   className="gap-2"
-                  style={{ border: '3px solid #000', background: '#fafaf5' }}
+                  style={{ border: '1px solid #000', background: '#fafaf5' }}
                 >
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -650,7 +650,7 @@ export function CaseWorkspace({
                 disabled={isLoading || isUploadingDocument || isLoadingChats || !input.trim()} 
                 variant="secondary"
                 className="gap-2"
-                style={{ background: '#982525', color: '#fff', border: '3px solid #000' }}
+                style={{ background: '#982525', color: '#fff', border: '1px solid #000' }}
               >
                 {isLoading || isLoadingChats ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

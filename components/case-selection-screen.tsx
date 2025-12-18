@@ -108,7 +108,7 @@ export function CaseSelectionScreen({
 
   return (
     <div className="flex min-h-screen flex-col bg-background" style={{ background: '#fafaf5' }}>
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '3px solid #982525' }}>
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '1px solid #982525' }}>
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Bot className="h-6 w-6" style={{ color: '#982525' }} />
@@ -119,10 +119,10 @@ export function CaseSelectionScreen({
       </header>
 
       <main className="container flex-1 px-4 py-8">
-        <div className="mx-auto max-w-5xl">
+        <div className="max-w-5xl">
           <div className="mb-8 flex items-start justify-between gap-4 mt-8">
             <div className="flex-1"></div>
-            <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2 shrink-0" style={{ background: '#982525', color: '#fff', border: '3px solid #000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', textTransform: 'uppercase' }}>
+            <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2 shrink-0" style={{ background: '#982525', color: '#fff', border: '1px solid #000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', textTransform: 'uppercase' }}>
               <FolderPlus className="h-5 w-5" />
               Создать новое дело
             </Button>
@@ -133,7 +133,7 @@ export function CaseSelectionScreen({
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : projects.length === 0 ? (
-            <Card className="border-dashed" style={{ border: '3px dashed #000', background: '#fafaf5' }}>
+            <Card className="border-dashed" style={{ border: '1px dashed #000', background: '#fafaf5' }}>
               <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="rounded-full bg-muted p-6" style={{ background: '#f0f0eb' }}>
                   <FolderPlus className="h-12 w-12 text-muted-foreground" style={{ color: '#982525' }} />
@@ -142,7 +142,7 @@ export function CaseSelectionScreen({
                 <p className="mt-2 max-w-md text-sm text-muted-foreground" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
                   Создайте первое дело, чтобы начать загружать документы и общаться с AI-помощником
                 </p>
-                <Button onClick={handleOpenDialog} variant="secondary" className="mt-6 gap-2" style={{ background: '#982525', color: '#fff', border: '3px solid #000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', textTransform: 'uppercase' }}>
+                <Button onClick={handleOpenDialog} variant="secondary" className="mt-6 gap-2" style={{ background: '#982525', color: '#fff', border: '1px solid #000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', textTransform: 'uppercase' }}>
                   <FolderPlus className="h-4 w-4" />
                   Создать первое дело
                 </Button>
@@ -162,7 +162,7 @@ export function CaseSelectionScreen({
                         "group cursor-pointer transition-all hover:border-foreground/20 hover:shadow-md flex flex-col",
                       )}
                       onClick={() => onSelectProject(project.id)}
-                      style={{ border: '3px solid #000', background: '#fafaf5' }}
+                      style={{ border: '1px solid #000', background: '#fafaf5' }}
                     >
                       <CardContent className="p-6 flex flex-col flex-1">
                         <div className="mb-4 flex items-center justify-between gap-2">
