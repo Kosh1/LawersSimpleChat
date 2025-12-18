@@ -317,7 +317,7 @@ export function CaseWorkspace({
               </div>
               <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                  <div className="space-y-1 pb-4 px-2">
+                  <div className="space-y-1 pb-4 px-2 pt-2">
                     {isLoadingChats ? (
                       <div className="rounded-lg border border-dashed px-4 py-8 text-center">
                         <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
@@ -350,12 +350,14 @@ export function CaseWorkspace({
                             background: session.id === activeSessionId ? '#f0f0eb' : 'transparent', 
                             color: '#000',
                             borderLeftColor: session.id === activeSessionId ? '#982525' : 'transparent',
-                            borderLeftWidth: session.id === activeSessionId ? '2px' : '0'
+                            borderLeftWidth: session.id === activeSessionId ? '2px' : '0',
+                            maxWidth: '100%',
+                            overflow: 'hidden'
                           }}
                         >
-                          <div className="flex w-full items-center gap-2">
-                            <MessageSquare className="h-4 w-4 flex-shrink-0" style={{ color: '#982525' }} />
-                            <span className="flex-1 truncate text-sm font-medium">
+                          <div className="flex w-full items-start gap-2 min-w-0" style={{ width: '100%' }}>
+                            <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: '#982525' }} />
+                            <span className="flex-1 text-sm font-medium break-words" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', lineHeight: '1.4', minWidth: 0 }}>
                               {session.title || "Новый чат"}
                             </span>
                           </div>
