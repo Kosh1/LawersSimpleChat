@@ -3,7 +3,8 @@
 .retro-workspace {
   background: #fafaf5;
   color: #000;
-  font-family: 'Courier New', 'Monaco', monospace;
+  font-family: var(--font-roboto), 'Roboto', sans-serif;
+  font-weight: 400;
   min-height: 100vh;
 }
 
@@ -11,10 +12,10 @@
 .retro-workspace h1,
 .retro-workspace h2,
 .retro-workspace h3 {
-  font-family: 'Courier New', 'Monaco', monospace;
-  font-weight: bold;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  font-family: var(--font-roboto), 'Roboto', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
   color: #000;
 }
 

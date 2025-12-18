@@ -145,7 +145,7 @@ export function CaseWorkspace({
   );
 
   return (
-    <div className="flex h-screen flex-col bg-background" style={{ background: '#fafaf5' }}>
+    <div className="flex h-screen flex-col bg-background" style={{ background: '#fafaf5', fontFamily: 'var(--font-roboto), Roboto, sans-serif', fontWeight: 400 }}>
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '1px solid #982525' }}>
         <div className="flex h-16 items-center justify-between px-4">

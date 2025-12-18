@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
+const roboto = Roboto({ 
+  weight: '400',
+  subsets: ["latin", "cyrillic"],
+  variable: '--font-roboto'
+});
 
 export const metadata: Metadata = {
   title: "Джихелпер — ИИ-помощник для юристов",
@@ -59,7 +64,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${roboto.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
