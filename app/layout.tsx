@@ -7,12 +7,12 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "jHelper — ИИ-помощник для юристов",
+  title: "Джихелпер — ИИ-помощник для юристов",
   description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
   keywords: "юридический ИИ, помощник юриста, анализ документов, подготовка исков, работа с договорами, искусственный интеллект для юристов",
-  authors: [{ name: "jHelper" }],
-  creator: "jHelper",
-  publisher: "jHelper",
+  authors: [{ name: "Джихелпер" }],
+  creator: "Джихелпер",
+  publisher: "Джихелпер",
   formatDetection: {
     email: false,
     address: false,
@@ -23,17 +23,17 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "jHelper — ИИ-помощник для юристов",
+    title: "Джихелпер — ИИ-помощник для юристов",
     description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
     url: '/',
-    siteName: 'jHelper',
+    siteName: 'Джихелпер',
     type: "website",
     locale: "ru_RU",
     countryName: "Russia",
   },
   twitter: {
     card: "summary_large_image",
-    title: "jHelper — ИИ-помощник для юристов",
+    title: "Джихелпер — ИИ-помощник для юристов",
     description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
   },
   robots: {

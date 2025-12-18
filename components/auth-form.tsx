@@ -6,10 +6,253 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoBox } from "@/components/ui/info-box";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+
+// Ретро стиль клавиатур (винтажный)
+const retroStyles = `
+  @keyframes blink {
+    0%, 50% { border-color: #000; }
+    51%, 100% { border-color: transparent; }
+  }
+  
+  .retro-bg {
+    background: #f5f5f0;
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.02) 2px,
+        rgba(0, 0, 0, 0.02) 4px
+      );
+    position: relative;
+  }
+  
+  .retro-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(0, 0, 0, 0.01) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.01) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  
+  .retro-card {
+    background: #fafaf5;
+    border: 3px solid #2a2a2a;
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.15),
+      0 8px 16px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    position: relative;
+    font-family: 'Courier New', 'Monaco', monospace;
+  }
+  
+  .retro-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, 
+      #2a2a2a 0%, 
+      #4a4a4a 25%, 
+      #2a2a2a 50%, 
+      #4a4a4a 75%, 
+      #2a2a2a 100%
+    );
+  }
+  
+  .retro-title {
+    color: #000;
+    font-family: 'Courier New', 'Monaco', monospace;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .retro-title::after {
+    content: '_';
+    animation: blink 1s infinite;
+    margin-left: 2px;
+  }
+  
+  .retro-label {
+    color: #000;
+    font-family: 'Courier New', 'Monaco', monospace;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+  }
+  
+  .retro-input {
+    background: #ffffff;
+    border: 2px solid #4a4a4a;
+    border-top-color: #2a2a2a;
+    border-left-color: #2a2a2a;
+    border-right-color: #6a6a6a;
+    border-bottom-color: #6a6a6a;
+    color: #000;
+    font-family: 'Courier New', 'Monaco', monospace;
+    box-shadow: 
+      inset 2px 2px 4px rgba(0, 0, 0, 0.1),
+      0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.2s;
+  }
+  
+  .retro-input:focus {
+    outline: none;
+    border-color: #2a2a2a;
+    background: #fffef5;
+    box-shadow: 
+      inset 2px 2px 4px rgba(0, 0, 0, 0.15),
+      0 0 0 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .retro-input::placeholder {
+    color: #888;
+    font-style: italic;
+  }
+  
+  .retro-button {
+    background: #982525 !important;
+    border: 3px solid #2a2a2a !important;
+    border-top-color: #4a4a4a !important;
+    border-left-color: #4a4a4a !important;
+    border-right-color: #1a1a1a !important;
+    border-bottom-color: #1a1a1a !important;
+    color: #fff !important;
+    font-family: 'Courier New', 'Monaco', monospace !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    box-shadow: 
+      0 3px 6px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.15s !important;
+    position: relative !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+    padding: 0.75rem 1.5rem !important;
+    font-size: 0.875rem !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 44px !important;
+    line-height: 1.5 !important;
+  }
+  
+  .retro-button:hover:not(:disabled) {
+    background: #b03030;
+    transform: translateY(-1px);
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  }
+  
+  .retro-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.3),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .retro-button:disabled {
+    background: #6a6a6a;
+    color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  .retro-info-box {
+    background: #f0f0eb;
+    border: 2px solid #4a4a4a;
+    border-top-color: #6a6a6a;
+    border-left-color: #6a6a6a;
+    border-right-color: #2a2a2a;
+    border-bottom-color: #2a2a2a;
+    box-shadow: 
+      inset 2px 2px 4px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Courier New', 'Monaco', monospace;
+  }
+  
+  .retro-info-text {
+    color: #000;
+    font-weight: 500;
+  }
+  
+  .retro-calendly-button {
+    background: #982525 !important;
+    border: 3px solid #2a2a2a !important;
+    border-top-color: #4a4a4a !important;
+    border-left-color: #4a4a4a !important;
+    border-right-color: #1a1a1a !important;
+    border-bottom-color: #1a1a1a !important;
+    color: #fff !important;
+    font-family: 'Courier New', 'Monaco', monospace !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    box-shadow: 
+      0 3px 6px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.15s !important;
+    position: relative !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+    padding: 0.75rem 1.5rem !important;
+    font-size: 0.875rem !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 44px !important;
+    line-height: 1.5 !important;
+  }
+  
+  .retro-calendly-button:hover:not(:disabled) {
+    background: #b03030;
+    transform: translateY(-1px);
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  }
+  
+  .retro-calendly-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.3),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .retro-loading {
+    color: #000;
+    font-family: 'Courier New', 'Monaco', monospace;
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+  
+  .retro-spinner {
+    border-color: #4a4a4a;
+    border-top-color: #000;
+  }
+  
+  .retro-description {
+    color: #333;
+    font-family: 'Courier New', 'Monaco', monospace;
+    font-size: 0.9rem;
+  }
+`;
 
 export function AuthForm() {
   const [email, setEmail] = useState("");
@@ -88,104 +331,99 @@ export function AuthForm() {
   // Show loading while checking auth
   if (authLoading || user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent" />
-          <p className="mt-4 text-gray-600">Загрузка...</p>
+      <>
+        <style>{retroStyles}</style>
+        <div className="retro-bg flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="retro-spinner inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent" />
+            <p className="retro-loading mt-4">ЗАГРУЗКА...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <div className="w-full max-w-md space-y-4">
-        <Card className="shadow-[0_4px_14px_rgba(0,0,0,0.12)]">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">
-              Войти
-            </CardTitle>
-            <CardDescription>
-              Введите email и пароль для входа
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Пароль</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  required
-                  minLength={6}
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                type="submit"
-                className="w-full transition-all duration-200"
-                disabled={loading || !isFormValid}
+    <>
+      <style>{retroStyles}</style>
+      <div className="retro-bg flex min-h-screen items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-4">
+          <Card className="retro-card">
+            <CardHeader className="space-y-1 pt-6">
+              <CardTitle className="retro-title text-2xl font-bold">
+                ВХОД В СИСТЕМУ
+              </CardTitle>
+              <CardDescription className="retro-description text-sm">
+                Введите email и пароль для входа
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleSubmit}>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="retro-label">
+                    EMAIL:
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    required
+                    className="retro-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="retro-label">
+                    ПАРОЛЬ:
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    required
+                    minLength={6}
+                    className="retro-input"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="!p-6 !pt-4">
+                <Button
+                  type="submit"
+                  className="retro-button w-full"
+                  disabled={loading || !isFormValid}
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  ВОЙТИ
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+          <div className="retro-info-box p-6 w-full">
+            <div className="space-y-3">
+              <p className="retro-info-text text-sm text-center">
+                Регистрация доступна только после звонка
+              </p>
+              <button
+                type="button"
+                onClick={handleCalendlyClick}
+                className="retro-calendly-button w-full"
+                style={{
+                  borderRadius: '0.5rem',
+                  cursor: 'pointer',
+                }}
               >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Войти
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-        <InfoBox variant="muted" className="p-4 w-full">
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground text-center">
-              Регистрация доступна только после звонка
-            </p>
-            <button
-              type="button"
-              onClick={handleCalendlyClick}
-              disabled={loading}
-              className="w-full bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                padding: '0.75rem 1.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                border: 'none',
-                borderRadius: '0.5rem',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 14px rgba(16, 130, 166, 0.3)'
-              }}
-              onMouseOver={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 130, 166, 0.4)';
-                }
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 130, 166, 0.3)';
-              }}
-            >
-              Записаться на звонок
-            </button>
+                ЗАПИСАТЬСЯ НА ЗВОНОК
+              </button>
+            </div>
           </div>
-        </InfoBox>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import './Header.css';
+import './retro-landing.css';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -28,28 +29,20 @@ const Header = () => {
   };
 
   return (
-    <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="header-container">
-        <div className="header-logo text-foreground" style={{ fontWeight: '700', fontSize: '1.25rem' }}>
-          jHelper
+    <header className={`retro-header ${isScrolled ? 'scrolled' : ''}`}>
+      <div className="retro-header-container">
+        <div className="retro-logo">
+          ДЖИХЕЛПЕР
         </div>
-        <nav className="nav">
-          <button onClick={() => scrollToSection('introduction')}>О системе</button>
-          <button onClick={() => scrollToSection('products')}>Возможности</button>
-          <button onClick={() => scrollToSection('contact')}>Контакты</button>
+        <nav className="retro-nav">
+          <button onClick={() => scrollToSection('introduction')}>О СИСТЕМЕ</button>
+          <button onClick={() => scrollToSection('products')}>ВОЗМОЖНОСТИ</button>
+          <button onClick={() => scrollToSection('contact')}>КОНТАКТЫ</button>
           <button 
             onClick={handleLogin}
-            className="bg-primary text-primary-foreground hover:opacity-90"
-            style={{
-              padding: '0.5rem 1.5rem',
-              border: 'none',
-              borderRadius: '0.375rem',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
+            className="retro-button"
           >
-            Войти
+            ВОЙТИ
           </button>
         </nav>
       </div>
@@ -58,6 +51,8 @@ const Header = () => {
 };
 
 export default Header;
+
+
 
 
 

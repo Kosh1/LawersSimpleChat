@@ -1,54 +1,77 @@
 'use client';
 
+import { useState } from 'react';
 import { features, useCases, security } from '@/lib/usefull/data/features';
 import './ProductsSection.css';
+import './retro-landing.css';
 
 const FeaturesSection = () => {
+  const [expandedCard, setExpandedCard] = useState<number | null>(0);
+  
+  // Цвета для заголовков карточек (приглушенные)
+  const cardColors = ['#a01a2a', '#b84d1f', '#b88a2f', '#253d5f', '#a01a2a', '#b84d1f'];
+  
   return (
     <>
-      <section id="products" className="products-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>Возможности системы</h2>
-            <p>Комплексные инструменты для эффективной юридической работы</p>
-          </div>
-          <div className="products-grid">
-            {features.map((feature) => (
-              <div key={feature.id} className="feature-card bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
-                <div className="feature-icon" style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-                  {feature.icon}
+      <section id="products" className="retro-section">
+        <div>
+          <h2 className="retro-section-title">ВОЗМОЖНОСТИ СИСТЕМЫ</h2>
+          <p className="retro-section-subtitle">Комплексные инструменты для эффективной юридической работы</p>
+          <div className="retro-card-stack">
+            <div className="retro-stack-headers">
+              {features.map((feature, idx) => {
+                const isExpanded = expandedCard === idx;
+                const cardColor = cardColors[idx];
+                
+                return (
+                  <div 
+                    key={feature.id} 
+                    className={`retro-stack-header ${isExpanded ? 'expanded' : ''}`}
+                    style={{ 
+                      backgroundColor: cardColor
+                    }}
+                    onClick={() => setExpandedCard(idx)}
+                  >
+                    <h3 className="retro-stack-header-title">
+                      {feature.name.toUpperCase()}
+                    </h3>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="retro-stack-content">
+              {expandedCard !== null && (
+                <div className="retro-stack-card-expanded" style={{ backgroundColor: cardColors[expandedCard] }}>
+                  <div className="retro-stack-card-content">
+                    <p className="retro-card-text" style={{ marginBottom: '1rem', color: '#fff' }}>
+                      {features[expandedCard].description}
+                    </p>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                      {features[expandedCard].benefits.map((benefit, benefitIdx) => (
+                        <li key={benefitIdx} className="retro-card-text" style={{ 
+                          padding: '0.5rem 0', 
+                          fontSize: '0.9rem',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          color: '#fff'
+                        }}>
+                          <span style={{ marginRight: '0.5rem', fontWeight: '700', color: '#fff' }}>✓</span>
+                          <span>{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <h3 className="feature-title text-card-foreground" style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.75rem' }}>
-                  {feature.name}
-                </h3>
-                <p className="feature-description text-muted-foreground" style={{ marginBottom: '1rem', lineHeight: '1.6' }}>
-                  {feature.description}
-                </p>
-                <ul className="feature-benefits" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {feature.benefits.map((benefit, idx) => (
-                    <li key={idx} className="text-muted-foreground" style={{ 
-                      padding: '0.5rem 0', 
-                      fontSize: '0.95rem',
-                      display: 'flex',
-                      alignItems: 'flex-start'
-                    }}>
-                      <span className="text-primary" style={{ marginRight: '0.5rem', fontWeight: '700' }}>✓</span>
-                      <span>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="products-section bg-secondary/50">
-        <div className="container">
-          <div className="section-header">
-            <h2>Как это работает</h2>
-            <p>Примеры использования в реальной практике</p>
-          </div>
+      <section className="retro-section" style={{ background: '#f0f0eb' }}>
+        <div>
+          <h2 className="retro-section-title">КАК ЭТО РАБОТАЕТ</h2>
+          <p className="retro-section-subtitle">Примеры использования в реальной практике</p>
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
@@ -56,11 +79,11 @@ const FeaturesSection = () => {
             marginTop: '2rem'
           }}>
             {useCases.map((useCase, idx) => (
-              <div key={idx} className="bg-card border border-border rounded-lg p-8 hover:shadow-md transition-shadow">
-                <h3 className="text-card-foreground" style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
-                  {useCase.title}
+              <div key={idx} className="retro-card">
+                <h3 className="retro-card-title">
+                  {useCase.title.toUpperCase()}
                 </h3>
-                <p className="text-muted-foreground" style={{ lineHeight: '1.6' }}>
+                <p className="retro-card-text">
                   {useCase.description}
                 </p>
               </div>
@@ -69,12 +92,10 @@ const FeaturesSection = () => {
         </div>
       </section>
 
-      <section className="products-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>{security.title}</h2>
-            <p>Ваши данные под надёжной защитой</p>
-          </div>
+      <section className="retro-section">
+        <div>
+          <h2 className="retro-section-title">{security.title.toUpperCase()}</h2>
+          <p className="retro-section-subtitle">Ваши данные под надёжной защитой</p>
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
@@ -82,14 +103,11 @@ const FeaturesSection = () => {
             marginTop: '2rem'
           }}>
             {security.items.map((item, idx) => (
-              <div key={idx} className="text-center p-6">
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-                  {item.icon}
-                </div>
-                <h3 className="text-card-foreground" style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem' }}>
-                  {item.title}
+              <div key={idx} className="retro-card" style={{ textAlign: 'center' }}>
+                <h3 className="retro-card-title" style={{ fontSize: '1rem' }}>
+                  {item.title.toUpperCase()}
                 </h3>
-                <p className="text-muted-foreground" style={{ lineHeight: '1.6' }}>
+                <p className="retro-card-text">
                   {item.description}
                 </p>
               </div>
@@ -102,5 +120,8 @@ const FeaturesSection = () => {
 };
 
 export default FeaturesSection;
+
+
+
 
 

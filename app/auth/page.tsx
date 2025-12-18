@@ -1,7 +1,7 @@
 import { AuthForm } from "@/components/auth-form";
 
 export const metadata = {
-  title: "Авторизация | jHelper",
+  title: "Авторизация | Джихелпер",
   description: "Войдите в свой аккаунт или создайте новый",
 };
 

@@ -10,6 +10,7 @@ import ContactSection from '@/components/usefull/ContactSection';
 import Footer from '@/components/usefull/Footer';
 import '@/components/usefull/App.css';
 import '@/app/usefull/index.css';
+import '@/components/usefull/retro-landing.css';
 
 export default function HomePage() {
   const router = useRouter();
@@ -25,10 +26,10 @@ export default function HomePage() {
   // Show loading while checking auth (fallback)
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="retro-landing flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent" />
-          <p className="mt-4 text-gray-600">Загрузка...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-4a4a4a border-r-transparent" />
+          <p className="mt-4" style={{ color: '#000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', letterSpacing: '2px' }}>ЗАГРУЗКА...</p>
         </div>
       </div>
     );
@@ -37,10 +38,10 @@ export default function HomePage() {
   // If user is authenticated, show loading while redirecting (fallback)
   if (user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="retro-landing flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent" />
-          <p className="mt-4 text-gray-600">Переход в рабочее пространство...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-4a4a4a border-r-transparent" />
+          <p className="mt-4" style={{ color: '#000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', letterSpacing: '2px' }}>ПЕРЕХОД В РАБОЧЕЕ ПРОСТРАНСТВО...</p>
         </div>
       </div>
     );
@@ -48,7 +49,7 @@ export default function HomePage() {
 
   // Show landing page for non-authenticated users
   return (
-    <div className="App">
+    <div className="App retro-landing">
       <Header />
       <Introduction />
       <FeaturesSection />
