@@ -66,6 +66,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <DevAutoAuth />
           {children}
           <Toaster />
         </ThemeProvider>

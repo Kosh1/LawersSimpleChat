@@ -107,12 +107,12 @@ export function CaseSelectionScreen({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex min-h-screen flex-col retro-workspace">
+      <header className="retro-workspace-header">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <Bot className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-xl font-bold">AI-юрист</h1>
+            <Bot className="h-6 w-6" style={{ color: '#982525' }} />
+            <h1 className="retro-workspace h1">ДЖИХЕЛПЕР</h1>
           </div>
           <ThemeToggle />
         </div>
@@ -122,15 +122,15 @@ export function CaseSelectionScreen({
         <div className="mx-auto max-w-5xl">
           <div className="mb-8 flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-3xl font-bold tracking-tight">Мои дела</h2>
-              <p className="mt-2 text-muted-foreground">
+              <h2 className="retro-workspace h2">МОИ ДЕЛА</h2>
+              <p className="mt-2" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
                 Выберите дело для работы или создайте новое
               </p>
             </div>
-            <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2 shrink-0">
+            <button onClick={handleOpenDialog} className="retro-workspace-button gap-2 shrink-0 flex items-center">
               <FolderPlus className="h-5 w-5" />
-              Создать новое дело
-            </Button>
+              СОЗДАТЬ НОВОЕ ДЕЛО
+            </button>
           </div>
 
           {isLoading ? (
@@ -138,21 +138,21 @@ export function CaseSelectionScreen({
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : projects.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="rounded-full bg-muted p-6">
-                  <FolderPlus className="h-12 w-12 text-muted-foreground" />
+            <div className="retro-workspace-card border-dashed">
+              <div className="retro-workspace-empty">
+                <div className="rounded-full p-6" style={{ background: '#f0f0eb', display: 'inline-block' }}>
+                  <FolderPlus className="h-12 w-12" style={{ color: '#982525' }} />
                 </div>
-                <h3 className="mt-6 text-xl font-semibold">Нет дел</h3>
-                <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                <h3 className="retro-workspace h3">НЕТ ДЕЛ</h3>
+                <p>
                   Создайте первое дело, чтобы начать загружать документы и общаться с AI-помощником
                 </p>
-                <Button onClick={handleOpenDialog} variant="secondary" className="mt-6 gap-2">
+                <button onClick={handleOpenDialog} className="retro-workspace-button mt-6 gap-2 flex items-center">
                   <FolderPlus className="h-4 w-4" />
-                  Создать первое дело
-                </Button>
-              </CardContent>
-            </Card>
+                  СОЗДАТЬ ПЕРВОЕ ДЕЛО
+                </button>
+              </div>
+            </div>
           ) : (
             <ScrollArea className="h-[calc(100vh-280px)]">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
@@ -161,14 +161,12 @@ export function CaseSelectionScreen({
                   const lastUpdate = new Date(project.updated_at ?? project.created_at);
 
                   return (
-                    <Card
+                    <div
                       key={project.id}
-                      className={cn(
-                        "group cursor-pointer transition-all hover:border-foreground/20 hover:shadow-md flex flex-col",
-                      )}
+                      className="retro-workspace-card group flex flex-col"
                       onClick={() => onSelectProject(project.id)}
                     >
-                      <CardContent className="p-6 flex flex-col flex-1">
+                      <div className="p-6 flex flex-col flex-1">
                         <div className="mb-4 flex items-center justify-between gap-2">
                           <div className="rounded-lg bg-muted p-2 text-muted-foreground shrink-0">
                             <Bot className="h-5 w-5" />
@@ -203,12 +201,12 @@ export function CaseSelectionScreen({
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                        <h3 className="mb-3 text-lg font-semibold leading-tight">
-                          {project.name}
+                        <h3 className="retro-workspace h3 mb-3 leading-tight">
+                          {project.name.toUpperCase()}
                         </h3>
-                        <div className="space-y-2 text-sm text-muted-foreground flex-1">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 shrink-0" />
+                        <div className="retro-workspace-stats flex-1">
+                          <div className="retro-workspace-stats-item">
+                            <FileText className="h-4 w-4 shrink-0" style={{ color: '#982525' }} />
                             <span>
                               {stats.documentCount}{" "}
                               {stats.documentCount === 1
@@ -218,8 +216,8 @@ export function CaseSelectionScreen({
                                 : "документов"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <MessageSquare className="h-4 w-4 shrink-0" />
+                          <div className="retro-workspace-stats-item">
+                            <MessageSquare className="h-4 w-4 shrink-0" style={{ color: '#982525' }} />
                             <span>
                               {stats.chatCount}{" "}
                               {stats.chatCount === 1
@@ -229,14 +227,14 @@ export function CaseSelectionScreen({
                                 : "чатов"}
                             </span>
                           </div>
-                          <div className="mt-auto pt-3 border-t">
+                          <div className="retro-workspace-stats-item mt-auto pt-3" style={{ borderTop: '1px solid #000', width: '100%' }}>
                             <span className="text-xs">
                               Обновлено: {lastUpdate.toLocaleDateString("ru-RU")}
                             </span>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   );
                 })}
               </div>

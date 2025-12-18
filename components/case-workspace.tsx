@@ -145,40 +145,38 @@ export function CaseWorkspace({
   );
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col retro-workspace">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="retro-workspace-header">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onBack} className="hidden sm:flex">
+            <button onClick={onBack} className="retro-workspace-button-secondary hidden sm:flex" style={{ padding: '0.5rem', minWidth: 'auto' }}>
               <ArrowLeft className="h-5 w-5" />
               <span className="sr-only">Вернуться к списку дел</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
+            </button>
+            <button
               onClick={onBack}
-              className="sm:hidden"
+              className="retro-workspace-button-secondary sm:hidden"
+              style={{ padding: '0.5rem', minWidth: 'auto' }}
             >
               <ArrowLeft className="h-5 w-5" />
               <span className="sr-only">Назад</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
+            </button>
+            <button
               onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden"
+              className="retro-workspace-button-secondary md:hidden"
+              style={{ padding: '0.5rem', minWidth: 'auto' }}
             >
               <Menu className="h-5 w-5" />
               <span className="sr-only">Открыть меню</span>
-            </Button>
+            </button>
             <div className="flex items-center gap-2">
-              <div className="hidden rounded-lg bg-muted p-1.5 sm:block">
-                <Bot className="h-4 w-4 text-muted-foreground" />
+              <div className="hidden rounded-lg p-1.5 sm:block" style={{ background: '#f0f0eb' }}>
+                <Bot className="h-4 w-4" style={{ color: '#982525' }} />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold leading-tight">{project.name}</span>
-                <span className="hidden text-xs text-muted-foreground sm:block">
+                <span className="text-sm font-semibold leading-tight retro-workspace" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>{project.name}</span>
+                <span className="hidden text-xs sm:block" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
                   {isDocumentsLoading ? (
                     <>
                       <Loader2 className="inline h-3 w-3 animate-spin" /> документов
@@ -200,14 +198,14 @@ export function CaseWorkspace({
             {/* Model Selection Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="hidden sm:flex">
+                <button className="retro-workspace-button-secondary hidden sm:flex" style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }}>
                   <span className="text-xs">
                     {getModelDisplayName(selectedModel)}
                   </span>
                   <ChevronDown className="ml-2 h-3 w-3" />
-                </Button>
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="retro-workspace-dialog">
                 <DropdownMenuItem
                   onClick={() => onModelChange('openai')}
                   className={selectedModel === 'openai' ? 'bg-accent' : ''}
@@ -244,7 +242,7 @@ export function CaseWorkspace({
         {/* Left Sidebar - Chats & Documents with Toggle */}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 flex w-80 flex-col border-r bg-muted/30 transition-transform duration-300 md:static md:translate-x-0",
+            "retro-workspace-sidebar fixed inset-y-0 left-0 z-40 flex w-80 flex-col transition-transform duration-300 md:static md:translate-x-0",
             isSidebarOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
@@ -264,39 +262,33 @@ export function CaseWorkspace({
           </div>
 
           {/* Tab Switcher */}
-          <div className="border-b bg-background/50">
-            <div className="flex">
-              <button
-                onClick={() => setSidebarView('chats')}
-                className={cn(
-                  "flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all",
-                  sidebarView === 'chats'
-                    ? "border-b-2 border-primary text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span>Чаты</span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                  {sessions.length}
-                </span>
-              </button>
-              <button
-                onClick={() => setSidebarView('documents')}
-                className={cn(
-                  "flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all",
-                  sidebarView === 'documents'
-                    ? "border-b-2 border-primary text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <FileText className="h-4 w-4" />
-                <span>Документы</span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                  {project.documents.length}
-                </span>
-              </button>
-            </div>
+          <div className="retro-workspace-tabs">
+            <button
+              onClick={() => setSidebarView('chats')}
+              className={cn(
+                "retro-workspace-tab",
+                sidebarView === 'chats' ? 'active' : ''
+              )}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Чаты</span>
+              <span style={{ marginLeft: '0.5rem', background: '#982525', color: '#fff', padding: '0.125rem 0.5rem', borderRadius: '0' }}>
+                {sessions.length}
+              </span>
+            </button>
+            <button
+              onClick={() => setSidebarView('documents')}
+              className={cn(
+                "retro-workspace-tab",
+                sidebarView === 'documents' ? 'active' : ''
+              )}
+            >
+              <FileText className="h-4 w-4" />
+              <span>Документы</span>
+              <span style={{ marginLeft: '0.5rem', background: '#982525', color: '#fff', padding: '0.125rem 0.5rem', borderRadius: '0' }}>
+                {project.documents.length}
+              </span>
+            </button>
           </div>
 
           {/* Chats View */}
@@ -307,10 +299,10 @@ export function CaseWorkspace({
                   <h3 className="text-sm font-semibold">Чаты проекта</h3>
                   {isLoadingChats && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                 </div>
-                <Button onClick={onNewChat} variant="secondary" className="w-full gap-2">
+                <button onClick={onNewChat} className="retro-workspace-button w-full gap-2 flex items-center justify-center">
                   <Plus className="h-4 w-4" />
-                  Новый чат
-                </Button>
+                  НОВЫЙ ЧАТ
+                </button>
               </div>
               <div className="flex-1 overflow-hidden p-2">
                 <ScrollArea className="h-full">
@@ -338,19 +330,17 @@ export function CaseWorkspace({
                             setIsSidebarOpen(false);
                           }}
                           className={cn(
-                            "flex w-full flex-col items-start rounded-lg px-3 py-3 text-left transition-all hover:bg-muted",
-                            session.id === activeSessionId
-                              ? "bg-muted shadow-sm"
-                              : "bg-transparent",
+                            "retro-workspace-sidebar-item flex w-full flex-col items-start text-left",
+                            session.id === activeSessionId ? "active" : "",
                           )}
                         >
                           <div className="flex w-full items-center gap-2">
-                            <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                            <span className="flex-1 truncate text-sm font-medium">
+                            <MessageSquare className="h-4 w-4 flex-shrink-0" style={{ color: session.id === activeSessionId ? '#fff' : '#982525' }} />
+                            <span className="flex-1 truncate text-sm font-medium" style={{ fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold' }}>
                               {session.title || "Новый чат"}
                             </span>
                           </div>
-                          <span className="ml-6 mt-1 text-xs text-muted-foreground">
+                          <span className="ml-6 mt-1 text-xs" style={{ color: session.id === activeSessionId ? '#fff' : '#666' }}>
                             {new Date(session.createdAt).toLocaleString("ru-RU", {
                               day: "numeric",
                               month: "short",
@@ -375,20 +365,19 @@ export function CaseWorkspace({
                   <h3 className="text-sm font-semibold">Документы проекта</h3>
                   {isDocumentsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                 </div>
-                <Button
+                <button
                   onClick={handleAttachButtonClick}
                   disabled={isUploadingDocument}
-                  variant="outline"
-                  className="w-full gap-2"
-                  size="sm"
+                  className="retro-workspace-button w-full gap-2 flex items-center justify-center"
+                  style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
                 >
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Upload className="h-4 w-4" />
                   )}
-                  Загрузить документ
-                </Button>
+                  ЗАГРУЗИТЬ ДОКУМЕНТ
+                </button>
               </div>
               <div className="flex-1 overflow-hidden p-2">
                 <ScrollArea className="h-full">
@@ -413,7 +402,7 @@ export function CaseWorkspace({
                       project.documents.map((document) => (
                         <div
                           key={document.id}
-                          className="group rounded-lg border bg-card p-3 transition-all hover:shadow-sm"
+                          className="retro-workspace-document group"
                         >
                           <div className="flex items-start gap-3">
                             <div className="rounded-md bg-primary/10 p-2 text-primary">
@@ -492,8 +481,8 @@ export function CaseWorkspace({
                   >
                     {message.role === "user" ? (
                       <div className="max-w-full md:max-w-[80%]">
-                        <div className="rounded-2xl bg-muted px-4 py-3">
-                          <p className="whitespace-pre-wrap text-sm text-foreground/90">
+                        <div className="retro-workspace-message user">
+                          <p className="whitespace-pre-wrap text-sm" style={{ fontFamily: "'Courier New', 'Monaco', monospace", color: '#000' }}>
                             {message.content}
                           </p>
                         </div>
@@ -509,8 +498,9 @@ export function CaseWorkspace({
                             />
                           </div>
                         )}
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90">
-                          <ReactMarkdown
+                        <div className="retro-workspace-message assistant">
+                          <div className="prose prose-sm dark:prose-invert max-w-none" style={{ fontFamily: "'Courier New', 'Monaco', monospace", color: '#000' }}>
+                            <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
                               p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
@@ -564,6 +554,7 @@ export function CaseWorkspace({
                           >
                             {message.content}
                           </ReactMarkdown>
+                          </div>
                         </div>
                         {onExportMessage && (
                           <Button
@@ -603,7 +594,7 @@ export function CaseWorkspace({
           </div>
 
           {/* Message Input */}
-          <div className="border-t bg-background p-4">
+          <div className="border-t p-4" style={{ background: '#fafaf5', borderTop: '3px solid #000' }}>
             <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-4xl flex-col gap-3">
               <input
                 ref={fileInputRef}
@@ -614,42 +605,41 @@ export function CaseWorkspace({
                 onChange={handleFileInputChange}
               />
 
-              <Textarea
+              <textarea
                 value={input}
                 onChange={(event) => onInputChange(event.target.value)}
                 onKeyDown={handleInputKeyDown}
                 placeholder="Опишите ситуацию, вопрос или запрос к защитнику…"
-                className="min-h-[100px] resize-none"
+                className="retro-workspace-input min-h-[100px] resize-none"
                 disabled={isLoading || isLoadingChats}
+                style={{ fontFamily: "'Courier New', 'Monaco', monospace" }}
               />
               <div className="flex items-center justify-between gap-3">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
                   onClick={handleAttachButtonClick}
                   disabled={isUploadingDocument}
-                  className="gap-2"
+                  className="retro-workspace-button-secondary gap-2 flex items-center"
                 >
                   {isUploadingDocument ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Paperclip className="h-4 w-4" />
                   )}
-                  {isUploadingDocument ? "Обработка…" : "Прикрепить"}
-                </Button>
-              <Button 
+                  {isUploadingDocument ? "ОБРАБОТКА…" : "ПРИКРЕПИТЬ"}
+                </button>
+              <button 
                 type="submit" 
                 disabled={isLoading || isUploadingDocument || isLoadingChats || !input.trim()} 
-                variant="secondary"
-                className="gap-2"
+                className="retro-workspace-button gap-2 flex items-center"
               >
                 {isLoading || isLoadingChats ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
-                {isLoadingChats ? "Загрузка..." : "Отправить"}
-              </Button>
+                {isLoadingChats ? "ЗАГРУЗКА..." : "ОТПРАВИТЬ"}
+              </button>
               </div>
             </form>
           </div>
