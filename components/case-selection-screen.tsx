@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CreateCaseDialog } from "@/components/create-case-dialog";
@@ -106,12 +107,12 @@ export function CaseSelectionScreen({
   };
 
   return (
-    <div className="flex min-h-screen flex-col retro-workspace">
-      <header className="retro-workspace-header">
+    <div className="flex min-h-screen flex-col bg-background" style={{ background: '#fafaf5' }}>
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '3px solid #982525' }}>
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Bot className="h-6 w-6" style={{ color: '#982525' }} />
-            <h1 className="retro-workspace h1">МОИ ДЕЛА</h1>
+            <h1 className="text-xl font-bold" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>МОИ ДЕЛА</h1>
           </div>
           <ThemeToggle />
         </div>
@@ -121,14 +122,15 @@ export function CaseSelectionScreen({
         <div className="mx-auto max-w-5xl">
           <div className="mb-8 flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="mt-2" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
+              <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>Мои дела</h2>
+              <p className="mt-2 text-muted-foreground" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
                 Выберите дело для работы или создайте новое
               </p>
             </div>
-            <button onClick={handleOpenDialog} className="retro-workspace-button gap-2 shrink-0 flex items-center">
+            <Button onClick={handleOpenDialog} size="lg" variant="secondary" className="gap-2 shrink-0" style={{ background: '#982525', color: '#fff', border: '3px solid #000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', textTransform: 'uppercase' }}>
               <FolderPlus className="h-5 w-5" />
-              СОЗДАТЬ НОВОЕ ДЕЛО
-            </button>
+              Создать новое дело
+            </Button>
           </div>
 
           {isLoading ? (
@@ -136,36 +138,40 @@ export function CaseSelectionScreen({
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : projects.length === 0 ? (
-            <div className="retro-workspace-card border-dashed">
-              <div className="retro-workspace-empty">
-                <div className="rounded-full p-6" style={{ background: '#f0f0eb', display: 'inline-block' }}>
-                  <FolderPlus className="h-12 w-12" style={{ color: '#982525' }} />
+            <Card className="border-dashed" style={{ border: '3px dashed #000', background: '#fafaf5' }}>
+              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="rounded-full bg-muted p-6" style={{ background: '#f0f0eb' }}>
+                  <FolderPlus className="h-12 w-12 text-muted-foreground" style={{ color: '#982525' }} />
                 </div>
-                <h3 className="retro-workspace h3">НЕТ ДЕЛ</h3>
-                <p>
+                <h3 className="mt-6 text-xl font-semibold" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>Нет дел</h3>
+                <p className="mt-2 max-w-md text-sm text-muted-foreground" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
                   Создайте первое дело, чтобы начать загружать документы и общаться с AI-помощником
                 </p>
-                <button onClick={handleOpenDialog} className="retro-workspace-button mt-6 gap-2 flex items-center">
+                <Button onClick={handleOpenDialog} variant="secondary" className="mt-6 gap-2" style={{ background: '#982525', color: '#fff', border: '3px solid #000', fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', textTransform: 'uppercase' }}>
                   <FolderPlus className="h-4 w-4" />
-                  СОЗДАТЬ ПЕРВОЕ ДЕЛО
-                </button>
-              </div>
-            </div>
+                  Создать первое дело
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {projects.map((project) => {
-                const stats = getProjectStats(project.id);
-                const lastUpdate = new Date(project.updated_at ?? project.created_at);
+            <ScrollArea className="h-[calc(100vh-280px)]">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                {projects.map((project) => {
+                  const stats = getProjectStats(project.id);
+                  const lastUpdate = new Date(project.updated_at ?? project.created_at);
 
-                return (
-                  <div
-                    key={project.id}
-                    className="retro-workspace-card group cursor-pointer"
-                    onClick={() => onSelectProject(project.id)}
-                  >
-                    <div className="p-6 flex flex-col">
+                  return (
+                    <Card
+                      key={project.id}
+                      className={cn(
+                        "group cursor-pointer transition-all hover:border-foreground/20 hover:shadow-md flex flex-col",
+                      )}
+                      onClick={() => onSelectProject(project.id)}
+                      style={{ border: '3px solid #000', background: '#fafaf5' }}
+                    >
+                      <CardContent className="p-6 flex flex-col flex-1">
                         <div className="mb-4 flex items-center justify-between gap-2">
-                          <div className="rounded-lg p-2 shrink-0" style={{ background: '#f0f0eb' }}>
+                          <div className="rounded-lg bg-muted p-2 text-muted-foreground shrink-0" style={{ background: '#f0f0eb' }}>
                             <Bot className="h-5 w-5" style={{ color: '#982525' }} />
                           </div>
                           <DropdownMenu>
@@ -198,10 +204,10 @@ export function CaseSelectionScreen({
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                        <h3 className="retro-workspace h3 mb-3 leading-tight" style={{ fontFamily: "'Courier New', 'Monaco', monospace", fontWeight: 'bold', fontSize: '1rem', textTransform: 'uppercase', color: '#000' }}>
-                          {project.name.toUpperCase()}
+                        <h3 className="mb-3 text-lg font-semibold leading-tight" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>
+                          {project.name}
                         </h3>
-                        <div className="flex flex-col space-y-2" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace", fontSize: '0.85rem' }}>
+                        <div className="space-y-2 text-sm text-muted-foreground flex-1" style={{ color: '#666', fontFamily: "'Courier New', 'Monaco', monospace" }}>
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 shrink-0" style={{ color: '#982525' }} />
                             <span>
@@ -224,17 +230,18 @@ export function CaseSelectionScreen({
                                 : "чатов"}
                             </span>
                           </div>
-                          <div className="pt-3 border-t" style={{ borderTop: '1px solid #000' }}>
-                            <span className="text-xs" style={{ fontFamily: "'Courier New', 'Monaco', monospace" }}>
+                          <div className="mt-auto pt-3 border-t">
+                            <span className="text-xs" style={{ borderTopColor: '#000' }}>
                               Обновлено: {lastUpdate.toLocaleDateString("ru-RU")}
                             </span>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   );
                 })}
-            </div>
+              </div>
+            </ScrollArea>
           )}
         </div>
       </main>
