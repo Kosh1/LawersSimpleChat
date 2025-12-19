@@ -1,14 +1,10 @@
-.products-section {
-  padding: 5rem 2rem;
-  background: var(--background);
-}
-
 .products-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
   max-width: 900px;
   margin: 0 auto;
+  margin-top: 3rem;
 }
 
 /* На больших экранах (ноутбуки) - узкие карточки */
@@ -24,25 +20,19 @@
   .products-grid {
     max-width: 600px;
     margin: 0 auto;
+    margin-top: 3rem;
   }
 }
 
 @media (max-width: 768px) {
-  .products-section {
-    padding: 3rem 1rem;
-  }
-
-  .section-header h2 {
-    font-size: 2rem;
-  }
-
   .products-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
     max-width: 100%;
+    margin-top: 2rem;
   }
 
-  .product-card {
+  .retro-card {
     max-width: 100%;
   }
 }

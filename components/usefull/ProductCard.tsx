@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import ExampleWithAnalysis from './ExampleWithAnalysis';
 import './ProductCard.css';
+import './retro-landing.css';
 
 interface Product {
   id: string;
@@ -44,7 +45,7 @@ const ProductCard = ({ product, examplesData }: ProductCardProps) => {
     : [];
 
   return (
-    <div className="product-card">
+    <div className="retro-card">
       <div className="product-header">
         {product.link ? (
           <a 
@@ -53,15 +54,15 @@ const ProductCard = ({ product, examplesData }: ProductCardProps) => {
             rel="noopener noreferrer"
             className="product-name-link"
           >
-            <h3 className="product-name">{product.name}</h3>
+            <h3 className="retro-card-title">{product.name}</h3>
           </a>
         ) : (
-          <h3 className="product-name">{product.name}</h3>
+          <h3 className="retro-card-title">{product.name}</h3>
         )}
         <span className="product-category">{product.category}</span>
       </div>
 
-      <p className="product-description">{product.description}</p>
+      <p className="retro-card-text">{product.description}</p>
 
       {(product.features && product.features.length > 0) || (product.disadvantages && product.disadvantages.length > 0) ? (
         <div className="product-features-wrapper">
@@ -115,10 +116,10 @@ const ProductCard = ({ product, examplesData }: ProductCardProps) => {
       {productExamples.length > 0 && (
         <div className="product-examples">
           <button 
-            className="toggle-examples"
+            className="retro-button toggle-examples"
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            {isExpanded ? 'Скрыть пример' : 'Показать пример'}
+            {isExpanded ? 'СКРЫТЬ ПРИМЕР' : 'ПОКАЗАТЬ ПРИМЕР'}
           </button>
           {isExpanded && (
             <div className="examples-content">
@@ -134,10 +135,10 @@ const ProductCard = ({ product, examplesData }: ProductCardProps) => {
       {productExamples.length === 0 && product.examples && product.examples.length > 0 && (
         <div className="product-examples">
           <button 
-            className="toggle-examples"
+            className="retro-button toggle-examples"
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            {isExpanded ? 'Скрыть пример' : 'Показать пример'}
+            {isExpanded ? 'СКРЫТЬ ПРИМЕР' : 'ПОКАЗАТЬ ПРИМЕР'}
           </button>
           {isExpanded && (
             <div className="examples-content">
@@ -157,6 +158,8 @@ const ProductCard = ({ product, examplesData }: ProductCardProps) => {
 };
 
 export default ProductCard;
+
+
 
 
 
