@@ -515,12 +515,12 @@ export function CaseWorkspace({
                     </p>
                   </div>
                 ) : activeSession && activeSession.messages.length === 0 && !isLoading && (
-                  <div className="mt-10 text-center text-muted-foreground">
+                  <div className="mt-10 text-center">
                     <div className="mx-auto mb-4 rounded-full bg-muted p-6 w-fit">
-                      <Bot className="h-12 w-12 text-muted-foreground" />
+                      <Bot className="h-12 w-12 text-foreground" />
                     </div>
                     <h2 className="text-xl font-semibold text-foreground">С чего начнём?</h2>
-                    <p className="mt-2 text-sm">
+                    <p className="mt-2 text-sm text-muted-foreground">
                       Опишите ситуацию, из-за которой вы обращаетесь.
                       <br />Я помогу разобраться со стратегией и рисками.
                     </p>
