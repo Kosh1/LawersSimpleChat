@@ -219,23 +219,63 @@ export function CaseWorkspace({
             {/* Model Selection Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="hidden sm:flex">
+                <Button variant="outline" size="sm" className="hidden sm:flex" style={{ border: `1px solid ${borderColor}`, background: isDarkMode ? '#253141' : '#fafaf5', color: textColor }}>
                   <span className="text-xs">
                     {getModelDisplayName(selectedModel)}
                   </span>
                   <ChevronDown className="ml-2 h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent 
+                align="end" 
+                className="z-[100]"
+                style={{
+                  background: isDarkMode ? '#253141' : '#fafaf5',
+                  border: `1px solid ${borderColor}`,
+                  color: textColor,
+                }}
+              >
                 <DropdownMenuItem
                   onClick={() => onModelChange('openai')}
                   className={selectedModel === 'openai' ? 'bg-accent' : ''}
+                  style={{
+                    color: textColor,
+                    background: selectedModel === 'openai' 
+                      ? (isDarkMode ? '#334155' : '#f0f0eb')
+                      : 'transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedModel !== 'openai') {
+                      e.currentTarget.style.background = isDarkMode ? '#334155' : '#f0f0eb';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedModel !== 'openai') {
+                      e.currentTarget.style.background = 'transparent';
+                    }
+                  }}
                 >
                   {getModelDisplayName('openai')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onModelChange('thinking')}
                   className={selectedModel === 'thinking' ? 'bg-accent' : ''}
+                  style={{
+                    color: textColor,
+                    background: selectedModel === 'thinking' 
+                      ? (isDarkMode ? '#334155' : '#f0f0eb')
+                      : 'transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedModel !== 'thinking') {
+                      e.currentTarget.style.background = isDarkMode ? '#334155' : '#f0f0eb';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedModel !== 'thinking') {
+                      e.currentTarget.style.background = 'transparent';
+                    }
+                  }}
                 >
                   {getModelDisplayName('thinking')}
                 </DropdownMenuItem>
