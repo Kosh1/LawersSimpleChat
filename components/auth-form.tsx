@@ -257,10 +257,14 @@ const retroStyles = `
 export function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, user, loading: authLoading } = useAuth();
+  const { signIn, signUp, user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Check if signup is enabled via environment variable
+  const isSignupEnabled = process.env.NEXT_PUBLIC_ENABLE_SIGNUP === "true";
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -272,8 +276,16 @@ export function AuthForm() {
   // Ссылка на Calendly для записи на консультацию
   const CALENDLY_URL = "https://calendly.com/glebtuzov/30-minute-call-with-tuzov-gleb-opencv?month=2025-12";
 
-  // Check if form is valid for submission
-  const isFormValid = email.trim() !== "" && password.trim() !== "" && password.length >= 6;
+  // Check if login form is valid for submission
+  const isLoginFormValid = email.trim() !== "" && password.trim() !== "" && password.length >= 6;
+
+  // Check if signup form is valid for submission
+  const isSignupFormValid = 
+    email.trim() !== "" && 
+    password.trim() !== "" && 
+    password.length >= 6 && 
+    confirmPassword.trim() !== "" && 
+    password === confirmPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -326,6 +338,73 @@ export function AuthForm() {
 
   const handleCalendlyClick = () => {
     window.open(CALENDLY_URL, '_blank');
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password || !confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Пожалуйста, заполните все поля",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Пароль должен содержать минимум 6 символов",
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Пароли не совпадают",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await signUp(email, password);
+      
+      if (error) {
+        throw error;
+      }
+
+      // After successful signup, automatically sign in
+      if (data?.user) {
+        const { error: signInError } = await signIn(email, password);
+        
+        if (signInError) {
+          throw signInError;
+        }
+
+        toast({
+          title: "Регистрация выполнена",
+          description: "Добро пожаловать!",
+        });
+
+        router.push("/workspace");
+        router.refresh();
+      }
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка регистрации",
+        description: error.message || "Проверьте введенные данные и попробуйте снова",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Show loading while checking auth
@@ -395,7 +474,7 @@ export function AuthForm() {
                 <Button
                   type="submit"
                   className="retro-button w-full"
-                  disabled={loading || !isFormValid}
+                  disabled={loading || !isLoginFormValid}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   ВОЙТИ
@@ -403,24 +482,103 @@ export function AuthForm() {
               </CardFooter>
             </form>
           </Card>
-          <div className="retro-info-box p-6 w-full">
-            <div className="space-y-3">
-              <p className="retro-info-text text-sm text-center">
-                Регистрация доступна только после звонка
-              </p>
-              <button
-                type="button"
-                onClick={handleCalendlyClick}
-                className="retro-calendly-button w-full"
-                style={{
-                  borderRadius: '0.5rem',
-                  cursor: 'pointer',
-                }}
-              >
-                ЗАПИСАТЬСЯ НА ЗВОНОК
-              </button>
+          
+          {/* Calendly section - hidden when signup is enabled */}
+          {!isSignupEnabled && (
+            <div className="retro-info-box p-6 w-full">
+              <div className="space-y-3">
+                <p className="retro-info-text text-sm text-center">
+                  Регистрация доступна только после звонка
+                </p>
+                <button
+                  type="button"
+                  onClick={handleCalendlyClick}
+                  className="retro-calendly-button w-full"
+                  style={{
+                    borderRadius: '0.5rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ЗАПИСАТЬСЯ НА ЗВОНОК
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Signup form - shown when signup is enabled */}
+          {isSignupEnabled && (
+            <Card className="retro-card">
+              <CardHeader className="space-y-1 pt-6">
+                <CardTitle className="retro-title text-2xl font-bold">
+                  РЕГИСТРАЦИЯ
+                </CardTitle>
+                <CardDescription className="retro-description text-sm">
+                  Создайте новый аккаунт
+                </CardDescription>
+              </CardHeader>
+              <form onSubmit={handleSignUp}>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email" className="retro-label">
+                      EMAIL:
+                    </Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={loading}
+                      required
+                      className="retro-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password" className="retro-label">
+                      ПАРОЛЬ:
+                    </Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
+                      required
+                      minLength={6}
+                      className="retro-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-confirm-password" className="retro-label">
+                      ПОДТВЕРДИТЕ ПАРОЛЬ:
+                    </Label>
+                    <Input
+                      id="signup-confirm-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      disabled={loading}
+                      required
+                      minLength={6}
+                      className="retro-input"
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter className="!p-6 !pt-4">
+                  <Button
+                    type="submit"
+                    className="retro-button w-full"
+                    disabled={loading || !isSignupFormValid}
+                  >
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    ЗАРЕГИСТРИРОВАТЬСЯ
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+          )}
         </div>
       </div>
     </>
