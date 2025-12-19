@@ -234,18 +234,6 @@ export function CaseWorkspace({
                   {getModelDisplayName('openai')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => onModelChange('anthropic')}
-                  className={selectedModel === 'anthropic' ? 'bg-accent' : ''}
-                >
-                  {getModelDisplayName('anthropic')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onModelChange('gemini')}
-                  className={selectedModel === 'gemini' ? 'bg-accent' : ''}
-                >
-                  {getModelDisplayName('gemini')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
                   onClick={() => onModelChange('thinking')}
                   className={selectedModel === 'thinking' ? 'bg-accent' : ''}
                 >

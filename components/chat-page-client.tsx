@@ -108,7 +108,7 @@ export function ChatPageClient() {
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [isLoadingChatsFromDB, setIsLoadingChatsFromDB] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<SelectedModel>('thinking'); // Выбранная модель (по умолчанию thinking)
+  const [selectedModel, setSelectedModel] = useState<SelectedModel>('openai'); // Выбранная модель (по умолчанию openai)
   const { toast } = useToast();
   const { exportMessage } = useExportMessage();
 

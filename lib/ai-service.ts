@@ -212,31 +212,82 @@ export async function generateAIResponse(
   if (isOpenRouterModel(selectedModel) && isOpenRouterAvailable()) {
     const openRouterClient = createOpenRouterClient();
     if (openRouterClient) {
-      try {
-        console.log(`[AI Service] Attempting OpenRouter with model: ${selectedModel}`);
-        const result = await generateWithOpenRouter(
-          openRouterClient,
-          messages,
-          selectedModel
-        );
+      // Для модели 'openai' реализуем fallback GPT → Gemini
+      if (selectedModel === 'openai') {
+        const modelsToTry: Exclude<SelectedModel, 'thinking'>[] = ['openai', 'gemini'];
+        let lastError: any = null;
+        let fallbackOccurred = false;
+        let fallbackReason: string | undefined = undefined;
         
-        const responseTimeMs = Date.now() - startTime;
-        console.log(`[AI Service] Success with OpenRouter model: ${selectedModel}`);
-        console.log(`[AI Service] Response: ${result.content.length} chars, ${result.chunksCount} chunks, ${result.totalTokens} tokens, ${responseTimeMs}ms`);
+        for (let i = 0; i < modelsToTry.length; i++) {
+          const modelToTry = modelsToTry[i];
+          try {
+            console.log(`[AI Service] Attempting OpenRouter with model: ${modelToTry} (${i + 1}/${modelsToTry.length})`);
+            const result = await generateWithOpenRouter(
+              openRouterClient,
+              messages,
+              modelToTry
+            );
+            
+            const responseTimeMs = Date.now() - startTime;
+            console.log(`[AI Service] Success with OpenRouter model: ${modelToTry}`);
+            console.log(`[AI Service] Response: ${result.content.length} chars, ${result.chunksCount} chunks, ${result.totalTokens} tokens, ${responseTimeMs}ms`);
+            
+            return {
+              content: result.content,
+              modelUsed: result.model,
+              fallbackOccurred,
+              fallbackReason,
+              chunksCount: result.chunksCount,
+              totalTokens: result.totalTokens,
+              finishReason: result.finishReason,
+              responseTimeMs,
+              provider: 'openrouter',
+            };
+          } catch (error: any) {
+            console.warn(`[AI Service] OpenRouter model ${modelToTry} failed:`, error);
+            lastError = error;
+            
+            if (i < modelsToTry.length - 1 && shouldFallback(error)) {
+              fallbackOccurred = true;
+              fallbackReason = getErrorDescription(error);
+              continue;
+            }
+            // Если это последняя модель или ошибка не требует fallback - пробуем OpenAI fallback
+            break;
+          }
+        }
         
-        return {
-          content: result.content,
-          modelUsed: result.model,
-          fallbackOccurred: false,
-          chunksCount: result.chunksCount,
-          totalTokens: result.totalTokens,
-          finishReason: result.finishReason,
-          responseTimeMs,
-          provider: 'openrouter',
-        };
-      } catch (error: any) {
-        console.warn(`[AI Service] OpenRouter failed, falling back to OpenAI:`, error);
-        // Продолжаем к OpenAI fallback
+        // Если все OpenRouter модели провалились, продолжаем к OpenAI fallback
+        console.warn(`[AI Service] All OpenRouter models failed, falling back to OpenAI`);
+      } else {
+        // Для других моделей (anthropic, gemini) используем стандартную логику
+        try {
+          console.log(`[AI Service] Attempting OpenRouter with model: ${selectedModel}`);
+          const result = await generateWithOpenRouter(
+            openRouterClient,
+            messages,
+            selectedModel
+          );
+          
+          const responseTimeMs = Date.now() - startTime;
+          console.log(`[AI Service] Success with OpenRouter model: ${selectedModel}`);
+          console.log(`[AI Service] Response: ${result.content.length} chars, ${result.chunksCount} chunks, ${result.totalTokens} tokens, ${responseTimeMs}ms`);
+          
+          return {
+            content: result.content,
+            modelUsed: result.model,
+            fallbackOccurred: false,
+            chunksCount: result.chunksCount,
+            totalTokens: result.totalTokens,
+            finishReason: result.finishReason,
+            responseTimeMs,
+            provider: 'openrouter',
+          };
+        } catch (error: any) {
+          console.warn(`[AI Service] OpenRouter failed, falling back to OpenAI:`, error);
+          // Продолжаем к OpenAI fallback
+        }
       }
     }
   }

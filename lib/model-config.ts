@@ -393,10 +393,10 @@ export function getOpenRouterModelName(selectedModel: Exclude<SelectedModel, 'th
  */
 export function getModelDisplayName(selectedModel: SelectedModel): string {
   const displayNames: Record<SelectedModel, string> = {
-    'openai': 'GPT-5 Mini',
+    'openai': 'Быстрая',
     'anthropic': 'Claude Opus 4.5',
     'gemini': 'Gemini 2.5 Flash',
-    'thinking': 'Thinking',
+    'thinking': 'Думающая',
   };
   return displayNames[selectedModel];
 }
