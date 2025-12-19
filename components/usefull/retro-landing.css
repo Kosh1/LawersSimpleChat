@@ -335,7 +335,7 @@
   margin: 0 auto;
 }
 
-/* Две колонки для Hero */
+/* Две колонки для Hero (оставлено для обратной совместимости) */
 .retro-hero-two-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -359,6 +359,76 @@
   font-size: 1.25rem;
   margin-bottom: 0;
   line-height: 1.6;
+}
+
+/* Вертикальный layout для Hero */
+.retro-hero-content-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  margin-bottom: 4rem;
+}
+
+.retro-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.retro-hero-text .retro-section-title {
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+}
+
+.retro-hero-text .retro-section-subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+/* Контейнер для скриншота */
+.retro-hero-screenshot {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 0;
+}
+
+.retro-hero-screenshot::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    #2a2a2a 0%, 
+    #4a4a4a 25%, 
+    #2a2a2a 50%, 
+    #4a4a4a 75%, 
+    #2a2a2a 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.retro-screenshot-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border: 3px solid #2a2a2a;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+  display: block;
 }
 
 .retro-hero-image {
@@ -639,6 +709,14 @@
     font-size: 2.5rem;
   }
   
+  .retro-hero-content-vertical {
+    gap: 3rem;
+  }
+  
+  .retro-hero-text .retro-section-title {
+    font-size: 2.5rem;
+  }
+  
   .retro-hero-image {
     order: -1;
   }
@@ -727,6 +805,22 @@
   
   .retro-hero-content .retro-section-subtitle {
     font-size: 1rem;
+  }
+  
+  .retro-hero-content-vertical {
+    gap: 2rem;
+  }
+  
+  .retro-hero-text .retro-section-title {
+    font-size: 2rem;
+  }
+  
+  .retro-hero-text .retro-section-subtitle {
+    font-size: 1rem;
+  }
+  
+  .retro-screenshot-image {
+    border-width: 2px;
   }
   
   .retro-section-horizontal {

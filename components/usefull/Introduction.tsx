@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import './Introduction.css';
 import './retro-landing.css';
 
@@ -14,8 +15,8 @@ const Introduction = () => {
   return (
     <section id="introduction" className="retro-hero-fullwidth">
       <div>
-        <div className="retro-hero-two-columns">
-          <div className="retro-hero-content">
+        <div className="retro-hero-content-vertical">
+          <div className="retro-hero-text">
             <h1 className="retro-section-title">
               ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ ДЛЯ РОССИЙСКИХ ЮРИСТОВ
             </h1>
@@ -36,10 +37,15 @@ const Introduction = () => {
             </div>
           </div>
           
-          <div className="retro-hero-image">
-            <div className="retro-image-placeholder">
-              {/* Здесь будет изображение */}
-            </div>
+          <div className="retro-hero-screenshot">
+            <Image
+              src="/hero-screenshot.png"
+              alt="Интерфейс Legal AI"
+              width={2880}
+              height={1550}
+              priority
+              className="retro-screenshot-image"
+            />
           </div>
         </div>
         
