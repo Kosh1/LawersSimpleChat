@@ -4,11 +4,18 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap',
+  preload: true,
+});
+
 const roboto = Roboto({ 
   weight: '400',
   subsets: ["latin", "cyrillic"],
-  variable: '--font-roboto'
+  variable: '--font-roboto',
+  display: 'swap',
+  preload: true,
 });
 
 export const metadata: Metadata = {
