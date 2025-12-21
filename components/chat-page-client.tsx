@@ -9,6 +9,7 @@ import type { ChatMessage, Project, SessionDocument, SelectedModel } from "@/lib
 import { useToast } from "@/hooks/use-toast";
 import { useExportMessage } from "@/hooks/use-export-message";
 import { useAuth } from "@/hooks/use-auth";
+import { fetchWithRetry, safeJsonResponse } from "@/lib/utils";
 
 type LocalChatSession = {
   id: string;
@@ -126,16 +127,26 @@ export function ChatPageClient() {
     const loadProjects = async () => {
       setIsProjectsLoading(true);
       try {
-        const response = await fetch(`/api/projects?userId=${encodeURIComponent(user.id)}`);
+        const response = await fetchWithRetry(`/api/projects?userId=${encodeURIComponent(user.id)}`);
         let projectsPayload: Project[] = [];
 
         if (response.ok) {
-          const data = await response.json();
-          projectsPayload = Array.isArray(data?.projects) ? data.projects : [];
+          try {
+            const data = await safeJsonResponse<{ projects?: Project[] }>(response);
+            projectsPayload = Array.isArray(data?.projects) ? data.projects : [];
+          } catch (error) {
+            console.warn("Ошибка при чтении ответа проектов, пробуем повторить:", error);
+            // Повторяем запрос один раз при ошибке чтения
+            const retryResponse = await fetchWithRetry(`/api/projects?userId=${encodeURIComponent(user.id)}`);
+            if (retryResponse.ok) {
+              const data = await safeJsonResponse<{ projects?: Project[] }>(retryResponse);
+              projectsPayload = Array.isArray(data?.projects) ? data.projects : [];
+            }
+          }
         }
 
         if (!projectsPayload.length) {
-          const createResponse = await fetch(`/api/projects`, {
+          const createResponse = await fetchWithRetry(`/api/projects`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: DEFAULT_PROJECT_NAME, userId: user.id }),
@@ -280,7 +291,7 @@ export function ChatPageClient() {
       setIsLoadingChatsFromDB(true);
       try {
         // Fetch chat sessions from database
-        const response = await fetch(`/api/projects/${selectedProjectId}/chats?userId=${user.id}`);
+        const response = await fetchWithRetry(`/api/projects/${selectedProjectId}/chats?userId=${user.id}`);
         if (!response.ok) {
           throw new Error('Failed to load chats from database');
         }
@@ -294,7 +305,7 @@ export function ChatPageClient() {
         const sessionsWithMessages = await Promise.all(
           dbChats.map(async (chat: any) => {
             try {
-              const messagesResponse = await fetch(`/api/chat/${chat.id}/messages`);
+              const messagesResponse = await fetchWithRetry(`/api/chat/${chat.id}/messages`);
               if (!messagesResponse.ok) {
                 console.warn(`Failed to load messages for session ${chat.id}`);
                 return null;
@@ -436,7 +447,7 @@ export function ChatPageClient() {
     const loadDocuments = async () => {
       setIsDocumentsLoading(true);
       try {
-        const response = await fetch(`/api/projects/${selectedProjectId}/documents`);
+        const response = await fetchWithRetry(`/api/projects/${selectedProjectId}/documents`);
         if (response.ok) {
           const data = await response.json();
           const docs: SessionDocument[] = Array.isArray(data?.documents)
@@ -546,7 +557,7 @@ export function ChatPageClient() {
     }
 
     try {
-      const response = await fetch("/api/projects", {
+      const response = await fetchWithRetry("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmedName, userId: user.id }),
@@ -607,7 +618,7 @@ export function ChatPageClient() {
     }
 
     try {
-      const response = await fetch(`/api/projects/${projectId}`, {
+      const response = await fetchWithRetry(`/api/projects/${projectId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmedName, userId: user.id }),
@@ -661,7 +672,7 @@ export function ChatPageClient() {
     }
 
     try {
-      const response = await fetch(`/api/projects/${projectId}`, {
+      const response = await fetchWithRetry(`/api/projects/${projectId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id }),
@@ -723,7 +734,7 @@ export function ChatPageClient() {
           formData.append("file", file);
           formData.append("userId", user.id);
 
-          const response = await fetch(`/api/projects/${selectedProjectId}/documents`, {
+          const response = await fetchWithRetry(`/api/projects/${selectedProjectId}/documents`, {
             method: "POST",
             body: formData,
           });
@@ -851,7 +862,7 @@ export function ChatPageClient() {
       });
 
       try {
-        const response = await fetch(`/api/projects/${selectedProjectId}/documents/${documentId}`, {
+        const response = await fetchWithRetry(`/api/projects/${selectedProjectId}/documents/${documentId}`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: user.id }),
@@ -997,7 +1008,7 @@ export function ChatPageClient() {
     );
 
     try {
-      const response = await fetch(`/api/chat${utmQuery}`, {
+      const response = await fetchWithRetry(`/api/chat${utmQuery}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
