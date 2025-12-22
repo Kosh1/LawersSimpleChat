@@ -3,6 +3,20 @@
 // compress не поддерживается на Cloudflare Pages, поэтому не включаем его
 const nextConfig = {
   serverExternalPackages: ['@supabase/supabase-js'],
+  // Исключаем Node.js-специфичные библиотеки из Edge Runtime сборки
+  serverComponentsExternalPackages: ['mammoth', 'pdf-parse', 'word-extractor'],
+  webpack: (config, { isServer }) => {
+    // Для Edge Runtime исключаем Node.js-специфичные модули
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push({
+        'mammoth': 'commonjs mammoth',
+        'pdf-parse': 'commonjs pdf-parse',
+        'word-extractor': 'commonjs word-extractor',
+      });
+    }
+    return config;
+  },
   
   // Опциональная поддержка прокси для статических ресурсов
   // Если указан NEXT_PUBLIC_PROXY_URL, используем его как assetPrefix
