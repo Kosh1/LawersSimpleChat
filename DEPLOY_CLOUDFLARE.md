@@ -32,6 +32,7 @@ git push
 - **Build output directory**: `.vercel/output/static`
 - **Root directory**: `/` (оставьте пустым)
 - **Node.js version**: `18` или `20`
+- **Deploy command**: Оставьте пустым (Cloudflare Pages автоматически задеплоит результат сборки)
 
 ### Шаг 4: Настройте переменные окружения
 
