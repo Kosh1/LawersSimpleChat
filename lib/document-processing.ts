@@ -1,19 +1,27 @@
-import { extname } from 'path';
-// NOTE: Эти библиотеки могут не работать на Cloudflare Workers runtime
-// На Cloudflare Pages будет использован fallback через OpenAI API (extractWithFileAttachment)
-// который вызывается автоматически, если extractDocx/extractDoc/extractPdf возвращают пустую строку
-import mammoth from 'mammoth';
-import OpenAI from 'openai';
-import pdfParse from 'pdf-parse';
-import { toFile } from 'openai/uploads';
-import WordExtractor from 'word-extractor';
+// NOTE: На Cloudflare Edge Runtime Node.js-специфичные библиотеки недоступны
+// Используем динамические импорты и fallback через OpenAI API
+// 
+// Функция для получения расширения файла без использования модуля 'path'
+function getFileExtension(filename: string): string {
+  const lastDot = filename.lastIndexOf('.');
+  return lastDot >= 0 ? filename.substring(lastDot).toLowerCase() : '';
+}
+
+// Динамический импорт OpenAI
+let openaiModule: typeof import('openai') | null = null;
+async function getOpenAIModule() {
+  if (!openaiModule) {
+    openaiModule = await import('openai');
+  }
+  return openaiModule;
+}
 
 // Ленивая инициализация OpenAI - только при наличии API ключа
-// Это предотвращает ошибки во время сборки, когда переменные окружения могут быть недоступны
-function getOpenAIClient(): OpenAI | null {
+async function getOpenAIClient() {
   if (!process.env.OPENAI_API_KEY) {
     return null;
   }
+  const OpenAI = (await getOpenAIModule()).default;
   return new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
@@ -30,7 +38,7 @@ export type ExtractedDocument = {
 };
 
 export async function extractTextFromDocument(buffer: Buffer, mimeType: string, filename: string): Promise<ExtractedDocument> {
-  const extension = extname(filename).toLowerCase();
+  const extension = getFileExtension(filename);
 
   if (isPlainText(mimeType, extension)) {
     const text = buffer.toString('utf-8');
@@ -96,45 +104,26 @@ function isImage(mimeType: string, extension: string) {
   return mimeType.startsWith('image/') || ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.heic'].includes(extension);
 }
 
-async function extractDocx(buffer: Buffer) {
-  // На Cloudflare Workers эта функция может выбросить ошибку
-  // В этом случае вернется пустая строка и будет использован fallback через OpenAI
-  try {
-    const result = await mammoth.extractRawText({ buffer });
-    return result.value?.trim();
-  } catch (error) {
-    console.warn('Failed to extract DOCX with mammoth (may not be supported on Cloudflare Workers):', error);
-    return ''; // Fallback к OpenAI будет использован в extractTextFromDocument
-  }
+async function extractDocx(_buffer: Buffer) {
+  // На Edge Runtime Node.js-специфичные библиотеки недоступны
+  // Всегда возвращаем пустую строку, чтобы использовать fallback через OpenAI API
+  return '';
 }
 
-async function extractDoc(buffer: Buffer) {
-  // На Cloudflare Workers эта функция может выбросить ошибку
-  // В этом случае вернется пустая строка и будет использован fallback через OpenAI
-  try {
-    const extractor = new WordExtractor();
-    const extracted = await extractor.extract(buffer);
-    return extracted.getBody().trim();
-  } catch (error) {
-    console.warn('Failed to extract DOC with word-extractor (may not be supported on Cloudflare Workers):', error);
-    return ''; // Fallback к OpenAI будет использован в extractTextFromDocument
-  }
+async function extractDoc(_buffer: Buffer) {
+  // На Edge Runtime Node.js-специфичные библиотеки недоступны
+  // Всегда возвращаем пустую строку, чтобы использовать fallback через OpenAI API
+  return '';
 }
 
-async function extractPdf(buffer: Buffer) {
-  // На Cloudflare Workers эта функция может выбросить ошибку
-  // В этом случае вернется пустая строка и будет использован fallback через OpenAI
-  try {
-    const result = await pdfParse(buffer);
-    return result.text?.trim();
-  } catch (error) {
-    console.warn('Failed to extract PDF with pdf-parse (may not be supported on Cloudflare Workers):', error);
-    return ''; // Fallback к OpenAI будет использован в extractTextFromDocument
-  }
+async function extractPdf(_buffer: Buffer) {
+  // На Edge Runtime Node.js-специфичные библиотеки недоступны
+  // Всегда возвращаем пустую строку, чтобы использовать fallback через OpenAI API
+  return '';
 }
 
 async function extractWithVision(buffer: Buffer, mimeType: string, filename: string) {
-  const openai = getOpenAIClient();
+  const openai = await getOpenAIClient();
   if (!openai) {
     throw new Error('OPENAI_API_KEY is not configured');
   }
@@ -171,10 +160,11 @@ async function extractWithVision(buffer: Buffer, mimeType: string, filename: str
 }
 
 async function extractWithFileAttachment(buffer: Buffer, filename: string) {
-  const openai = getOpenAIClient();
+  const openai = await getOpenAIClient();
   if (!openai) {
     throw new Error('OPENAI_API_KEY is not configured');
   }
+  const { toFile } = await import('openai/uploads');
   const upload = await openai.files.create({
     file: await toFile(buffer, filename),
     purpose: 'assistants',
