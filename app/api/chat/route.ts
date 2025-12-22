@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@/lib/supabase/server';
 import { getUKLawyerPrompt } from '@/lib/prompts';
@@ -8,12 +8,15 @@ import { projectDocumentToSessionDocument } from '@/lib/projects';
 import { generateAIResponse } from '@/lib/ai-service';
 
 // Ленивая инициализация OpenAI - только при наличии API ключа
-function getOpenAIClient() {
+// Используем динамический импорт, чтобы избежать выполнения кода во время сборки
+async function getOpenAIClient(): Promise<InstanceType<typeof import('openai').default> | null> {
   if (!process.env.OPENAI_API_KEY) {
     return null;
   }
+  const OpenAIModule = await import('openai');
+  const OpenAI = OpenAIModule.default;
   return new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY!,
   });
 }
 
@@ -75,7 +78,9 @@ export async function POST(req: NextRequest) {
     const combinedDocuments = mergeDocumentsForContext(sharedDocuments, documents);
 
     // Format messages for OpenAI
-    const formattedMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    // Используем тип из OpenAI, но не создаем экземпляр клиента до проверки
+    type ChatMessageParam = OpenAI.Chat.Completions.ChatCompletionMessageParam;
+    const formattedMessages: ChatMessageParam[] = [
       { role: "system", content: lawyerPrompt },
       ...messages.map(msg => ({
         role: msg.role as "user" | "assistant",
@@ -99,7 +104,7 @@ export async function POST(req: NextRequest) {
     // --- AI Service call with automatic fallback and chunking ---
     // OpenRouter будет использован первым, если selectedModel указан и OpenRouter доступен
     // В противном случае используется OpenAI с fallback между моделями
-    const openaiClient = getOpenAIClient();
+    const openaiClient = await getOpenAIClient();
     if (!openaiClient) {
       return NextResponse.json(
         { error: 'OpenAI API key is not configured' },
