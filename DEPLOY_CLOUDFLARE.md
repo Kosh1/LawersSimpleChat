@@ -26,7 +26,9 @@ git push
 В настройках сборки укажите:
 
 - **Framework preset**: `Next.js`
-- **Build command**: `npm run build && npx @cloudflare/next-on-pages@latest`
+- **Build command**: `npm install --legacy-peer-deps && npm run build && npx @cloudflare/next-on-pages@latest`
+  
+  **Важно**: Используйте `npm install --legacy-peer-deps` вместо стандартного `npm ci`, чтобы избежать конфликтов зависимостей.
 - **Build output directory**: `.vercel/output/static`
 - **Root directory**: `/` (оставьте пустым)
 - **Node.js version**: `18` или `20`
