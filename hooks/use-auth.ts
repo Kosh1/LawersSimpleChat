@@ -5,9 +5,16 @@ import type { User } from '@supabase/supabase-js'
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  
+  // Создаем клиент только на клиенте, не во время SSR/SSG
+  const supabase = typeof window !== 'undefined' ? createClient() : null
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
@@ -26,6 +33,9 @@ export function useAuth() {
   }, [supabase])
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      return { data: null, error: new Error('Supabase client is not available') };
+    }
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -34,6 +44,9 @@ export function useAuth() {
   }
 
   const signUp = async (email: string, password: string) => {
+    if (!supabase) {
+      return { data: null, error: new Error('Supabase client is not available') };
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -42,11 +55,17 @@ export function useAuth() {
   }
 
   const signOut = async () => {
+    if (!supabase) {
+      return { error: new Error('Supabase client is not available') };
+    }
     const { error } = await supabase.auth.signOut()
     return { error }
   }
 
   const resetPassword = async (email: string) => {
+    if (!supabase) {
+      return { data: null, error: new Error('Supabase client is not available') };
+    }
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     })

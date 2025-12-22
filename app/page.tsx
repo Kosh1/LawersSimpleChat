@@ -12,6 +12,9 @@ import '@/components/usefull/App.css';
 import '@/app/usefull/index.css';
 import '@/components/usefull/retro-landing.css';
 
+// Отключаем статическую генерацию для этой страницы
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   const router = useRouter();
   const { user, loading } = useAuth();
