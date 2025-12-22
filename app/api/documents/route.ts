@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { extractTextFromDocument } from '@/lib/document-processing';
 
+// NOTE: На Cloudflare Pages runtime='nodejs' не поддерживается
+// API routes будут работать в Cloudflare Workers runtime
+// Обработка документов автоматически использует fallback через OpenAI API,
+// если Node.js-специфичные библиотеки (pdf-parse, mammoth, word-extractor) недоступны
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {

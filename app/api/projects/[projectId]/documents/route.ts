@@ -4,6 +4,10 @@ import { getSupabase } from '@/lib/supabase';
 import { extractTextFromDocument } from '@/lib/document-processing';
 import { mapProjectDocument } from '@/lib/projects';
 
+// NOTE: На Cloudflare Pages runtime='nodejs' не поддерживается
+// API routes будут работать в Cloudflare Workers runtime
+// Обработка документов автоматически использует fallback через OpenAI API,
+// если Node.js-специфичные библиотеки (pdf-parse, mammoth, word-extractor) недоступны
 export const runtime = 'nodejs';
 
 function getProjectIdFromRequest(req: NextRequest) {

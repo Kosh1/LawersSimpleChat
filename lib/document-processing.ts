@@ -1,4 +1,7 @@
 import { extname } from 'path';
+// NOTE: Эти библиотеки могут не работать на Cloudflare Workers runtime
+// На Cloudflare Pages будет использован fallback через OpenAI API (extractWithFileAttachment)
+// который вызывается автоматически, если extractDocx/extractDoc/extractPdf возвращают пустую строку
 import mammoth from 'mammoth';
 import OpenAI from 'openai';
 import pdfParse from 'pdf-parse';
@@ -87,33 +90,39 @@ function isImage(mimeType: string, extension: string) {
 }
 
 async function extractDocx(buffer: Buffer) {
+  // На Cloudflare Workers эта функция может выбросить ошибку
+  // В этом случае вернется пустая строка и будет использован fallback через OpenAI
   try {
     const result = await mammoth.extractRawText({ buffer });
     return result.value?.trim();
   } catch (error) {
-    console.warn('Failed to extract DOCX with mammoth:', error);
-    return '';
+    console.warn('Failed to extract DOCX with mammoth (may not be supported on Cloudflare Workers):', error);
+    return ''; // Fallback к OpenAI будет использован в extractTextFromDocument
   }
 }
 
 async function extractDoc(buffer: Buffer) {
+  // На Cloudflare Workers эта функция может выбросить ошибку
+  // В этом случае вернется пустая строка и будет использован fallback через OpenAI
   try {
     const extractor = new WordExtractor();
     const extracted = await extractor.extract(buffer);
     return extracted.getBody().trim();
   } catch (error) {
-    console.warn('Failed to extract DOC with word-extractor:', error);
-    return '';
+    console.warn('Failed to extract DOC with word-extractor (may not be supported on Cloudflare Workers):', error);
+    return ''; // Fallback к OpenAI будет использован в extractTextFromDocument
   }
 }
 
 async function extractPdf(buffer: Buffer) {
+  // На Cloudflare Workers эта функция может выбросить ошибку
+  // В этом случае вернется пустая строка и будет использован fallback через OpenAI
   try {
     const result = await pdfParse(buffer);
     return result.text?.trim();
   } catch (error) {
-    console.warn('Failed to extract PDF with pdf-parse:', error);
-    return '';
+    console.warn('Failed to extract PDF with pdf-parse (may not be supported on Cloudflare Workers):', error);
+    return ''; // Fallback к OpenAI будет использован в extractTextFromDocument
   }
 }
 
