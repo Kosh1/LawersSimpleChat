@@ -25,14 +25,26 @@ git push
 
 В настройках сборки укажите:
 
-- **Framework preset**: `Next.js`
+- **Framework preset**: `Next.js` или `None` (если нет опции Next.js)
 - **Build command**: `npm run build && npx @cloudflare/next-on-pages@latest`
   
   **Важно**: Файл `.npmrc` в корне репозитория содержит `legacy-peer-deps=true`, что автоматически применяется при установке зависимостей на Cloudflare Pages.
 - **Build output directory**: `.vercel/output/static`
 - **Root directory**: `/` (оставьте пустым)
 - **Node.js version**: `18` или `20`
-- **Deploy command**: Оставьте пустым (Cloudflare Pages автоматически задеплоит результат сборки)
+
+#### ⚠️ КРИТИЧЕСКИ ВАЖНО: Настройка Deploy Command
+
+В разделе **Builds & deployments** или **Deploy settings**:
+
+1. Найдите поле **"Deploy command"** или **"Post-build command"**
+2. **ОБЯЗАТЕЛЬНО ОСТАВЬТЕ ЕГО ПУСТЫМ** или удалите команду `npx wrangler deploy`
+3. Cloudflare Pages автоматически задеплоит результат сборки из `.vercel/output/static`
+
+**Если поле нельзя оставить пустым:**
+- Используйте команду: `echo "Deployment handled by Cloudflare Pages automatically"`
+
+**НЕ используйте** `npx wrangler deploy` - это команда для Workers, а не для Pages!
 
 ### Шаг 4: Настройте переменные окружения
 
