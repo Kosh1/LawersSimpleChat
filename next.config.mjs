@@ -1,13 +1,8 @@
 /** @type {import('next').NextConfig} */
-// Определяем платформу сборки
-const isCloudflare = process.env.CF_PAGES === '1' || process.env.CF_PAGES_BRANCH || process.env.CI && process.env.CF_PAGES;
-
+// Конфигурация для Cloudflare Pages
+// compress не поддерживается на Cloudflare Pages, поэтому не включаем его
 const nextConfig = {
   serverExternalPackages: ['@supabase/supabase-js'],
-  
-  // Оптимизация для статических ресурсов
-  // compress может не поддерживаться на Cloudflare Pages
-  ...(isCloudflare ? {} : { compress: true }),
   
   // Опциональная поддержка прокси для статических ресурсов
   // Если указан NEXT_PUBLIC_PROXY_URL, используем его как assetPrefix

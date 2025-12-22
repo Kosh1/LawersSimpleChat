@@ -5,6 +5,45 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Получает базовый URL для API запросов
+ * Если указан NEXT_PUBLIC_PROXY_URL, использует его, иначе возвращает пустую строку (относительный путь)
+ */
+export function getApiBaseUrl(): string {
+  if (typeof window === 'undefined') {
+    // Server-side: всегда используем относительные пути
+    return '';
+  }
+  
+  const proxyUrl = process.env.NEXT_PUBLIC_PROXY_URL;
+  if (proxyUrl) {
+    // Убираем trailing slash если есть
+    return proxyUrl.replace(/\/$/, '');
+  }
+  
+  return '';
+}
+
+/**
+ * Преобразует относительный URL в абсолютный с учетом прокси
+ */
+export function resolveApiUrl(url: string): string {
+  // Если URL уже абсолютный, возвращаем как есть
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  const baseUrl = getApiBaseUrl();
+  if (baseUrl) {
+    // Убираем ведущий слэш из относительного URL
+    const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
+    return `${baseUrl}/${cleanUrl}`;
+  }
+  
+  // Возвращаем относительный URL
+  return url;
+}
+
 export function slugify(input: string, fallback?: string) {
   const normalized = input
     .normalize("NFKD")
@@ -27,6 +66,7 @@ export function slugify(input: string, fallback?: string) {
 /**
  * Выполняет fetch запрос с автоматическим retry при сетевых ошибках
  * Обрабатывает ERR_HTTP2_PING_FAILED, ERR_CONNECTION_RESET и другие сетевые ошибки
+ * Автоматически использует прокси URL если он настроен
  */
 export async function fetchWithRetry(
   url: string,
@@ -35,6 +75,9 @@ export async function fetchWithRetry(
   retryDelay: number = 1000
 ): Promise<Response> {
   let lastError: Error | null = null;
+  
+  // Разрешаем URL с учетом прокси
+  const resolvedUrl = resolveApiUrl(url);
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -43,7 +86,7 @@ export async function fetchWithRetry(
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 секунд таймаут
 
       try {
-        const response = await fetch(url, {
+        const response = await fetch(resolvedUrl, {
           ...options,
           signal: controller.signal,
           // Добавляем keepalive для более стабильных соединений

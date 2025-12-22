@@ -19,8 +19,8 @@ A chat-first Next.js application that lets users talk directly with an AI legal 
 - **Styling**: Tailwind CSS
 - **UI Components**: Radix UI
 - **Database**: Supabase
-- **AI**: OpenAI GPT-4
-- **Deployment**: Vercel
+- **AI**: OpenAI GPT-4 / OpenRouter
+- **Deployment**: Cloudflare Pages
 
 ## Getting Started
 
@@ -162,17 +162,21 @@ After migration, run through manual regression:
 
 ## Deployment
 
-### Vercel
+### Cloudflare Pages
 
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+1. Connect your GitHub repository to Cloudflare Pages
+2. Set build command: `npm run build && npx @cloudflare/next-on-pages@latest`
+3. Set build output directory: `.vercel/output/static`
+4. Set environment variables in Cloudflare Pages dashboard
+5. Deploy automatically on push to main branch
+
+For detailed deployment instructions, see [docs/CLOUDFLARE_MIGRATION.md](docs/CLOUDFLARE_MIGRATION.md)
 
 ### Manual Deployment
 
 ```bash
-npm run build
-npm start
+npm run build:cf
+npm run pages:deploy
 ```
 
 ## Contributing

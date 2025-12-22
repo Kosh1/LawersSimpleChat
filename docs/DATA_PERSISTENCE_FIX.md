@@ -133,7 +133,7 @@ Page Load → Load from localStorage (fast) → Initial display
 git pull
 npm install
 npm run build
-# Deploy to Vercel/your platform
+# Deploy to Cloudflare Pages
 ```
 
 3. **Verify**:
