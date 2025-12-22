@@ -99,8 +99,15 @@ export async function POST(req: NextRequest) {
     // --- AI Service call with automatic fallback and chunking ---
     // OpenRouter будет использован первым, если selectedModel указан и OpenRouter доступен
     // В противном случае используется OpenAI с fallback между моделями
+    const openaiClient = getOpenAIClient();
+    if (!openaiClient) {
+      return NextResponse.json(
+        { error: 'OpenAI API key is not configured' },
+        { status: 500 }
+      );
+    }
     const aiResponse = await generateAIResponse(
-      openai,
+      openaiClient,
       formattedMessages,
       lastUserMessage,
       undefined, // forceModel - используем автоматический выбор
