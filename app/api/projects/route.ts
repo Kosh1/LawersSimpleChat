@@ -5,6 +5,8 @@ import { requireAuth } from '@/lib/auth-helpers';
 import { mapProject } from '@/lib/projects';
 import { slugify } from '@/lib/utils';
 
+export const runtime = 'edge';
+
 export async function GET(req: NextRequest) {
   // Check authentication
   const { user, response: authResponse } = await requireAuth();

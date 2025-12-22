@@ -3,6 +3,8 @@ import { getSupabase } from '@/lib/supabase';
 import { mapProject } from '@/lib/projects';
 import { slugify } from '@/lib/utils';
 
+export const runtime = 'edge';
+
 function getProjectIdFromRequest(req: NextRequest) {
   const segments = req.nextUrl.pathname.split('/').filter(Boolean);
   const projectsIndex = segments.lastIndexOf('projects');

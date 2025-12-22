@@ -22,7 +22,7 @@ async function getOpenAIClient(): Promise<InstanceType<typeof import('openai').d
 
 // Отключаем статическую генерацию для этого route
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   try {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { getSupabase } from '@/lib/supabase';
 
+export const runtime = 'edge';
+
 function getProjectIdFromRequest(req: NextRequest) {
   const segments = req.nextUrl.pathname.split('/').filter(Boolean);
   const projectsIndex = segments.lastIndexOf('projects');

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
+export const runtime = 'edge';
+
 function getProjectAndDocumentIds(req: NextRequest) {
   const segments = req.nextUrl.pathname.split('/').filter(Boolean);
   const projectsIndex = segments.lastIndexOf('projects');

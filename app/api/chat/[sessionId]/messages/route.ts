@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
+export const runtime = 'edge';
+
 function getSessionIdFromRequest(req: NextRequest) {
   const segments = req.nextUrl.pathname.split('/').filter(Boolean);
   const chatIndex = segments.lastIndexOf('chat');
