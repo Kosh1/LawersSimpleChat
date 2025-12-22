@@ -8,9 +8,16 @@ import pdfParse from 'pdf-parse';
 import { toFile } from 'openai/uploads';
 import WordExtractor from 'word-extractor';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Ленивая инициализация OpenAI - только при наличии API ключа
+// Это предотвращает ошибки во время сборки, когда переменные окружения могут быть недоступны
+function getOpenAIClient(): OpenAI | null {
+  if (!process.env.OPENAI_API_KEY) {
+    return null;
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 const MAX_DOCUMENT_TEXT_LENGTH = 18000;
 const MIN_TEXT_LENGTH_FOR_SUCCESS = 80;
@@ -127,7 +134,10 @@ async function extractPdf(buffer: Buffer) {
 }
 
 async function extractWithVision(buffer: Buffer, mimeType: string, filename: string) {
-  ensureOpenAIKey();
+  const openai = getOpenAIClient();
+  if (!openai) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
   const base64 = buffer.toString('base64');
   const completion = await openai.chat.completions.create({
     model: process.env.OPENAI_VISION_MODEL ?? 'gpt-4.1-mini',
@@ -161,7 +171,10 @@ async function extractWithVision(buffer: Buffer, mimeType: string, filename: str
 }
 
 async function extractWithFileAttachment(buffer: Buffer, filename: string) {
-  ensureOpenAIKey();
+  const openai = getOpenAIClient();
+  if (!openai) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
   const upload = await openai.files.create({
     file: await toFile(buffer, filename),
     purpose: 'assistants',
@@ -244,9 +257,5 @@ function normalizeResult(rawText: string, strategy: ExtractedDocument['strategy'
   };
 }
 
-function ensureOpenAIKey() {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured');
-  }
-}
+// Функция ensureOpenAIKey удалена - теперь используется getOpenAIClient()
 

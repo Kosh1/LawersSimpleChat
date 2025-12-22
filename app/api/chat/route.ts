@@ -7,9 +7,15 @@ import type { ChatMessage, ChatRequestDocument, UTMData, AIResponseMetadata, Sel
 import { projectDocumentToSessionDocument } from '@/lib/projects';
 import { generateAIResponse } from '@/lib/ai-service';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Ленивая инициализация OpenAI - только при наличии API ключа
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    return null;
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 export async function POST(req: NextRequest) {
   try {
