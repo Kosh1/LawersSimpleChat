@@ -141,7 +141,8 @@ jobs:
             --service-account-id ${{ secrets.YC_SERVICE_ACCOUNT_ID }} \
             --cores 1 \
             --memory 2GB \
-            --execution-timeout 30s \
+            --execution-timeout 120s \
             --concurrency 10 \
+            --allow-unauthenticated-invoke \
             --environment "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }},NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }},NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},NEXT_PUBLIC_PROXY_URL=${{ secrets.NEXT_PUBLIC_PROXY_URL }},NEXT_PUBLIC_ENABLE_SIGNUP=${{ secrets.NEXT_PUBLIC_ENABLE_SIGNUP }}"
 
