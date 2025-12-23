@@ -310,6 +310,7 @@ export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
     ...
   },
 ```
+```
 
 ### Шаг 3: Замените имя модели
 ```typescript

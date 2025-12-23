@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
-// Конфигурация для Cloudflare Pages
+// Конфигурация для Cloudflare Pages и Yandex Cloud
 // compress не поддерживается на Cloudflare Pages, поэтому не включаем его
 const nextConfig = {
+  output: 'standalone', // Для деплоя в Docker/Yandex Cloud Serverless Containers
   serverExternalPackages: ['@supabase/supabase-js'],
   // Исключаем Node.js-специфичные библиотеки из Edge Runtime сборки
   serverComponentsExternalPackages: ['mammoth', 'pdf-parse', 'word-extractor'],

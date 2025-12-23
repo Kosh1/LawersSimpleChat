@@ -30,7 +30,7 @@ sudo certbot --nginx -d YOUR_DOMAIN
 
 ### 3. Копирование конфигурации
 
-1. Скопируйте `nginx-proxy.conf` на сервер
+1. Скопируйте `docs/nginx-proxy.conf` на сервер
 2. Замените `YOUR_DOMAIN` на ваш домен (например, `proxy.jhelper.ru`)
 3. Замените `your-app.pages.dev` на URL вашего Cloudflare Pages приложения
 4. Скопируйте файл в `/etc/nginx/sites-available/your-site`
@@ -101,7 +101,7 @@ sudo tail -f /var/log/nginx/proxy-error.log
 
 ### Настройка кэша
 
-Измените время кэширования в `nginx-proxy.conf`:
+Измените время кэширования в `docs/nginx-proxy.conf`:
 - Статические ресурсы: `365d` (1 год)
 - Изображения: `30d` (1 месяц)
 - HTML: `5m` (5 минут)

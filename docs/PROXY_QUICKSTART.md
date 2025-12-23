@@ -2,20 +2,20 @@
 
 ## Шаг 1: Настройка Nginx на российском сервере
 
-1. Скопируйте `nginx-proxy.conf` на ваш сервер
+1. Скопируйте `docs/nginx-proxy.conf` на ваш сервер
 2. Отредактируйте файл:
    - Замените `YOUR_DOMAIN` на ваш домен (например, `proxy.jhelper.ru`)
    - Замените `your-app.vercel.app` на URL вашего Vercel приложения
 3. Установите конфигурацию:
    ```bash
-   sudo cp nginx-proxy.conf /etc/nginx/sites-available/jhelper-proxy
+   sudo cp docs/nginx-proxy.conf /etc/nginx/sites-available/jhelper-proxy
    sudo ln -s /etc/nginx/sites-available/jhelper-proxy /etc/nginx/sites-enabled/
    ```
 4. Настройте SSL (Let's Encrypt):
    ```bash
    sudo certbot --nginx -d proxy.jhelper.ru
    ```
-5. Добавьте зоны кэширования в `/etc/nginx/nginx.conf` (см. комментарии в nginx-proxy.conf)
+5. Добавьте зоны кэширования в `/etc/nginx/nginx.conf` (см. комментарии в docs/nginx-proxy.conf)
 6. Перезапустите Nginx:
    ```bash
    sudo nginx -t
