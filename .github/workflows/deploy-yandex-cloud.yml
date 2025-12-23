@@ -32,10 +32,14 @@ jobs:
           NEXT_PUBLIC_PROXY_URL: ${{ secrets.NEXT_PUBLIC_PROXY_URL }}
           NEXT_PUBLIC_ENABLE_SIGNUP: ${{ secrets.NEXT_PUBLIC_ENABLE_SIGNUP }}
       
-      - name: Setup Yandex Cloud CLI with static access key
+      - name: Install Yandex Cloud CLI
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+      
+      - name: Setup Yandex Cloud CLI with static access key
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
           yc config profile create deploy-profile || true
           yc config set access-key ${{ secrets.YC_ACCESS_KEY_ID }}
           yc config set secret-key ${{ secrets.YC_SECRET_ACCESS_KEY }}
@@ -44,6 +48,7 @@ jobs:
       
       - name: Configure Docker for Yandex Container Registry
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           yc container registry configure-docker
       
       - name: Login to Yandex Container Registry
@@ -63,6 +68,7 @@ jobs:
       
       - name: Deploy to Serverless Container
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           yc serverless container revision deploy \
             --container-name jhelper-bot \
             --image cr.yandex/${{ secrets.YC_REGISTRY_ID }}/jhelper-bot:${{ github.sha }} \
