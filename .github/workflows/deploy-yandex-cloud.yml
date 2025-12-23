@@ -74,11 +74,8 @@ jobs:
           yc container registry configure-docker
       
       - name: Login to Yandex Container Registry
-        env:
-          YC_ACCESS_KEY_ID: ${{ secrets.YC_ACCESS_KEY_ID }}
-          YC_SECRET_ACCESS_KEY: ${{ secrets.YC_SECRET_ACCESS_KEY }}
         run: |
-          echo "$YC_SECRET_ACCESS_KEY" | docker login --username "$YC_ACCESS_KEY_ID" --password-stdin cr.yandex
+          echo "${{ secrets.YC_SECRET_ACCESS_KEY }}" | docker login --username "${{ secrets.YC_ACCESS_KEY_ID }}" --password-stdin cr.yandex
       
       - name: Build Docker image
         run: |
