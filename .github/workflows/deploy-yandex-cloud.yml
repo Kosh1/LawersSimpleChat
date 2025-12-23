@@ -33,50 +33,22 @@ jobs:
           NEXT_PUBLIC_PROXY_URL: ${{ secrets.NEXT_PUBLIC_PROXY_URL }}
           NEXT_PUBLIC_ENABLE_SIGNUP: ${{ secrets.NEXT_PUBLIC_ENABLE_SIGNUP }}
       
-      - name: Install Yandex Cloud CLI
-        run: |
-          mkdir -p $HOME/.local/bin
-          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s
-          # Убедимся что yc доступен
-          if [ -f "$HOME/.local/bin/yc" ]; then
-            chmod +x $HOME/.local/bin/yc
-            echo "$HOME/.local/bin" >> $GITHUB_PATH
-            echo "yc installed at $HOME/.local/bin/yc"
-          else
-            # Попробуем найти yc
-            YC_PATH=$(find $HOME -name yc -type f -executable 2>/dev/null | head -1)
-            if [ -n "$YC_PATH" ]; then
-              echo "Found yc at $YC_PATH"
-              echo "$(dirname $YC_PATH)" >> $GITHUB_PATH
-            else
-              echo "Error: yc not found after installation"
-              exit 1
-            fi
-          fi
+      - name: Setup Yandex Cloud CLI
+        uses: yc-actions/yc-setup@v1
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON }}
       
-      - name: Setup Yandex Cloud CLI with static access key
-        env:
-          YC_ACCESS_KEY_ID: ${{ secrets.YC_ACCESS_KEY_ID }}
-          YC_SECRET_ACCESS_KEY: ${{ secrets.YC_SECRET_ACCESS_KEY }}
-          YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}
-          YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+      - name: Configure yc CLI
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          yc version
           yc config profile create deploy-profile || true
-          # Для статического ключа используем переменные окружения
-          # yc автоматически использует YC_ACCESS_KEY_ID и YC_SECRET_ACCESS_KEY
-          yc config set cloud-id "$YC_CLOUD_ID"
-          yc config set folder-id "$YC_FOLDER_ID"
-      
-      - name: Configure Docker for Yandex Container Registry
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          yc container registry configure-docker
+          yc config set cloud-id "${{ secrets.YC_CLOUD_ID }}"
+          yc config set folder-id "${{ secrets.YC_FOLDER_ID }}"
       
       - name: Login to Yandex Container Registry
-        run: |
-          echo "${{ secrets.YC_SECRET_ACCESS_KEY }}" | docker login --username iam --password-stdin cr.yandex
+        uses: yc-actions/yc-cr-login@v3
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON }}
       
       - name: Build Docker image
         run: |
