@@ -1,5 +1,5 @@
 # Многоэтапная сборка для оптимизации размера образа
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Установка зависимостей
 FROM base AS deps
