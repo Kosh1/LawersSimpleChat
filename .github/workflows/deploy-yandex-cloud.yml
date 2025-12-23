@@ -34,21 +34,32 @@ jobs:
       
       - name: Install Yandex Cloud CLI
         run: |
-          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-          echo "YC_BIN=$HOME/.local/bin/yc" >> $GITHUB_ENV
+          # Найдем где установился yc
+          YC_PATH=$(find $HOME -name yc -type f 2>/dev/null | head -1)
+          if [ -z "$YC_PATH" ]; then
+            YC_PATH="$HOME/.local/bin/yc"
+          fi
+          echo "YC_BIN=$YC_PATH" >> $GITHUB_ENV
+          echo "Installed yc at: $YC_PATH"
+          ls -la $YC_PATH || echo "yc not found at $YC_PATH"
+          which yc || echo "yc not in PATH"
       
       - name: Setup Yandex Cloud CLI with static access key
         run: |
-          $YC_BIN config profile create deploy-profile || true
-          $YC_BIN config set access-key ${{ secrets.YC_ACCESS_KEY_ID }}
-          $YC_BIN config set secret-key ${{ secrets.YC_SECRET_ACCESS_KEY }}
-          $YC_BIN config set cloud-id ${{ secrets.YC_CLOUD_ID }}
-          $YC_BIN config set folder-id ${{ secrets.YC_FOLDER_ID }}
+          export PATH="$HOME/.local/bin:$PATH"
+          yc version || $YC_BIN version || echo "yc not found"
+          yc config profile create deploy-profile || $YC_BIN config profile create deploy-profile || true
+          yc config set access-key ${{ secrets.YC_ACCESS_KEY_ID }} || $YC_BIN config set access-key ${{ secrets.YC_ACCESS_KEY_ID }}
+          yc config set secret-key ${{ secrets.YC_SECRET_ACCESS_KEY }} || $YC_BIN config set secret-key ${{ secrets.YC_SECRET_ACCESS_KEY }}
+          yc config set cloud-id ${{ secrets.YC_CLOUD_ID }} || $YC_BIN config set cloud-id ${{ secrets.YC_CLOUD_ID }}
+          yc config set folder-id ${{ secrets.YC_FOLDER_ID }} || $YC_BIN config set folder-id ${{ secrets.YC_FOLDER_ID }}
       
       - name: Configure Docker for Yandex Container Registry
         run: |
-          $YC_BIN container registry configure-docker
+          export PATH="$HOME/.local/bin:$PATH"
+          yc container registry configure-docker || $YC_BIN container registry configure-docker
       
       - name: Login to Yandex Container Registry
         run: |
@@ -67,7 +78,8 @@ jobs:
       
       - name: Deploy to Serverless Container
         run: |
-          $YC_BIN serverless container revision deploy \
+          export PATH="$HOME/.local/bin:$PATH"
+          yc serverless container revision deploy \
             --container-name jhelper-bot \
             --image cr.yandex/${{ secrets.YC_REGISTRY_ID }}/jhelper-bot:${{ github.sha }} \
             --service-account-id ${{ secrets.YC_SERVICE_ACCOUNT_ID }} \
