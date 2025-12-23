@@ -57,17 +57,55 @@ jobs:
           YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
         run: |
           export PATH="$HOME/.local/bin:$PATH"
+          
+          # Проверяем, что секрет не пустой
+          if [ -z "$YC_SA_JSON" ] || [ "$YC_SA_JSON" = "" ]; then
+            echo "Error: YC_SA_JSON secret is empty or not set"
+            echo "Please verify:"
+            echo "1. Secret YC_SA_JSON exists in Environment 'Deploy ENV'"
+            echo "2. Secret contains the full JSON key (starts with { and ends with })"
+            echo "3. Secret was saved correctly (not just whitespace)"
+            exit 1
+          fi
+          
+          # Выводим информацию для отладки (без самого ключа)
+          JSON_LENGTH=${#YC_SA_JSON}
+          echo "JSON key length: $JSON_LENGTH characters"
+          
+          if [ "$JSON_LENGTH" -lt 100 ]; then
+            echo "Warning: JSON key seems too short (expected ~500-1000 chars)"
+          fi
+          
+          # Проверяем формат
+          FIRST_CHAR="${YC_SA_JSON:0:1}"
+          LAST_CHAR="${YC_SA_JSON: -1}"
+          echo "First char: '$FIRST_CHAR' (should be '{')"
+          echo "Last char: '$LAST_CHAR' (should be '}')"
+          
+          if [ "$FIRST_CHAR" != "{" ] || [ "$LAST_CHAR" != "}" ]; then
+            echo "Error: JSON key format is incorrect"
+            echo "JSON should start with '{' and end with '}'"
+            exit 1
+          fi
+          
           # Сохраняем JSON ключ во временный файл
-          # Используем printf для правильной обработки многострочного JSON
-          printf '%s\n' "$YC_SA_JSON" > /tmp/sa-key.json
+          echo "$YC_SA_JSON" > /tmp/sa-key.json
           chmod 600 /tmp/sa-key.json
+          
+          # Проверяем размер файла
+          FILE_SIZE=$(wc -c < /tmp/sa-key.json)
+          echo "Saved file size: $FILE_SIZE bytes"
           
           # Проверяем, что JSON валидный
           if ! python3 -m json.tool /tmp/sa-key.json > /dev/null 2>&1; then
-            echo "Error: Invalid JSON key"
-            echo "First 100 chars: $(head -c 100 /tmp/sa-key.json)"
+            echo "Error: Invalid JSON format"
+            echo "File contains:"
+            head -c 200 /tmp/sa-key.json
+            echo "..."
             exit 1
           fi
+          
+          echo "JSON key is valid, proceeding with yc CLI setup"
           
           # Настраиваем yc CLI с JSON ключом
           yc config profile create deploy-profile || true
