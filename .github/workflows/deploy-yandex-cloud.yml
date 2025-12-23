@@ -58,10 +58,10 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           yc version
           yc config profile create deploy-profile || true
-          yc config set access-key ${{ secrets.YC_ACCESS_KEY_ID }}
-          yc config set secret-key ${{ secrets.YC_SECRET_ACCESS_KEY }}
-          yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
-          yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
+          yc config set access-key "${{ secrets.YC_ACCESS_KEY_ID }}"
+          yc config set secret-key "${{ secrets.YC_SECRET_ACCESS_KEY }}"
+          yc config set cloud-id "${{ secrets.YC_CLOUD_ID }}"
+          yc config set folder-id "${{ secrets.YC_FOLDER_ID }}"
       
       - name: Configure Docker for Yandex Container Registry
         run: |
