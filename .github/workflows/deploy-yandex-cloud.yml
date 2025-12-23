@@ -34,32 +34,39 @@ jobs:
       
       - name: Install Yandex Cloud CLI
         run: |
+          mkdir -p $HOME/.local/bin
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          # Найдем где установился yc
-          YC_PATH=$(find $HOME -name yc -type f 2>/dev/null | head -1)
-          if [ -z "$YC_PATH" ]; then
-            YC_PATH="$HOME/.local/bin/yc"
+          # Убедимся что yc доступен
+          if [ -f "$HOME/.local/bin/yc" ]; then
+            chmod +x $HOME/.local/bin/yc
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+            echo "yc installed at $HOME/.local/bin/yc"
+          else
+            # Попробуем найти yc
+            YC_PATH=$(find $HOME -name yc -type f -executable 2>/dev/null | head -1)
+            if [ -n "$YC_PATH" ]; then
+              echo "Found yc at $YC_PATH"
+              echo "$(dirname $YC_PATH)" >> $GITHUB_PATH
+            else
+              echo "Error: yc not found after installation"
+              exit 1
+            fi
           fi
-          echo "YC_BIN=$YC_PATH" >> $GITHUB_ENV
-          echo "Installed yc at: $YC_PATH"
-          ls -la $YC_PATH || echo "yc not found at $YC_PATH"
-          which yc || echo "yc not in PATH"
       
       - name: Setup Yandex Cloud CLI with static access key
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          yc version || $YC_BIN version || echo "yc not found"
-          yc config profile create deploy-profile || $YC_BIN config profile create deploy-profile || true
-          yc config set access-key ${{ secrets.YC_ACCESS_KEY_ID }} || $YC_BIN config set access-key ${{ secrets.YC_ACCESS_KEY_ID }}
-          yc config set secret-key ${{ secrets.YC_SECRET_ACCESS_KEY }} || $YC_BIN config set secret-key ${{ secrets.YC_SECRET_ACCESS_KEY }}
-          yc config set cloud-id ${{ secrets.YC_CLOUD_ID }} || $YC_BIN config set cloud-id ${{ secrets.YC_CLOUD_ID }}
-          yc config set folder-id ${{ secrets.YC_FOLDER_ID }} || $YC_BIN config set folder-id ${{ secrets.YC_FOLDER_ID }}
+          yc version
+          yc config profile create deploy-profile || true
+          yc config set access-key ${{ secrets.YC_ACCESS_KEY_ID }}
+          yc config set secret-key ${{ secrets.YC_SECRET_ACCESS_KEY }}
+          yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
+          yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
       
       - name: Configure Docker for Yandex Container Registry
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          yc container registry configure-docker || $YC_BIN container registry configure-docker
+          yc container registry configure-docker
       
       - name: Login to Yandex Container Registry
         run: |
