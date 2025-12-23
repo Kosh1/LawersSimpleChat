@@ -58,8 +58,16 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           # Сохраняем JSON ключ во временный файл
-          echo "$YC_SA_JSON" > /tmp/sa-key.json
+          # Используем printf для правильной обработки многострочного JSON
+          printf '%s\n' "$YC_SA_JSON" > /tmp/sa-key.json
           chmod 600 /tmp/sa-key.json
+          
+          # Проверяем, что JSON валидный
+          if ! python3 -m json.tool /tmp/sa-key.json > /dev/null 2>&1; then
+            echo "Error: Invalid JSON key"
+            echo "First 100 chars: $(head -c 100 /tmp/sa-key.json)"
+            exit 1
+          fi
           
           # Настраиваем yc CLI с JSON ключом
           yc config profile create deploy-profile || true
