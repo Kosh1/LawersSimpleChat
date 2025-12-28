@@ -335,7 +335,7 @@ export function getFallbackModels(primaryModel: ModelName): ModelName[] {
  * Конфигурация моделей для OpenRouter
  * OpenRouter использует формат provider/model-name
  */
-export const OPENROUTER_MODEL_CONFIGS: Record<Exclude<SelectedModel, 'thinking'>, ModelConfig> = {
+export const OPENROUTER_MODEL_CONFIGS: Record<SelectedModel, ModelConfig> = {
   'openai': {
     name: 'openai/gpt-5-mini', // Последняя модель OpenAI через OpenRouter
     maxTokens: 16000,
@@ -363,26 +363,35 @@ export const OPENROUTER_MODEL_CONFIGS: Record<Exclude<SelectedModel, 'thinking'>
     priority: 1,
     description: 'Google Gemini 2.5 Flash - последняя модель Google',
   },
+  'thinking': {
+    name: 'openai/gpt-5', // GPT-5 reasoning модель через OpenRouter
+    maxTokens: 32000,
+    contextWindow: 400000,
+    temperature: undefined, // GPT-5 не поддерживает temperature
+    useMaxCompletionTokens: true, // GPT-5 использует max_completion_tokens
+    reasoningEffort: 'high',
+    verbosity: 'high',
+    supportsSystemMessages: true,
+    priority: 0,
+    description: 'OpenAI GPT-5 - думающая модель для глубокого анализа через OpenRouter',
+  },
 };
 
 /**
  * Получает конфигурацию модели OpenRouter по выбранной модели
  * @param selectedModel - выбранная модель пользователем
- * @returns конфигурация модели для OpenRouter или null если это thinking модель
+ * @returns конфигурация модели для OpenRouter
  */
-export function getOpenRouterModelConfig(selectedModel: SelectedModel): ModelConfig | null {
-  if (selectedModel === 'thinking') {
-    return null; // Thinking модель использует OpenAI напрямую
-  }
+export function getOpenRouterModelConfig(selectedModel: SelectedModel): ModelConfig {
   return OPENROUTER_MODEL_CONFIGS[selectedModel];
 }
 
 /**
  * Получает имя модели OpenRouter по выбранной модели
- * @param selectedModel - выбранная модель пользователем (не 'thinking')
+ * @param selectedModel - выбранная модель пользователем
  * @returns имя модели в формате OpenRouter (provider/model-name)
  */
-export function getOpenRouterModelName(selectedModel: Exclude<SelectedModel, 'thinking'>): string {
+export function getOpenRouterModelName(selectedModel: SelectedModel): string {
   return OPENROUTER_MODEL_CONFIGS[selectedModel].name;
 }
 

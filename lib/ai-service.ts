@@ -108,10 +108,10 @@ function getErrorDescription(error: any): string {
 }
 
 /**
- * Type guard для проверки, что модель не является 'thinking'
+ * Type guard для проверки, что модель выбрана и доступна
  */
-function isOpenRouterModel(model: SelectedModel | undefined): model is Exclude<SelectedModel, 'thinking'> {
-  return model !== undefined && model !== 'thinking';
+function isModelSelected(model: SelectedModel | undefined): model is SelectedModel {
+  return model !== undefined;
 }
 
 /**
@@ -127,91 +127,41 @@ export async function generateAIResponse(
 ): Promise<AIResponse> {
   const startTime = Date.now();
   
-  // Если выбрана модель "thinking" - используем OpenAI напрямую с reasoning моделью
-  if (selectedModel === 'thinking') {
-    console.log(`[AI Service] Using Thinking model (OpenAI reasoning)`);
-    const primaryModel = 'reasoning'; // Всегда используем reasoning для thinking
-    const fallbackModels = getFallbackModels(primaryModel);
-    const modelsToTry: ModelName[] = [primaryModel, ...fallbackModels];
-    
-    let lastError: any = null;
-    let fallbackOccurred = false;
-    let fallbackReason: string | undefined = undefined;
-    
-    for (let i = 0; i < modelsToTry.length; i++) {
-      const modelName = modelsToTry[i];
-      const config = getModelConfig(modelName);
-      
-      console.log(`[AI Service] Attempting model: ${modelName} (${i + 1}/${modelsToTry.length})`);
-      
-      try {
-        let adaptedMessages = messages;
-        
-        if (config.useDeveloperMessage || !config.supportsSystemMessages) {
-          adaptedMessages = messages.map(msg => {
-            if (msg.role === 'system') {
-              return {
-                role: 'developer' as any,
-                content: msg.content,
-              };
-            }
-            return msg;
-          });
-        }
-        
-        const additionalParams: any = {};
-        if (config.reasoningEffort) {
-          additionalParams.reasoning_effort = config.reasoningEffort;
-        }
-        if (config.verbosity) {
-          additionalParams.verbosity = config.verbosity;
-        }
-        if (config.useMaxCompletionTokens) {
-          additionalParams.useMaxCompletionTokens = true;
-        }
-        
-        const result: ChunkedResponse = await generateWithChunking(
-          openai,
-          config.name,
-          adaptedMessages,
-          config.maxTokens,
-          config.temperature,
-          additionalParams
-        );
-        
-        const responseTimeMs = Date.now() - startTime;
-        
-        return {
-          content: result.content,
-          modelUsed: 'thinking',
-          fallbackOccurred,
-          fallbackReason,
-          chunksCount: result.chunksCount,
-          totalTokens: result.totalTokens,
-          finishReason: result.finishReason,
-          responseTimeMs,
-          provider: 'openai',
-        };
-      } catch (error: any) {
-        console.error(`[AI Service] Error with model ${modelName}:`, error);
-        lastError = error;
-        
-        if (i < modelsToTry.length - 1 && shouldFallback(error)) {
-          fallbackOccurred = true;
-          fallbackReason = getErrorDescription(error);
-          continue;
-        }
-        throw error;
-      }
-    }
-    
-    throw lastError || new Error('All models failed to generate response');
-  }
-  
-  // Если выбран OpenRouter и он доступен - пробуем сначала его
-  if (isOpenRouterModel(selectedModel) && isOpenRouterAvailable()) {
+  // Если выбран OpenRouter и он доступен - пробуем сначала его (включая thinking)
+  if (isModelSelected(selectedModel) && isOpenRouterAvailable()) {
     const openRouterClient = createOpenRouterClient();
     if (openRouterClient) {
+      // Для thinking модели используем OpenRouter с O1
+      if (selectedModel === 'thinking') {
+        try {
+          console.log(`[AI Service] Using Thinking model via OpenRouter (gpt-5)`);
+          const result = await generateWithOpenRouter(
+            openRouterClient,
+            messages,
+            selectedModel
+          );
+          
+          const responseTimeMs = Date.now() - startTime;
+          console.log(`[AI Service] Success with OpenRouter thinking model`);
+          console.log(`[AI Service] Response: ${result.content.length} chars, ${result.chunksCount} chunks, ${result.totalTokens} tokens, ${responseTimeMs}ms`);
+          
+          return {
+            content: result.content,
+            modelUsed: 'thinking',
+            fallbackOccurred: false,
+            chunksCount: result.chunksCount,
+            totalTokens: result.totalTokens,
+            finishReason: result.finishReason,
+            responseTimeMs,
+            provider: 'openrouter',
+          };
+        } catch (error: any) {
+          console.error(`[AI Service] OpenRouter thinking model failed:`, error);
+          // Для thinking модели OpenRouter - единственный способ (так как прямой OpenAI не работает из России)
+          throw error;
+        }
+      }
+      
       // Для модели 'openai' реализуем fallback GPT → Gemini
       if (selectedModel === 'openai') {
         const modelsToTry: Exclude<SelectedModel, 'thinking'>[] = ['openai', 'gemini'];
@@ -403,22 +353,40 @@ export async function generateAIResponse(
 async function generateWithOpenRouter(
   openRouterClient: OpenAI,
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-  selectedModel: Exclude<SelectedModel, 'thinking'>
+  selectedModel: SelectedModel
 ): Promise<ChunkedResponse> {
   const config = getOpenRouterModelConfig(selectedModel);
   
-  if (!config) {
-    throw new Error(`Model config not found for ${selectedModel}`);
-  }
-  
   // Адаптируем messages для моделей с особыми требованиями
   let adaptedMessages = messages;
+  
+  // O1 модели требуют developer message вместо system (но gpt-5 поддерживает system)
+  if (config.useDeveloperMessage || !config.supportsSystemMessages) {
+    adaptedMessages = messages.map(msg => {
+      if (msg.role === 'system') {
+        return {
+          role: 'developer' as any,
+          content: msg.content,
+        };
+      }
+      return msg;
+    });
+    console.log(`[AI Service] Converted system messages to developer messages`);
+  }
   
   // Подготовка дополнительных параметров модели
   const additionalParams: any = {};
   
   if (config.useMaxCompletionTokens) {
     additionalParams.useMaxCompletionTokens = true;
+  }
+  
+  // GPT-5 поддерживает reasoning параметры
+  if (config.reasoningEffort) {
+    additionalParams.reasoning_effort = config.reasoningEffort;
+  }
+  if (config.verbosity) {
+    additionalParams.verbosity = config.verbosity;
   }
   
   // Генерируем ответ с chunking
