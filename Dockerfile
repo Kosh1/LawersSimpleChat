@@ -38,11 +38,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 8080
 
-# Yandex Cloud может передавать PORT через переменную окружения
-# Используем значение по умолчанию 3000, если PORT не установлен
-ENV PORT=3000
+# Yandex Cloud Serverless Containers ожидают порт 8080
+# Переменная PORT будет установлена Yandex Cloud, но используем 8080 по умолчанию
+ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
