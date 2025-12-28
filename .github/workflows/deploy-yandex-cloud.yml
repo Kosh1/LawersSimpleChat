@@ -124,7 +124,13 @@ jobs:
       
       - name: Build Docker image
         run: |
-          docker build -t cr.yandex/${{ secrets.YC_REGISTRY_ID }}/jhelper-bot:${{ github.sha }} .
+          docker build \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL="${{ vars.NEXT_PUBLIC_SUPABASE_URL }}" \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
+            --build-arg NEXT_PUBLIC_SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL }}" \
+            --build-arg NEXT_PUBLIC_PROXY_URL="${{ vars.NEXT_PUBLIC_PROXY_URL }}" \
+            --build-arg NEXT_PUBLIC_ENABLE_SIGNUP="${{ vars.NEXT_PUBLIC_ENABLE_SIGNUP }}" \
+            -t cr.yandex/${{ secrets.YC_REGISTRY_ID }}/jhelper-bot:${{ github.sha }} .
           docker tag cr.yandex/${{ secrets.YC_REGISTRY_ID }}/jhelper-bot:${{ github.sha }} \
                      cr.yandex/${{ secrets.YC_REGISTRY_ID }}/jhelper-bot:latest
       
