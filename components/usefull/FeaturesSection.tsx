@@ -72,12 +72,7 @@ const FeaturesSection = () => {
         <div>
           <h2 className="retro-section-title">КАК ЭТО РАБОТАЕТ</h2>
           <p className="retro-section-subtitle">Примеры использования в реальной практике</p>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-            gap: '2rem',
-            marginTop: '2rem'
-          }}>
+          <div className="retro-use-cases-grid">
             {useCases.map((useCase, idx) => (
               <div key={idx} className="retro-card">
                 <h3 className="retro-card-title">
@@ -96,12 +91,7 @@ const FeaturesSection = () => {
         <div>
           <h2 className="retro-section-title">{security.title.toUpperCase()}</h2>
           <p className="retro-section-subtitle">Ваши данные под надёжной защитой</p>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-            gap: '2rem',
-            marginTop: '2rem'
-          }}>
+          <div className="retro-security-grid">
             {security.items.map((item, idx) => (
               <div key={idx} className="retro-card" style={{ textAlign: 'center' }}>
                 <h3 className="retro-card-title" style={{ fontSize: '1rem' }}>

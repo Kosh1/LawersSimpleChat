@@ -427,84 +427,6 @@ export function AuthForm() {
       <style>{retroStyles}</style>
       <div className="retro-bg flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-md space-y-4">
-          <Card className="retro-card">
-            <CardHeader className="space-y-1 pt-6">
-              <CardTitle className="retro-title text-2xl font-bold">
-                ВХОД В СИСТЕМУ
-              </CardTitle>
-              <CardDescription className="retro-description text-sm">
-                Введите email и пароль для входа
-              </CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="retro-label">
-                    EMAIL:
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
-                    required
-                    className="retro-input"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="retro-label">
-                    ПАРОЛЬ:
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={loading}
-                    required
-                    minLength={6}
-                    className="retro-input"
-                  />
-                </div>
-              </CardContent>
-              <CardFooter className="!p-6 !pt-4">
-                <Button
-                  type="submit"
-                  className="retro-button w-full"
-                  disabled={loading || !isLoginFormValid}
-                >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  ВОЙТИ
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
-          
-          {/* Calendly section - hidden when signup is enabled */}
-          {!isSignupEnabled && (
-            <div className="retro-info-box p-6 w-full">
-              <div className="space-y-3">
-                <p className="retro-info-text text-sm text-center">
-                  Регистрация доступна только после звонка
-                </p>
-                <button
-                  type="button"
-                  onClick={handleCalendlyClick}
-                  className="retro-calendly-button w-full"
-                  style={{
-                    borderRadius: '0.5rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ЗАПИСАТЬСЯ НА ЗВОНОК
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Signup form - shown when signup is enabled */}
           {isSignupEnabled && (
             <Card className="retro-card">
@@ -579,6 +501,84 @@ export function AuthForm() {
               </form>
             </Card>
           )}
+
+          {/* Calendly section - hidden when signup is enabled */}
+          {!isSignupEnabled && (
+            <div className="retro-info-box p-6 w-full">
+              <div className="space-y-3">
+                <p className="retro-info-text text-sm text-center">
+                  Регистрация доступна только после звонка
+                </p>
+                <button
+                  type="button"
+                  onClick={handleCalendlyClick}
+                  className="retro-calendly-button w-full"
+                  style={{
+                    borderRadius: '0.5rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ЗАПИСАТЬСЯ НА ЗВОНОК
+                </button>
+              </div>
+            </div>
+          )}
+
+          <Card className="retro-card">
+            <CardHeader className="space-y-1 pt-6">
+              <CardTitle className="retro-title text-2xl font-bold">
+                ВХОД В СИСТЕМУ
+              </CardTitle>
+              <CardDescription className="retro-description text-sm">
+                Введите email и пароль для входа
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleSubmit}>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="retro-label">
+                    EMAIL:
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    required
+                    className="retro-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="retro-label">
+                    ПАРОЛЬ:
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    required
+                    minLength={6}
+                    className="retro-input"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="!p-6 !pt-4">
+                <Button
+                  type="submit"
+                  className="retro-button w-full"
+                  disabled={loading || !isLoginFormValid}
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  ВОЙТИ
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
         </div>
       </div>
     </>

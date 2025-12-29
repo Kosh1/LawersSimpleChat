@@ -294,3 +294,6 @@ useMaxCompletionTokens: true,
 
 Сделано с ❤️ для быстрой настройки AI моделей
 
+
+
+

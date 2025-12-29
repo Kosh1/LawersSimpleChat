@@ -32,14 +32,7 @@ const ContactSection = () => {
             Консультация бесплатная, ~30 минут
           </p>
           
-          <div style={{ 
-            marginTop: '2.5rem', 
-            paddingTop: '2rem', 
-            borderTop: '2px solid #2a2a2a',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '2rem'
-          }}>
+          <div className="retro-contact-features">
             <div>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📞</div>
               <div className="retro-card-text" style={{ fontSize: '0.875rem' }}>БЕСПЛАТНАЯ<br/>КОНСУЛЬТАЦИЯ</div>
