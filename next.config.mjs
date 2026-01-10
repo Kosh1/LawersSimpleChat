@@ -4,8 +4,6 @@
 const nextConfig = {
   output: 'standalone', // Для деплоя в Docker/Yandex Cloud Serverless Containers
   serverExternalPackages: ['@supabase/supabase-js'],
-  // Исключаем Node.js-специфичные библиотеки из Edge Runtime сборки
-  serverComponentsExternalPackages: ['mammoth', 'pdf-parse', 'word-extractor'],
   webpack: (config, { isServer }) => {
     // Для Edge Runtime исключаем Node.js-специфичные модули
     if (isServer) {

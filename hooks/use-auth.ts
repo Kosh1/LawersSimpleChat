@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
@@ -7,17 +7,18 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   
   // Создаем клиент только на клиенте, не во время SSR/SSG
-  // Также проверяем наличие переменных окружения
-  let supabase: ReturnType<typeof createClient> | null = null;
-  if (typeof window !== 'undefined') {
+  // Используем useMemo чтобы не пересоздавать клиент на каждом рендере
+  const supabase = useMemo(() => {
+    if (typeof window === 'undefined') return null;
     try {
       if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        supabase = createClient();
+        return createClient();
       }
     } catch (error) {
       console.error('Failed to create Supabase client:', error);
     }
-  }
+    return null;
+  }, []);
 
   useEffect(() => {
     if (!supabase) {
@@ -25,21 +26,39 @@ export function useAuth() {
       return;
     }
     
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    let mounted = true;
+    
+    // Get initial session with error handling
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (!mounted) return;
+        if (error) {
+          console.error('Error getting session:', error);
+          setLoading(false);
+          return;
+        }
+        setUser(session?.user ?? null);
+        setLoading(false);
+      })
+      .catch((error) => {
+        if (!mounted) return;
+        console.error('Failed to get session:', error);
+        setLoading(false);
+      });
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+      if (!mounted) return;
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [supabase])
 
   const signIn = async (email: string, password: string) => {

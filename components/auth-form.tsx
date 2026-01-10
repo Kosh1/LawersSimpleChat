@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { ToasterClient } from "@/components/toaster-client";
 import { Loader2 } from "lucide-react";
 
 // Ретро стиль клавиатур (винтажный)
@@ -252,11 +254,71 @@ const retroStyles = `
     font-family: 'Courier New', 'Monaco', monospace;
     font-size: 0.9rem;
   }
+  
+  .retro-tabs-list {
+    background: #fafaf5 !important;
+    border: 2px solid #2a2a2a !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    font-family: 'Courier New', 'Monaco', monospace !important;
+    display: flex !important;
+    align-items: stretch !important;
+    height: auto !important;
+    min-height: 44px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  .retro-tabs-trigger {
+    background: transparent !important;
+    border: none !important;
+    color: #666 !important;
+    font-family: 'Courier New', 'Monaco', monospace !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 0.875rem 1rem !important;
+    transition: color 0.15s !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 1 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    height: auto !important;
+    min-height: 44px !important;
+    margin: 0 !important;
+  }
+  
+  .retro-tabs-trigger:hover {
+    color: #333 !important;
+    background: transparent !important;
+  }
+  
+  .retro-tabs-trigger[data-state=active] {
+    background: transparent !important;
+    border: none !important;
+    color: #982525 !important;
+    box-shadow: none !important;
+  }
+  
+  .retro-tabs-trigger:focus-visible {
+    outline: none !important;
+    ring: none !important;
+  }
+  
+  .retro-tabs-content {
+    margin-top: 1.5rem;
+  }
 `;
 
 export function AuthForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Separate state for login and signup forms
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user, loading: authLoading } = useAuth();
@@ -265,6 +327,9 @@ export function AuthForm() {
 
   // Check if signup is enabled via environment variable
   const isSignupEnabled = process.env.NEXT_PUBLIC_ENABLE_SIGNUP === "true";
+  
+  // Default tab: registration when enabled, authorization when disabled
+  const defaultTab = isSignupEnabled ? "registration" : "authorization";
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -277,20 +342,20 @@ export function AuthForm() {
   const CALENDLY_URL = "https://calendly.com/glebtuzov/30-minute-call-with-tuzov-gleb-opencv?month=2025-12";
 
   // Check if login form is valid for submission
-  const isLoginFormValid = email.trim() !== "" && password.trim() !== "" && password.length >= 6;
+  const isLoginFormValid = loginEmail.trim() !== "" && loginPassword.trim() !== "" && loginPassword.length >= 6;
 
   // Check if signup form is valid for submission
   const isSignupFormValid = 
-    email.trim() !== "" && 
-    password.trim() !== "" && 
-    password.length >= 6 && 
+    signupEmail.trim() !== "" && 
+    signupPassword.trim() !== "" && 
+    signupPassword.length >= 6 && 
     confirmPassword.trim() !== "" && 
-    password === confirmPassword;
+    signupPassword === confirmPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!loginEmail || !loginPassword) {
       toast({
         variant: "destructive",
         title: "Ошибка",
@@ -299,7 +364,7 @@ export function AuthForm() {
       return;
     }
 
-    if (password.length < 6) {
+    if (loginPassword.length < 6) {
       toast({
         variant: "destructive",
         title: "Ошибка",
@@ -311,7 +376,7 @@ export function AuthForm() {
     setLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(loginEmail, loginPassword);
       
       if (error) {
         throw error;
@@ -343,7 +408,7 @@ export function AuthForm() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !confirmPassword) {
+    if (!signupEmail || !signupPassword || !confirmPassword) {
       toast({
         variant: "destructive",
         title: "Ошибка",
@@ -352,7 +417,7 @@ export function AuthForm() {
       return;
     }
 
-    if (password.length < 6) {
+    if (signupPassword.length < 6) {
       toast({
         variant: "destructive",
         title: "Ошибка",
@@ -361,7 +426,7 @@ export function AuthForm() {
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (signupPassword !== confirmPassword) {
       toast({
         variant: "destructive",
         title: "Ошибка",
@@ -373,7 +438,7 @@ export function AuthForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await signUp(email, password);
+      const { data, error } = await signUp(signupEmail, signupPassword);
       
       if (error) {
         throw error;
@@ -381,7 +446,7 @@ export function AuthForm() {
 
       // After successful signup, automatically sign in
       if (data?.user) {
-        const { error: signInError } = await signIn(email, password);
+        const { error: signInError } = await signIn(signupEmail, signupPassword);
         
         if (signInError) {
           throw signInError;
@@ -430,47 +495,180 @@ export function AuthForm() {
           <Card className="retro-card">
             <CardHeader className="space-y-1 pt-6">
               <CardTitle className="retro-title text-2xl font-bold">
-                ВХОД В СИСТЕМУ
+                {isSignupEnabled ? "АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ" : "ВХОД В СИСТЕМУ"}
               </CardTitle>
               <CardDescription className="retro-description text-sm">
-                Введите email и пароль для входа
+                {isSignupEnabled ? "Выберите действие" : "Введите email и пароль для входа"}
               </CardDescription>
             </CardHeader>
-            <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
+            <CardContent className="pt-4">
+              {isSignupEnabled ? (
+                <Tabs defaultValue={defaultTab} className="w-full">
+                  <TabsList className="retro-tabs-list w-full">
+                    <TabsTrigger value="authorization" className="retro-tabs-trigger">
+                      АВТОРИЗАЦИЯ
+                    </TabsTrigger>
+                    <TabsTrigger value="registration" className="retro-tabs-trigger">
+                      РЕГИСТРАЦИЯ
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="registration" className="retro-tabs-content">
+                    <form onSubmit={handleSignUp} autoComplete="off">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email" className="retro-label">
+                            EMAIL:
+                          </Label>
+                          <Input
+                            id="signup-email"
+                            name="email"
+                            type="email"
+                            placeholder="name@example.com"
+                            value={signupEmail}
+                            onChange={(e) => setSignupEmail(e.target.value)}
+                            disabled={loading}
+                            required
+                            autoComplete="email"
+                            className="retro-input"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-password" className="retro-label">
+                            ПАРОЛЬ:
+                          </Label>
+                          <Input
+                            id="signup-password"
+                            name="new-password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={signupPassword}
+                            onChange={(e) => setSignupPassword(e.target.value)}
+                            disabled={loading}
+                            required
+                            minLength={6}
+                            autoComplete="new-password"
+                            className="retro-input"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-confirm-password" className="retro-label">
+                            ПОДТВЕРДИТЕ ПАРОЛЬ:
+                          </Label>
+                          <Input
+                            id="signup-confirm-password"
+                            name="confirm-password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            disabled={loading}
+                            required
+                            minLength={6}
+                            autoComplete="new-password"
+                            className="retro-input"
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          className="retro-button w-full"
+                          disabled={loading || !isSignupFormValid}
+                        >
+                          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          ЗАРЕГИСТРИРОВАТЬСЯ
+                        </Button>
+                      </div>
+                    </form>
+                  </TabsContent>
+                  
+                  <TabsContent value="authorization" className="retro-tabs-content">
+                    <form onSubmit={handleSubmit} autoComplete="off">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="login-email" className="retro-label">
+                            EMAIL:
+                          </Label>
+                          <Input
+                            id="login-email"
+                            name="email"
+                            type="email"
+                            placeholder="name@example.com"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            disabled={loading}
+                            required
+                            autoComplete="email"
+                            className="retro-input"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="login-password" className="retro-label">
+                            ПАРОЛЬ:
+                          </Label>
+                          <Input
+                            id="login-password"
+                            name="password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            disabled={loading}
+                            required
+                            minLength={6}
+                            autoComplete="current-password"
+                            className="retro-input"
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          className="retro-button w-full"
+                          disabled={loading || !isLoginFormValid}
+                        >
+                          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          ВОЙТИ
+                        </Button>
+                      </div>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+              ) : (
+                <form onSubmit={handleSubmit} autoComplete="off">
+                  <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="retro-label">
+                      <Label htmlFor="login-email" className="retro-label">
                     EMAIL:
                   </Label>
                   <Input
-                    id="email"
+                        id="login-email"
+                        name="email"
                     type="email"
                     placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
                     disabled={loading}
                     required
+                        autoComplete="email"
                     className="retro-input"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="retro-label">
+                      <Label htmlFor="login-password" className="retro-label">
                     ПАРОЛЬ:
                   </Label>
                   <Input
-                    id="password"
+                        id="login-password"
+                        name="password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
                     disabled={loading}
                     required
                     minLength={6}
+                        autoComplete="current-password"
                     className="retro-input"
                   />
                 </div>
-              </CardContent>
-              <CardFooter className="!p-6 !pt-4">
                 <Button
                   type="submit"
                   className="retro-button w-full"
@@ -479,11 +677,13 @@ export function AuthForm() {
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   ВОЙТИ
                 </Button>
-              </CardFooter>
+                  </div>
             </form>
+              )}
+            </CardContent>
           </Card>
           
-          {/* Calendly section - hidden when signup is enabled */}
+          {/* Calendly section - shown only when signup is disabled */}
           {!isSignupEnabled && (
             <div className="retro-info-box p-6 w-full">
               <div className="space-y-3">
@@ -504,83 +704,9 @@ export function AuthForm() {
               </div>
             </div>
           )}
-
-          {/* Signup form - shown when signup is enabled */}
-          {isSignupEnabled && (
-            <Card className="retro-card">
-              <CardHeader className="space-y-1 pt-6">
-                <CardTitle className="retro-title text-2xl font-bold">
-                  РЕГИСТРАЦИЯ
-                </CardTitle>
-                <CardDescription className="retro-description text-sm">
-                  Создайте новый аккаунт
-                </CardDescription>
-              </CardHeader>
-              <form onSubmit={handleSignUp}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="retro-label">
-                      EMAIL:
-                    </Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={loading}
-                      required
-                      className="retro-input"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="retro-label">
-                      ПАРОЛЬ:
-                    </Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={loading}
-                      required
-                      minLength={6}
-                      className="retro-input"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-confirm-password" className="retro-label">
-                      ПОДТВЕРДИТЕ ПАРОЛЬ:
-                    </Label>
-                    <Input
-                      id="signup-confirm-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      disabled={loading}
-                      required
-                      minLength={6}
-                      className="retro-input"
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter className="!p-6 !pt-4">
-                  <Button
-                    type="submit"
-                    className="retro-button w-full"
-                    disabled={loading || !isSignupFormValid}
-                  >
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    ЗАРЕГИСТРИРОВАТЬСЯ
-                  </Button>
-                </CardFooter>
-              </form>
-            </Card>
-          )}
         </div>
       </div>
+      <ToasterClient />
     </>
   );
 }

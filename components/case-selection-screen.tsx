@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeProvider } from "@/components/theme-provider";
 import { CreateCaseDialog } from "@/components/create-case-dialog";
 import { RenameProjectDialog } from "@/components/rename-project-dialog";
 import {
@@ -107,16 +108,22 @@ export function CaseSelectionScreen({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background" style={{ background: '#fafaf5' }}>
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '1px solid #982525' }}>
-        <div className="flex h-16 items-center justify-between" style={{ paddingLeft: '2rem', paddingRight: '2rem' }}>
-          <div className="flex items-center gap-3">
-            <Bot className="h-6 w-6" style={{ color: '#982525' }} />
-            <h1 className="text-xl font-bold" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>МОИ ДЕЛА</h1>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <div className="flex min-h-screen flex-col bg-background" style={{ background: '#fafaf5' }}>
+        <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ background: '#fafaf5', borderBottom: '1px solid #982525' }}>
+          <div className="flex h-16 items-center justify-between" style={{ paddingLeft: '2rem', paddingRight: '2rem' }}>
+            <div className="flex items-center gap-3">
+              <Bot className="h-6 w-6" style={{ color: '#982525' }} />
+              <h1 className="text-xl font-bold" style={{ fontFamily: "'Courier New', 'Monaco', monospace", textTransform: 'uppercase' }}>МОИ ДЕЛА</h1>
+            </div>
+            <ThemeToggle />
           </div>
-          <ThemeToggle />
-        </div>
-      </header>
+        </header>
 
       <main className="flex-1 py-8" style={{ paddingLeft: '2rem', paddingRight: '2rem' }}>
         <div>
@@ -275,7 +282,8 @@ export function CaseSelectionScreen({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </div>
+    </ThemeProvider>
   );
 }
 

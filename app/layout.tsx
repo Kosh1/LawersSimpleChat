@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Roboto } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { metadataStrings } from "./metadata-strings";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -19,12 +18,12 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Джихелпер — ИИ-помощник для юристов",
-  description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
-  keywords: "юридический ИИ, помощник юриста, анализ документов, подготовка исков, работа с договорами, искусственный интеллект для юристов",
-  authors: [{ name: "Джихелпер" }],
-  creator: "Джихелпер",
-  publisher: "Джихелпер",
+  title: metadataStrings.siteTitle,
+  description: metadataStrings.siteDescription,
+  keywords: metadataStrings.siteKeywords,
+  authors: [{ name: metadataStrings.siteName }],
+  creator: metadataStrings.siteName,
+  publisher: metadataStrings.siteName,
   formatDetection: {
     email: false,
     address: false,
@@ -35,18 +34,18 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "Джихелпер — ИИ-помощник для юристов",
-    description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
+    title: metadataStrings.siteTitle,
+    description: metadataStrings.siteDescription,
     url: '/',
-    siteName: 'Джихелпер',
+    siteName: metadataStrings.siteName,
     type: "website",
     locale: "ru_RU",
     countryName: "Russia",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Джихелпер — ИИ-помощник для юристов",
-    description: "Искусственный интеллект для работы с юридическими документами. Анализ материалов, подготовка документов, организация дел. Специально для российских юристов.",
+    title: metadataStrings.siteTitle,
+    description: metadataStrings.siteDescription,
   },
   robots: {
     index: true,
@@ -69,18 +68,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const bodyClassName = `${inter.className} ${roboto.variable}`;
+  
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} ${roboto.variable}`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+    <html lang="ru" suppressHydrationWarning>
+      <body className={bodyClassName}>
+        {children}
       </body>
     </html>
   );

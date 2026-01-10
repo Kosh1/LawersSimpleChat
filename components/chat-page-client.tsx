@@ -9,6 +9,7 @@ import type { ChatMessage, Project, SessionDocument, SelectedModel } from "@/lib
 import { useToast } from "@/hooks/use-toast";
 import { useExportMessage } from "@/hooks/use-export-message";
 import { useAuth } from "@/hooks/use-auth";
+import { ToasterClient } from "@/components/toaster-client";
 import { fetchWithRetry, safeJsonResponse } from "@/lib/utils";
 
 type LocalChatSession = {
@@ -1137,6 +1138,7 @@ export function ChatPageClient() {
   // Render appropriate screen based on navigation state
   if (!isInWorkspace || !selectedProjectId) {
   return (
+    <>
       <CaseSelectionScreen
         projects={projects}
         sessions={sessions}
@@ -1146,7 +1148,9 @@ export function ChatPageClient() {
         onRenameProject={handleRenameProject}
         onDeleteProject={handleDeleteProject}
       />
-    );
+      <ToasterClient />
+    </>
+  );
   }
 
   const currentProject = projects.find((p) => p.id === selectedProjectId);
@@ -1157,26 +1161,29 @@ export function ChatPageClient() {
   const currentProjectSessions = sessions.filter((s) => s.projectId === selectedProjectId);
 
   return (
-    <CaseWorkspace
-      project={currentProject}
-      sessions={currentProjectSessions}
-      activeSessionId={activeSessionId}
-      input={input}
-      isLoading={isLoading}
-      isThinking={isThinking}
-      isUploadingDocument={isUploadingDocument}
-      isDocumentsLoading={isDocumentsLoading}
-      isLoadingChats={isLoadingChatsFromDB}
-      selectedModel={selectedModel}
-      onModelChange={setSelectedModel}
-      onBack={handleBackToSelection}
-      onSelectSession={handleSelectSession}
-      onNewChat={handleNewChat}
-      onInputChange={setInput}
-      onSendMessage={handleSendMessage}
-      onAttachDocument={processDocumentFiles}
-      onRemoveDocument={handleRemoveDocument}
-      onExportMessage={handleExportMessage}
-    />
+    <>
+      <CaseWorkspace
+        project={currentProject}
+        sessions={currentProjectSessions}
+        activeSessionId={activeSessionId}
+        input={input}
+        isLoading={isLoading}
+        isThinking={isThinking}
+        isUploadingDocument={isUploadingDocument}
+        isDocumentsLoading={isDocumentsLoading}
+        isLoadingChats={isLoadingChatsFromDB}
+        selectedModel={selectedModel}
+        onModelChange={setSelectedModel}
+        onBack={handleBackToSelection}
+        onSelectSession={handleSelectSession}
+        onNewChat={handleNewChat}
+        onInputChange={setInput}
+        onSendMessage={handleSendMessage}
+        onAttachDocument={processDocumentFiles}
+        onRemoveDocument={handleRemoveDocument}
+        onExportMessage={handleExportMessage}
+      />
+      <ToasterClient />
+    </>
   );
 }
