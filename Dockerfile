@@ -15,9 +15,20 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Переменные окружения для сборки (если нужны на этапе сборки)
-# Они будут переданы через build args или env
-ENV NEXT_TELEMETRY_DISABLED 1
+# Переменные окружения для сборки Next.js
+# Они передаются через build args из GitHub Actions
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_PROXY_URL
+ARG NEXT_PUBLIC_ENABLE_SIGNUP
+
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_PROXY_URL=$NEXT_PUBLIC_PROXY_URL
+ENV NEXT_PUBLIC_ENABLE_SIGNUP=$NEXT_PUBLIC_ENABLE_SIGNUP
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
@@ -38,11 +49,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 8080
 
-# Yandex Cloud может передавать PORT через переменную окружения
-# Используем значение по умолчанию 3000, если PORT не установлен
-ENV PORT=3000
+# Yandex Cloud Serverless Containers ожидают порт 8080
+# Переменная PORT будет установлена Yandex Cloud, но используем 8080 по умолчанию
+ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]

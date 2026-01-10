@@ -49,15 +49,7 @@ const Introduction = () => {
           </div>
         </div>
         
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-          gap: '2.5rem',
-          marginTop: '6rem',
-          maxWidth: '1400px',
-          marginLeft: 'auto',
-          marginRight: 'auto'
-        }}>
+        <div className="retro-cards-grid">
           <div className="retro-card">
             <h2 className="retro-card-title">🇷🇺 СПЕЦИАЛЬНО ДЛЯ РОССИИ</h2>
             <p className="retro-card-text">

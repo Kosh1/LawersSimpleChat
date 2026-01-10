@@ -372,3 +372,6 @@ AI Response metadata: {
 Обновлено: Ноябрь 2024  
 Актуальность: Проверяйте в https://platform.openai.com/playground
 
+
+
+

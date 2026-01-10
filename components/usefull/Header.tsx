@@ -17,13 +17,6 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   const handleLogin = () => {
     router.push('/auth');
   };
@@ -35,9 +28,6 @@ const Header = () => {
           ДЖИХЕЛПЕР
         </div>
         <nav className="retro-nav">
-          <button onClick={() => scrollToSection('introduction')}>О СИСТЕМЕ</button>
-          <button onClick={() => scrollToSection('products')}>ВОЗМОЖНОСТИ</button>
-          <button onClick={() => scrollToSection('contact')}>КОНТАКТЫ</button>
           <button 
             onClick={handleLogin}
             className="retro-button"
@@ -51,9 +41,3 @@ const Header = () => {
 };
 
 export default Header;
-
-
-
-
-
-
