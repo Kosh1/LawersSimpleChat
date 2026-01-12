@@ -67,12 +67,15 @@ export function slugify(input: string, fallback?: string) {
  * Выполняет fetch запрос с автоматическим retry при сетевых ошибках
  * Обрабатывает ERR_HTTP2_PING_FAILED, ERR_CONNECTION_RESET и другие сетевые ошибки
  * Автоматически использует прокси URL если он настроен
+ * 
+ * @param timeoutMs - таймаут запроса в миллисекундах (по умолчанию 30 секунд)
  */
 export async function fetchWithRetry(
   url: string,
   options: RequestInit = {},
   maxRetries: number = 3,
-  retryDelay: number = 1000
+  retryDelay: number = 1000,
+  timeoutMs: number = 30000 // 30 секунд по умолчанию
 ): Promise<Response> {
   let lastError: Error | null = null;
   
@@ -83,7 +86,7 @@ export async function fetchWithRetry(
     try {
       // Добавляем таймаут для запроса
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 секунд таймаут
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
         const response = await fetch(resolvedUrl, {

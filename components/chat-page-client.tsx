@@ -1009,20 +1009,28 @@ export function ChatPageClient() {
     );
 
     try {
-      const response = await fetchWithRetry(`/api/chat${utmQuery}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      // Используем увеличенный таймаут (35 минут) для долгих thinking-запросов
+      // Сервер настроен на 30 минут, добавляем запас
+      const response = await fetchWithRetry(
+        `/api/chat${utmQuery}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: messagesForRequest,
+            sessionId: backendSessionId,
+            documents: documentsForRequest,
+            projectId: selectedProjectId,
+            userId: user.id,
+            selectedModel, // Передаем выбранную модель для OpenRouter
+          }),
         },
-        body: JSON.stringify({
-          messages: messagesForRequest,
-          sessionId: backendSessionId,
-          documents: documentsForRequest,
-          projectId: selectedProjectId,
-          userId: user.id,
-          selectedModel, // Передаем выбранную модель для OpenRouter
-        }),
-      });
+        3, // maxRetries
+        1000, // retryDelay
+        2100000 // timeoutMs: 35 минут (2100 секунд) для долгих thinking-запросов
+      );
 
       if (!response.ok) {
         throw new Error("Не удалось отправить сообщение");
