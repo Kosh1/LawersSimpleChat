@@ -22,7 +22,9 @@ async function getOpenAIClient(): Promise<InstanceType<typeof import('openai').d
 
 // Отключаем статическую генерацию для этого route
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
+// Используем Node.js runtime для Yandex Cloud Serverless Containers
+// Edge Runtime имеет ограничения по DNS lookup в Yandex Cloud
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -106,8 +108,8 @@ export async function POST(req: NextRequest) {
     const lastUserMessage = messages[messages.length - 1]?.content || '';
 
     // --- AI Service call with automatic fallback and chunking ---
-    // OpenRouter будет использован первым, если selectedModel указан и OpenRouter доступен
-    // В противном случае используется OpenAI с fallback между моделями
+    // Используем streaming для отправки heartbeat во время обработки
+    // Это предотвращает закрытие соединения балансировщиком Yandex Cloud
     const openaiClient = await getOpenAIClient();
     if (!openaiClient) {
       return NextResponse.json(
@@ -115,111 +117,178 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
-    const aiResponse = await generateAIResponse(
-      openaiClient,
-      formattedMessages,
-      lastUserMessage,
-      undefined, // forceModel - используем автоматический выбор
-      selectedModel // selectedModel для OpenRouter
-    );
 
-    const assistantMessage = aiResponse.content;
-    
-    // Логирование метаданных ответа
-    const metadata: AIResponseMetadata = {
-      modelUsed: aiResponse.modelUsed,
-      fallbackOccurred: aiResponse.fallbackOccurred,
-      fallbackReason: aiResponse.fallbackReason,
-      chunksCount: aiResponse.chunksCount,
-      totalTokens: aiResponse.totalTokens,
-      finishReason: aiResponse.finishReason,
-      responseTimeMs: aiResponse.responseTimeMs,
-      provider: aiResponse.provider, // Добавляем информацию о провайдере
-    };
-    
-    console.log('AI Response metadata:', metadata);
-    
-    // Предупреждение если ответ был обрезан даже после chunking
-    if (aiResponse.finishReason === 'length') {
-      console.warn('Response was truncated even after chunking. Consider reviewing chunking limits.');
-    }
-    
-    // Ensure we have a valid response
-    if (!assistantMessage || assistantMessage.trim() === '') {
-      console.error('AI Service returned empty response', metadata);
-      throw new Error('Empty response from AI Service');
-    }
+    // Создаем ReadableStream для отправки heartbeat
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        let heartbeatInterval: NodeJS.Timeout | null = null;
+        
+        try {
+          // Отправляем начальный heartbeat сразу
+          controller.enqueue(encoder.encode(': heartbeat\n\n'));
+          
+          // Отправляем heartbeat каждые 5 секунд для поддержания соединения
+          heartbeatInterval = setInterval(() => {
+            try {
+              controller.enqueue(encoder.encode(': heartbeat\n\n'));
+            } catch (e) {
+              // Соединение закрыто, останавливаем heartbeat
+              if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+              }
+            }
+          }, 5000);
 
-    let currentSessionId = sessionId;
+          // Выполняем генерацию AI ответа
+          const aiResponse = await generateAIResponse(
+            openaiClient,
+            formattedMessages,
+            lastUserMessage,
+            undefined, // forceModel - используем автоматический выбор
+            selectedModel // selectedModel для OpenRouter
+          );
 
-    // Create new session only if it doesn't exist
-    if (!currentSessionId) {
-      const newSessionId = uuidv4();
-      try {
-        const newChatSession = {
-          id: newSessionId,
-          user_id: userId ?? null,
-          project_id: resolvedProjectId ?? null,
-          initial_message: messages[0].content,
-          created_at: new Date().toISOString(),
-          utm: utm || null,
-        };
-        const { error: sessionError } = await supabase
-          .from('chat_sessions')
-          .insert([
-            {
-              id: newChatSession.id,
-              user_id: newChatSession.user_id,
-              project_id: newChatSession.project_id,
-              initial_message: newChatSession.initial_message,
-              created_at: newChatSession.created_at,
-              utm: newChatSession.utm,
-            },
-          ]);
-        if (sessionError) {
-          console.error('Error creating session:', sessionError);
-        } else {
-          currentSessionId = newSessionId;
+          // Останавливаем heartbeat
+          if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+          }
+
+          const assistantMessage = aiResponse.content;
+          
+          // Логирование метаданных ответа
+          const metadata: AIResponseMetadata = {
+            modelUsed: aiResponse.modelUsed,
+            fallbackOccurred: aiResponse.fallbackOccurred,
+            fallbackReason: aiResponse.fallbackReason,
+            chunksCount: aiResponse.chunksCount,
+            totalTokens: aiResponse.totalTokens,
+            finishReason: aiResponse.finishReason,
+            responseTimeMs: aiResponse.responseTimeMs,
+            provider: aiResponse.provider, // Добавляем информацию о провайдере
+          };
+          
+          console.log('AI Response metadata:', metadata);
+          
+          // Предупреждение если ответ был обрезан даже после chunking
+          if (aiResponse.finishReason === 'length') {
+            console.warn('Response was truncated even after chunking. Consider reviewing chunking limits.');
+          }
+          
+          // Ensure we have a valid response
+          if (!assistantMessage || assistantMessage.trim() === '') {
+            console.error('AI Service returned empty response', metadata);
+            throw new Error('Empty response from AI Service');
+          }
+
+          let currentSessionId = sessionId;
+
+          // Create new session only if it doesn't exist
+          if (!currentSessionId) {
+            const newSessionId = uuidv4();
+            try {
+              const newChatSession = {
+                id: newSessionId,
+                user_id: userId ?? null,
+                project_id: resolvedProjectId ?? null,
+                initial_message: messages[0].content,
+                created_at: new Date().toISOString(),
+                utm: utm || null,
+              };
+              const { error: sessionError } = await supabase
+                .from('chat_sessions')
+                .insert([
+                  {
+                    id: newChatSession.id,
+                    user_id: newChatSession.user_id,
+                    project_id: newChatSession.project_id,
+                    initial_message: newChatSession.initial_message,
+                    created_at: newChatSession.created_at,
+                    utm: newChatSession.utm,
+                  },
+                ]);
+              if (sessionError) {
+                console.error('Error creating session:', sessionError);
+              } else {
+                currentSessionId = newSessionId;
+              }
+            } catch (error) {
+              console.error('Error with Supabase session creation:', error);
+            }
+          }
+
+          // Save messages to database
+          try {
+            if (currentSessionId) {
+              const messageRows = [
+                {
+                  session_id: currentSessionId,
+                  role: 'user',
+                  content: messages[messages.length - 1].content,
+                  created_at: new Date().toISOString(),
+                },
+                {
+                  session_id: currentSessionId,
+                  role: 'assistant',
+                  content: assistantMessage,
+                  created_at: new Date().toISOString(),
+                },
+              ];
+              const { error: messageError } = await supabase
+                .from('chat_messages')
+                .insert(messageRows);
+
+              if (messageError) {
+                console.error('Error saving messages:', messageError);
+              }
+            }
+          } catch (error) {
+            console.error('Error with Supabase message saving:', error);
+          }
+
+          // Отправляем финальный ответ через SSE
+          const response = {
+            message: assistantMessage,
+            sessionId: currentSessionId,
+            projectId: resolvedProjectId,
+            metadata,
+          };
+          
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(response)}\n\n`));
+          controller.close();
+          
+        } catch (error) {
+          // Останавливаем heartbeat при ошибке
+          if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+          }
+          
+          console.error('Error in chat API (streaming):', error);
+          
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const errorResponse = {
+            error: 'Internal server error',
+            details: errorMessage,
+          };
+          
+          try {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(errorResponse)}\n\n`));
+            controller.close();
+          } catch (closeError) {
+            // Игнорируем ошибки при закрытии
+          }
         }
-      } catch (error) {
-        console.error('Error with Supabase session creation:', error);
-      }
-    }
+      },
+    });
 
-    // Save messages to database
-    try {
-      if (currentSessionId) {
-        const messageRows = [
-          {
-            session_id: currentSessionId,
-            role: 'user',
-            content: messages[messages.length - 1].content,
-            created_at: new Date().toISOString(),
-          },
-          {
-            session_id: currentSessionId,
-            role: 'assistant',
-            content: assistantMessage,
-            created_at: new Date().toISOString(),
-          },
-        ];
-        const { error: messageError } = await supabase
-          .from('chat_messages')
-          .insert(messageRows);
-
-        if (messageError) {
-          console.error('Error saving messages:', messageError);
-        }
-      }
-    } catch (error) {
-      console.error('Error with Supabase message saving:', error);
-    }
-
-    return NextResponse.json({
-      message: assistantMessage,
-      sessionId: currentSessionId,
-      projectId: resolvedProjectId,
-      metadata, // Включаем метаданные в ответ
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no', // Отключаем буферизацию nginx/балансировщика
+      },
     });
 
   } catch (error) {

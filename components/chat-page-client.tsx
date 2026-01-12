@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useExportMessage } from "@/hooks/use-export-message";
 import { useAuth } from "@/hooks/use-auth";
 import { ToasterClient } from "@/components/toaster-client";
-import { fetchWithRetry, safeJsonResponse } from "@/lib/utils";
+import { fetchWithRetry, safeJsonResponse, resolveApiUrl } from "@/lib/utils";
 
 type LocalChatSession = {
   id: string;
@@ -1011,98 +1011,144 @@ export function ChatPageClient() {
     try {
       // Используем увеличенный таймаут (35 минут) для долгих thinking-запросов
       // Сервер настроен на 30 минут, добавляем запас
-      const response = await fetchWithRetry(
-        `/api/chat${utmQuery}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: messagesForRequest,
-            sessionId: backendSessionId,
-            documents: documentsForRequest,
-            projectId: selectedProjectId,
-            userId: user.id,
-            selectedModel, // Передаем выбранную модель для OpenRouter
-          }),
+      // Теперь используем streaming для получения ответа с heartbeat
+      const resolvedUrl = resolveApiUrl(`/api/chat${utmQuery}`);
+      const response = await fetch(resolvedUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        3, // maxRetries
-        1000, // retryDelay
-        2100000 // timeoutMs: 35 минут (2100 секунд) для долгих thinking-запросов
-      );
+        body: JSON.stringify({
+          messages: messagesForRequest,
+          sessionId: backendSessionId,
+          documents: documentsForRequest,
+          projectId: selectedProjectId,
+          userId: user.id,
+          selectedModel, // Передаем выбранную модель для OpenRouter
+        }),
+        signal: AbortSignal.timeout(2100000), // 35 минут таймаут
+      });
 
       if (!response.ok) {
         throw new Error("Не удалось отправить сообщение");
       }
 
-      const data = await response.json();
-      
-      // Логируем метаданные AI ответа
-      if (data.metadata) {
-        console.log('[AI Response]', {
-          model: data.metadata.modelUsed,
-          fallback: data.metadata.fallbackOccurred,
-          chunks: data.metadata.chunksCount,
-          tokens: data.metadata.totalTokens,
-          time: `${data.metadata.responseTimeMs}ms`
-        });
+      // Читаем streaming ответ (Server-Sent Events)
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      if (!reader) {
+        throw new Error("Не удалось получить поток данных");
+      }
+
+      let data: any = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
         
-        // Показываем уведомление если было несколько chunks
-        if (data.metadata.chunksCount > 1) {
-          console.info(`✨ Ответ был сгенерирован в ${data.metadata.chunksCount} частей для обеспечения полноты`);
-        }
+        if (done) break;
         
-        // Показываем уведомление если был fallback
-        if (data.metadata.fallbackOccurred) {
-          console.warn(`⚠️ Была использована резервная модель из-за: ${data.metadata.fallbackReason}`);
+        buffer += decoder.decode(value, { stream: true });
+        
+        // Обрабатываем SSE сообщения
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Оставляем неполную строку в буфере
+        
+        for (const line of lines) {
+          // Игнорируем heartbeat сообщения (строки начинающиеся с ':')
+          if (line.trim() === '' || line.startsWith(':')) {
+            continue;
+          }
+          
+          if (line.startsWith('data: ')) {
+            try {
+              data = JSON.parse(line.slice(6));
+              
+              // Если это ошибка
+              if (data.error) {
+                throw new Error(data.details || data.error);
+              }
+              
+              // Если это финальный ответ (содержит message)
+              if (data.message) {
+                // Логируем метаданные AI ответа
+                if (data.metadata) {
+                  console.log('[AI Response]', {
+                    model: data.metadata.modelUsed,
+                    fallback: data.metadata.fallbackOccurred,
+                    chunks: data.metadata.chunksCount,
+                    tokens: data.metadata.totalTokens,
+                    time: `${data.metadata.responseTimeMs}ms`
+                  });
+                  
+                  // Показываем уведомление если было несколько chunks
+                  if (data.metadata.chunksCount > 1) {
+                    console.info(`✨ Ответ был сгенерирован в ${data.metadata.chunksCount} частей для обеспечения полноты`);
+                  }
+                  
+                  // Показываем уведомление если был fallback
+                  if (data.metadata.fallbackOccurred) {
+                    console.warn(`⚠️ Была использована резервная модель из-за: ${data.metadata.fallbackReason}`);
+                  }
+                }
+                
+                // Определяем была ли использована reasoning модель и время размышления
+                const wasReasoning = data.metadata?.modelUsed === 'reasoning' || 
+                  (data.metadata?.responseTimeMs && data.metadata.responseTimeMs > 5000);
+                const thinkingTimeSeconds = data.metadata?.responseTimeMs 
+                  ? Math.floor(data.metadata.responseTimeMs / 1000) 
+                  : undefined;
+                
+                const assistantMessage: ChatMessage = {
+                  role: "assistant",
+                  content: data.message,
+                  metadata: {
+                    modelUsed: data.metadata?.modelUsed,
+                    thinkingTimeSeconds,
+                    wasReasoning,
+                  },
+                };
+
+                setIsThinking(false);
+
+                setSessions((prev) =>
+                  prev.map((session) => {
+                    if (session.id !== sessionLocalId) return session;
+                    return {
+                      ...session,
+                      backendSessionId: data.sessionId ?? session.backendSessionId,
+                      messages: [...session.messages, assistantMessage],
+                      projectId: data.projectId ?? session.projectId ?? selectedProjectId,
+                    };
+                  }),
+                );
+
+                setProjects((prev) =>
+                  prev
+                    .map((project) =>
+                      project.id === (data.projectId ?? selectedProjectId)
+                        ? { ...project, updated_at: new Date().toISOString() }
+                        : project,
+                    )
+                    .sort(
+                      (a, b) =>
+                        new Date(b.updated_at ?? b.created_at).getTime() -
+                        new Date(a.updated_at ?? a.created_at).getTime(),
+                    ),
+                );
+              }
+            } catch (parseError) {
+              console.error('Error parsing SSE data:', parseError);
+              // Продолжаем обработку, возможно следующая строка будет валидной
+            }
+          }
         }
       }
-      
-      // Определяем была ли использована reasoning модель и время размышления
-      const wasReasoning = data.metadata?.modelUsed === 'reasoning' || 
-        (data.metadata?.responseTimeMs && data.metadata.responseTimeMs > 5000);
-      const thinkingTimeSeconds = data.metadata?.responseTimeMs 
-        ? Math.floor(data.metadata.responseTimeMs / 1000) 
-        : undefined;
-      
-      const assistantMessage: ChatMessage = {
-        role: "assistant",
-        content: data.message,
-        metadata: {
-          modelUsed: data.metadata?.modelUsed,
-          thinkingTimeSeconds,
-          wasReasoning,
-        },
-      };
 
-      setIsThinking(false);
-
-      setSessions((prev) =>
-        prev.map((session) => {
-          if (session.id !== sessionLocalId) return session;
-          return {
-            ...session,
-            backendSessionId: data.sessionId ?? session.backendSessionId,
-            messages: [...session.messages, assistantMessage],
-            projectId: data.projectId ?? session.projectId ?? selectedProjectId,
-          };
-        }),
-      );
-
-      setProjects((prev) =>
-        prev
-          .map((project) =>
-            project.id === (data.projectId ?? selectedProjectId)
-              ? { ...project, updated_at: new Date().toISOString() }
-              : project,
-          )
-          .sort(
-            (a, b) =>
-              new Date(b.updated_at ?? b.created_at).getTime() -
-              new Date(a.updated_at ?? a.created_at).getTime(),
-          ),
-      );
+      if (!data || !data.message) {
+        throw new Error("Не удалось получить ответ от сервера");
+      }
     } catch (error) {
       console.error("Ошибка при отправке сообщения:", error);
       setSessions((prev) =>
