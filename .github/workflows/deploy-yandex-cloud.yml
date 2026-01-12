@@ -177,7 +177,7 @@ jobs:
             --service-account-id ${{ secrets.YC_SERVICE_ACCOUNT_ID }} \
             --cores 1 \
             --memory 2GB \
-            --execution-timeout 120s \
+            --execution-timeout 1800s \
             --concurrency 10 \
             --environment "${ENV_VARS}"
 
