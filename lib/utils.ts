@@ -89,12 +89,14 @@ export async function fetchWithRetry(
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
-        const response = await fetch(resolvedUrl, {
+        // keepalive не используем для запросов с телом (POST/FormData): в Safari — лимит 64 КБ тела,
+        // в Firefox — "NetworkError when attempting to fetch resource". Для запросов с телом явно выключаем.
+        const fetchOptions: RequestInit = {
           ...options,
           signal: controller.signal,
-          // Добавляем keepalive для более стабильных соединений
-          keepalive: true,
-        });
+          keepalive: options.body != null ? false : options.keepalive ?? true,
+        };
+        const response = await fetch(resolvedUrl, fetchOptions);
 
         clearTimeout(timeoutId);
         

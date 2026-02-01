@@ -6,15 +6,23 @@ Workflow для автоматического деплоя в Yandex Cloud Obje
 
 ### Настройка
 
-1. **Создайте секреты в GitHub:**
-   - `YC_KEY_ID` - Access Key ID для Yandex Cloud
-   - `YC_SECRET_KEY` - Secret Access Key для Yandex Cloud
-   - `YC_BUCKET_NAME` - Имя S3-бакета в Yandex Cloud
-   - `NEXT_PUBLIC_SUPABASE_URL` - URL вашего Supabase проекта
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Anon Key для Supabase
-   - `NEXT_PUBLIC_SITE_URL` - URL вашего сайта
-   - `OPENROUTER_API_KEY` - API ключ OpenRouter (опционально)
-   - `OPENAI_API_KEY` - API ключ OpenAI (опционально)
+Откройте **Settings** → **Security** → **Secrets and variables** → **Actions**.
+
+1. **Variables** (вкладка Variables — не секреты, используются при сборке):
+   - `NEXT_PUBLIC_SUPABASE_URL` — URL проекта Supabase
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Anon Key Supabase
+   - `NEXT_PUBLIC_SITE_URL` — URL сайта (например `https://your-domain.com`)
+   - `OPENROUTER_API_KEY` — API ключ OpenRouter
+   - `OPENAI_API_KEY` — API ключ OpenAI (опционально)
+   - `NEXT_PUBLIC_PROXY_URL` — URL прокси (опционально)
+   - `NEXT_PUBLIC_ENABLE_SIGNUP` — `true` или `false` (опционально, по умолчанию `false`)
+
+2. **Secrets** (вкладка Secrets — конфиденциальные данные):
+   - `YC_SA_JSON` — JSON-ключ сервисного аккаунта Yandex Cloud (целиком)
+   - `YC_CLOUD_ID` — Cloud ID
+   - `YC_FOLDER_ID` — Folder ID
+   - `YC_REGISTRY_ID` — ID Container Registry
+   - `YC_SERVICE_ACCOUNT_ID` — ID сервисного аккаунта для Serverless Container
 
 2. **Для статического экспорта Next.js:**
    
