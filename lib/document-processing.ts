@@ -117,22 +117,31 @@ function isImage(mimeType: string, extension: string) {
   return mimeType.startsWith('image/') || ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.heic'].includes(extension);
 }
 
-async function extractDocx(_buffer: Buffer) {
-  // На Edge Runtime Node.js-специфичные библиотеки недоступны
-  // Всегда возвращаем пустую строку, чтобы использовать fallback через OpenAI API
-  return '';
+async function extractDocx(buffer: Buffer): Promise<string> {
+  try {
+    const mammoth = await import('mammoth');
+    const result = await mammoth.extractRawText({ buffer });
+    return (result?.value ?? '').trim();
+  } catch {
+    // mammoth недоступен на Edge Runtime или ошибка парсинга — fallback через API
+    return '';
+  }
 }
 
 async function extractDoc(_buffer: Buffer) {
-  // На Edge Runtime Node.js-специфичные библиотеки недоступны
-  // Всегда возвращаем пустую строку, чтобы использовать fallback через OpenAI API
+  // .doc (бинарный MS Word) — mammoth не поддерживает, оставляем fallback через API
   return '';
 }
 
-async function extractPdf(_buffer: Buffer) {
-  // На Edge Runtime Node.js-специфичные библиотеки недоступны
-  // Всегда возвращаем пустую строку, чтобы использовать fallback через OpenAI API
-  return '';
+async function extractPdf(buffer: Buffer): Promise<string> {
+  try {
+    const pdfParse = (await import('pdf-parse')).default;
+    const result = await pdfParse(buffer);
+    return (result?.text ?? '').trim();
+  } catch {
+    // pdf-parse недоступен на Edge Runtime или ошибка парсинга — fallback через API
+    return '';
+  }
 }
 
 async function extractWithVision(buffer: Buffer, mimeType: string, filename: string) {
