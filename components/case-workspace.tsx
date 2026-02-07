@@ -235,50 +235,31 @@ export function CaseWorkspace({
                   color: textColor,
                 }}
               >
-                <DropdownMenuItem
-                  onClick={() => onModelChange('openai')}
-                  className={selectedModel === 'openai' ? 'bg-accent' : ''}
-                  style={{
-                    color: textColor,
-                    background: selectedModel === 'openai' 
-                      ? (isDarkMode ? '#334155' : '#f0f0eb')
-                      : 'transparent',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedModel !== 'openai') {
-                      e.currentTarget.style.background = isDarkMode ? '#334155' : '#f0f0eb';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedModel !== 'openai') {
-                      e.currentTarget.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  {getModelDisplayName('openai')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onModelChange('thinking')}
-                  className={selectedModel === 'thinking' ? 'bg-accent' : ''}
-                  style={{
-                    color: textColor,
-                    background: selectedModel === 'thinking' 
-                      ? (isDarkMode ? '#334155' : '#f0f0eb')
-                      : 'transparent',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedModel !== 'thinking') {
-                      e.currentTarget.style.background = isDarkMode ? '#334155' : '#f0f0eb';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedModel !== 'thinking') {
-                      e.currentTarget.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  {getModelDisplayName('thinking')}
-                </DropdownMenuItem>
+                {(['openai', 'thinking'] as const).map((model) => (
+                  <DropdownMenuItem
+                    key={model}
+                    onClick={() => onModelChange(model)}
+                    className={selectedModel === model ? 'bg-accent' : ''}
+                    style={{
+                      color: textColor,
+                      background: selectedModel === model 
+                        ? (isDarkMode ? '#334155' : '#f0f0eb')
+                        : 'transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedModel !== model) {
+                        e.currentTarget.style.background = isDarkMode ? '#334155' : '#f0f0eb';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedModel !== model) {
+                        e.currentTarget.style.background = 'transparent';
+                      }
+                    }}
+                  >
+                    {getModelDisplayName(model)}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
