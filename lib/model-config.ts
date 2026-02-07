@@ -1,42 +1,5 @@
 /**
  * Конфигурация моделей AI с приоритизацией и параметрами
- * 
- * ВАЖНО: Измените имена моделей в соответствии с вашим доступом к OpenAI API
- * 
- * ============================================
- * ПОЛНЫЙ СПИСОК АКТУАЛЬНЫХ ИМЕН МОДЕЛЕЙ:
- * ============================================
- * 
- * GPT-5 (если доступны):
- * - 'gpt-5' - основная модель GPT-5
- * - 'gpt-5-mini' - облегченная версия GPT-5
- * - 'gpt-5-nano' - максимально быстрая версия
- * - 'gpt-5-chat-latest' - последняя chat версия
- * 
- * O1 Reasoning Models (есть ограничения):
- * - 'o1-preview' - preview версия O1
- * - 'o1-mini' - облегченная версия O1
- * - 'o1-2024-12-17' - версия с датой
- * ВАЖНО для O1: не поддерживают temperature, используют developer вместо system messages
- * 
- * GPT-4o (текущие стабильные):
- * - 'gpt-4o' - основная модель GPT-4o
- * - 'gpt-4o-2024-11-20' - версия от ноября 2024
- * - 'gpt-4o-2024-08-06' - версия от августа 2024
- * - 'gpt-4o-mini' - облегченная версия
- * - 'gpt-4o-mini-2024-07-18' - версия mini с датой
- * 
- * GPT-4 Turbo:
- * - 'gpt-4-turbo' - основная turbo модель
- * - 'gpt-4-turbo-2024-04-09' - версия от апреля 2024
- * - 'gpt-4-turbo-preview' - preview версия
- * - 'gpt-4-0125-preview' - preview от января 2024
- * 
- * GPT-4 (базовые):
- * - 'gpt-4' - базовая GPT-4
- * - 'gpt-4-0613' - версия от июня 2023
- * 
- * Проверить доступные модели: https://platform.openai.com/playground
  */
 
 import type { SelectedModel } from './types';
@@ -69,29 +32,15 @@ export interface ModelConfig {
 }
 
 /**
- * Конфигурация всех доступных моделей
- * 
- * ============================================
- * ВЫБЕРИТЕ ОДИН ИЗ ВАРИАНТОВ КОНФИГУРАЦИИ:
- * ============================================
- * 
- * ВАРИАНТ 1: GPT-5 (если у вас есть доступ)
- * ВАРИАНТ 2: O1 Reasoning Models (o1-preview, o1-mini)
- * ВАРИАНТ 3: GPT-4o (текущие стабильные модели)
- * 
- * Раскомментируйте нужный вариант ниже!
+ * Конфигурация всех доступных моделей для прямого OpenAI API
  */
-
-// ============================================
-// ВАРИАНТ 1: GPT-5 MODELS (если доступны)
-// ============================================
 export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
   'primary': {
-    name: 'gpt-5', // Полное имя: 'gpt-5' или 'gpt-5-chat-latest'
+    name: 'gpt-5',
     maxTokens: 32000,
     contextWindow: 400000,
-    temperature: undefined, // GPT-5 НЕ поддерживает temperature - только дефолтное значение
-    useMaxCompletionTokens: true, // КРИТИЧНО: новые модели требуют max_completion_tokens вместо max_tokens
+    temperature: undefined,
+    useMaxCompletionTokens: true,
     reasoningEffort: 'medium',
     verbosity: 'medium',
     supportsSystemMessages: true,
@@ -99,11 +48,11 @@ export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
     description: 'GPT-5 основная модель с балансом скорости и качества',
   },
   'reasoning': {
-    name: 'gpt-5', // Полное имя: 'gpt-5' или 'gpt-5-mini' для reasoning
+    name: 'gpt-5',
     maxTokens: 32000,
     contextWindow: 400000,
-    temperature: undefined, // GPT-5 НЕ поддерживает temperature - только дефолтное значение
-    useMaxCompletionTokens: true, // КРИТИЧНО: новые модели требуют max_completion_tokens вместо max_tokens
+    temperature: undefined,
+    useMaxCompletionTokens: true,
     reasoningEffort: 'high',
     verbosity: 'high',
     supportsSystemMessages: true,
@@ -111,174 +60,15 @@ export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
     description: 'GPT-5 режим глубокого анализа для сложных юридических задач',
   },
   'fallback': {
-    name: 'gpt-4.1', // Полное имя: 'gpt-4-turbo' или 'gpt-4-turbo-2024-04-09'
+    name: 'gpt-4.1',
     maxTokens: 32000,
     contextWindow: 128000,
     temperature: 0.7,
-    // useMaxCompletionTokens НЕ нужен для gpt-4.1 - работает с обычным max_tokens
     supportsSystemMessages: true,
     priority: 2,
     description: 'GPT-4.1 - быстрая и надежная fallback модель',
   },
 };
-
-// ============================================
-// ВАРИАНТ 2: O1 REASONING MODELS
-// Раскомментируйте этот блок если хотите использовать O1
-// ============================================
-/*
-export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
-  'primary': {
-    name: 'gpt-4o', // Полное имя: 'gpt-4o' или 'gpt-4o-2024-08-06' или 'gpt-4o-2024-11-20'
-    maxTokens: 16000,
-    contextWindow: 128000,
-    temperature: 0.7,
-    supportsSystemMessages: true,
-    priority: 1,
-    description: 'GPT-4o основная быстрая модель для обычных задач',
-  },
-  'reasoning': {
-    name: 'o1-preview', // Полное имя: 'o1-preview' или 'o1-mini' или 'o1-2024-12-17'
-    maxTokens: 32000,
-    contextWindow: 128000,
-    // О1 НЕ поддерживает temperature!
-    temperature: undefined,
-    useMaxCompletionTokens: true, // O1 использует max_completion_tokens
-    supportsSystemMessages: false, // O1 не поддерживает system messages
-    useDeveloperMessage: true, // O1 использует developer message
-    priority: 0,
-    description: 'O1-preview для глубокого reasoning и сложных юридических задач',
-  },
-  'fallback': {
-    name: 'gpt-4-turbo', // Полное имя: 'gpt-4-turbo' или 'gpt-4-turbo-2024-04-09' или 'gpt-4-turbo-preview'
-    maxTokens: 16000,
-    contextWindow: 128000,
-    temperature: 0.7,
-    supportsSystemMessages: true,
-    priority: 2,
-    description: 'GPT-4 Turbo - надежная fallback модель',
-  },
-};
-*/
-
-// ============================================
-// ВАРИАНТ 3: GPT-4O MODELS (стабильные, доступны всем)
-// Раскомментируйте этот блок если хотите использовать GPT-4o
-// ============================================
-/*
-export const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
-  'primary': {
-    name: 'gpt-4o', // Полное имя: 'gpt-4o' или 'gpt-4o-2024-08-06' или 'gpt-4o-2024-11-20'
-    maxTokens: 16000,
-    contextWindow: 128000,
-    temperature: 0.7,
-    supportsSystemMessages: true,
-    priority: 1,
-    description: 'GPT-4o основная стабильная модель для большинства задач',
-  },
-  'reasoning': {
-    name: 'gpt-4o', // Полное имя: 'gpt-4o' - та же модель с детальными промптами
-    maxTokens: 16000,
-    contextWindow: 128000,
-    temperature: 0.7,
-    supportsSystemMessages: true,
-    priority: 0,
-    description: 'GPT-4o для сложных юридических задач с детальным анализом',
-  },
-  'fallback': {
-    name: 'gpt-4-turbo', // Полное имя: 'gpt-4-turbo' или 'gpt-4-turbo-2024-04-09' или 'gpt-4-turbo-preview'
-    maxTokens: 16000,
-    contextWindow: 128000,
-    temperature: 0.7,
-    supportsSystemMessages: true,
-    priority: 2,
-    description: 'GPT-4 Turbo - проверенная fallback модель',
-  },
-};
-*/
-
-/**
- * Ключевые слова для определения необходимости глубокого reasoning
- */
-export const REASONING_KEYWORDS = [
-  'проанализируй',
-  'анализ',
-  'стратегия',
-  'стратегию',
-  'риски',
-  'рисков',
-  'подготовь',
-  'подготовить',
-  'жалоб',
-  'жалобу',
-  'апелляц',
-  'кассац',
-  'иск',
-  'ходатайств',
-  'заявлени',
-  'обоснова',
-  'аргумент',
-  'доказательств',
-  'правов',
-  'норм',
-  'статей',
-  'статью',
-  'законодательств',
-  'судебн',
-  'процессуальн',
-  'дополнени',
-  'не менее',
-  'слов',
-  'токенов',
-  'больш',
-  'глубок',
-  'детальн',
-  'подробн',
-];
-
-/**
- * Минимальная длина запроса (в символах) для использования thinking модели
- */
-export const MIN_QUERY_LENGTH_FOR_THINKING = 200;
-
-/**
- * Минимальная ожидаемая длина ответа (в словах) для использования thinking модели
- */
-export const MIN_EXPECTED_RESPONSE_WORDS = 5000;
-
-/**
- * Определяет, нужна ли модель с глубоким reasoning
- * @param userMessage - сообщение пользователя
- * @returns true если нужна thinking модель
- */
-export function shouldUseThinkingModel(userMessage: string): boolean {
-  const messageLower = userMessage.toLowerCase();
-  
-  // Проверка на длину запроса
-  if (userMessage.length > MIN_QUERY_LENGTH_FOR_THINKING) {
-    return true;
-  }
-  
-  // Проверка на ключевые слова
-  const hasReasoningKeywords = REASONING_KEYWORDS.some(keyword => 
-    messageLower.includes(keyword)
-  );
-  
-  if (hasReasoningKeywords) {
-    return true;
-  }
-  
-  // Проверка на запрос большого количества текста
-  const wordsMatch = messageLower.match(/(\d+)\s*(слов|токен|знак)/);
-  if (wordsMatch) {
-    const requestedAmount = parseInt(wordsMatch[1], 10);
-    if (requestedAmount >= MIN_EXPECTED_RESPONSE_WORDS) {
-      return true;
-    }
-  }
-  
-  return false;
-}
 
 /**
  * Получает конфигурацию модели по имени
@@ -289,9 +79,7 @@ export function getModelConfig(modelName: ModelName): ModelConfig {
 
 /**
  * Определяет, какую модель использовать для запроса
- * @param userMessage - сообщение пользователя
- * @param forceModel - принудительный выбор модели
- * @returns имя модели для использования
+ * Всегда используем reasoning модель для максимального качества
  */
 export function selectModel(
   userMessage: string,
@@ -301,16 +89,7 @@ export function selectModel(
     return forceModel;
   }
   
-  // ВСЕГДА используем reasoning модель для максимального качества ответов
-  // Для юридического помощника важнее качество, чем скорость
   return 'reasoning';
-  
-  /* СТАРАЯ ЛОГИКА (условное включение):
-  if (shouldUseThinkingModel(userMessage)) {
-    return 'reasoning';
-  }
-  return 'primary';
-  */
 }
 
 /**
@@ -337,16 +116,16 @@ export function getFallbackModels(primaryModel: ModelName): ModelName[] {
  */
 export const OPENROUTER_MODEL_CONFIGS: Record<SelectedModel, ModelConfig> = {
   'openai': {
-    name: 'openai/gpt-5-mini', // Последняя модель OpenAI через OpenRouter
+    name: 'anthropic/claude-sonnet-4.5',
     maxTokens: 16000,
-    contextWindow: 128000,
+    contextWindow: 200000,
     temperature: 0.7,
     supportsSystemMessages: true,
     priority: 1,
-    description: 'OpenAI GPT-5 Mini - последняя модель OpenAI',
+    description: 'Claude Sonnet 4.5 - быстрая и качественная модель',
   },
   'anthropic': {
-    name: 'anthropic/claude-opus-4.5', // Последняя модель Anthropic через OpenRouter
+    name: 'anthropic/claude-opus-4.5',
     maxTokens: 16000,
     contextWindow: 200000,
     temperature: 0.7,
@@ -355,57 +134,44 @@ export const OPENROUTER_MODEL_CONFIGS: Record<SelectedModel, ModelConfig> = {
     description: 'Anthropic Claude Opus 4.5 - последняя модель Anthropic',
   },
   'gemini': {
-    name: 'google/gemini-2.5-flash', // Последняя модель Google через OpenRouter
+    name: 'google/gemini-2.5-flash',
     maxTokens: 16000,
-    contextWindow: 1000000, // Gemini имеет большое контекстное окно
+    contextWindow: 1000000,
     temperature: 0.7,
     supportsSystemMessages: true,
     priority: 1,
     description: 'Google Gemini 2.5 Flash - последняя модель Google',
   },
   'thinking': {
-    name: 'openai/gpt-5', // GPT-5 reasoning модель через OpenRouter
+    name: 'openai/gpt-5.2',
     maxTokens: 32000,
     contextWindow: 400000,
-    temperature: undefined, // GPT-5 не поддерживает temperature
-    useMaxCompletionTokens: true, // GPT-5 использует max_completion_tokens
+    temperature: undefined,
+    useMaxCompletionTokens: true,
     reasoningEffort: 'high',
     verbosity: 'high',
     supportsSystemMessages: true,
     priority: 0,
-    description: 'OpenAI GPT-5 - думающая модель для глубокого анализа через OpenRouter',
+    description: 'GPT-5.2 - думающая модель для глубокого анализа через OpenRouter',
   },
 };
 
 /**
  * Получает конфигурацию модели OpenRouter по выбранной модели
- * @param selectedModel - выбранная модель пользователем
- * @returns конфигурация модели для OpenRouter
  */
 export function getOpenRouterModelConfig(selectedModel: SelectedModel): ModelConfig {
   return OPENROUTER_MODEL_CONFIGS[selectedModel];
 }
 
 /**
- * Получает имя модели OpenRouter по выбранной модели
- * @param selectedModel - выбранная модель пользователем
- * @returns имя модели в формате OpenRouter (provider/model-name)
- */
-export function getOpenRouterModelName(selectedModel: SelectedModel): string {
-  return OPENROUTER_MODEL_CONFIGS[selectedModel].name;
-}
-
-/**
  * Получает отображаемое название модели для UI
- * @param selectedModel - выбранная модель пользователем
- * @returns читаемое название модели
  */
 export function getModelDisplayName(selectedModel: SelectedModel): string {
   const displayNames: Record<SelectedModel, string> = {
-    'openai': 'Быстрая',
+    'openai': 'Claude Sonnet 4.5',
     'anthropic': 'Claude Opus 4.5',
     'gemini': 'Gemini 2.5 Flash',
-    'thinking': 'Думающая',
+    'thinking': 'GPT-5.2 Thinking',
   };
   return displayNames[selectedModel];
 }
