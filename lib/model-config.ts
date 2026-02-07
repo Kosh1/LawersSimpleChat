@@ -168,10 +168,10 @@ export function getOpenRouterModelConfig(selectedModel: SelectedModel): ModelCon
  */
 export function getModelDisplayName(selectedModel: SelectedModel): string {
   const displayNames: Record<SelectedModel, string> = {
-    'openai': 'Claude Sonnet 4.5',
+    'openai': 'Быстрая',
     'anthropic': 'Claude Opus 4.5',
     'gemini': 'Gemini 2.5 Flash',
-    'thinking': 'GPT-5.2 Thinking',
+    'thinking': 'Думающая',
   };
   return displayNames[selectedModel];
 }
